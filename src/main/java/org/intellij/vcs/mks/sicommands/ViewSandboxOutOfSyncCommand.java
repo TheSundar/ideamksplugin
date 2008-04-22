@@ -1,10 +1,11 @@
 package org.intellij.vcs.mks.sicommands;
 
-import java.util.List;
-import org.intellij.vcs.mks.EncodingProvider;
+import com.intellij.openapi.vcs.VcsException;
+import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.MksRevisionNumber;
 import org.intellij.vcs.mks.model.MksMemberState;
-import com.intellij.openapi.vcs.VcsException;
+
+import java.util.List;
 
 /**
  * Obtains member revision, working revision, checkedout state (won't see
@@ -15,9 +16,9 @@ import com.intellij.openapi.vcs.VcsException;
 public class ViewSandboxOutOfSyncCommand extends AbstractViewSandboxCommand {
 
 
-    public ViewSandboxOutOfSyncCommand(final List<VcsException> errors, final EncodingProvider encodingProvider,
+    public ViewSandboxOutOfSyncCommand(final List<VcsException> errors, final MksCLIConfiguration mksCLIConfiguration,
                                        final String sandboxPath) {
-        super(errors, encodingProvider, sandboxPath, "--filter=changed:sync", "--filter=!changed:working");
+        super(errors, mksCLIConfiguration, sandboxPath, "--filter=changed:sync", "--filter=!changed:working");
     }
 
     @Override
