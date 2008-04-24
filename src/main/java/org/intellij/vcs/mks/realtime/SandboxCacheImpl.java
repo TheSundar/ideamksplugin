@@ -107,7 +107,7 @@ public class SandboxCacheImpl implements SandboxCache {
 	 * Should only be called for sandbox relevant for the project (eg : sandbox
 	 * content and project content intersect)
 	 *
-	 * @param sandboxInfo
+	 * @param sandboxInfo the sandbox
 	 */
 	private void addSandboxBelongingToProject(@NotNull MksSandboxInfo sandboxInfo) {
 		String sandboxPath;
@@ -139,7 +139,9 @@ public class SandboxCacheImpl implements SandboxCache {
 						public void run() {
 							ApplicationManager.getApplication().runReadAction(new Runnable() {
 								public void run() {
-									VcsDirtyScopeManager.getInstance(project).dirDirtyRecursively(sandboxParentFolderVFile);
+									if (!project.isDisposed()) {
+										VcsDirtyScopeManager.getInstance(project).dirDirtyRecursively(sandboxParentFolderVFile);
+									}
 								}
 							});
 						}
@@ -156,7 +158,7 @@ public class SandboxCacheImpl implements SandboxCache {
 			VirtualFile sandboxPjFile = VcsUtil.getVirtualFile(sandboxPath);
 			if (sandboxPjFile != null) {
 				sandboxInfo = new MksSandboxInfo(sandboxInfo.sandboxPath, sandboxInfo.hostAndPort, sandboxInfo.mksProject,
-					sandboxInfo.devPath, sandboxPjFile, sandboxInfo.isSubSandbox);
+						sandboxInfo.devPath, sandboxPjFile, sandboxInfo.isSubSandbox);
 			}
 			addRejected(sandboxInfo);
 		}
@@ -264,7 +266,7 @@ public class SandboxCacheImpl implements SandboxCache {
 	}
 
 	/**
-	 * @param directory
+	 * @param directory the directory we want the sandboxes for
 	 * @return all the TOP sandboxes intersecting the given directory
 	 */
 	@NotNull
@@ -273,7 +275,9 @@ public class SandboxCacheImpl implements SandboxCache {
 
 		for (List<MksSandboxInfo> infoList : new ArrayList<List<MksSandboxInfo>>(sandboxByFolder.values())) {
 			for (MksSandboxInfo sandboxInfo : infoList) {
-				if (sandboxInfo.isSubSandbox) continue;
+				if (sandboxInfo.isSubSandbox) {
+					continue;
+				}
 				VirtualFile sandboxFile = sandboxInfo.sandboxPjFile;
 				if (sandboxFile == null) {
 					synchronized (lock) {
@@ -320,7 +324,7 @@ public class SandboxCacheImpl implements SandboxCache {
 	/**
 	 * returns the highest level non ambiguous sandbox for the given file
 	 *
-	 * @param virtualFile
+	 * @param virtualFile the virtual file we want the parent sandbox for
 	 * @return the sandbox containing  the give file if one exists, null otherwise
 	 */
 	@Nullable
@@ -366,12 +370,12 @@ public class SandboxCacheImpl implements SandboxCache {
 
 
 	/**
-	 * THis only works when sandbox is the bottom most subsandbox including
+	 * This only works when sandbox is the bottom most subsandbox including
 	 * virtualfile. Thus this is not supported when subsandboxes are not monitored
 	 *
-	 * @param sandbox
-	 * @param virtualFile
-	 * @return
+	 * @param sandbox	 the candidate sandbox
+	 * @param virtualFile the file
+	 * @return true if sandbox is the bottom most subsandbox including virtualfile.
 	 */
 	private boolean checkSandboxContains(@NotNull MksSandboxInfo sandbox, @NotNull VirtualFile virtualFile) {
 		final FilePath filePath = PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(virtualFile);
@@ -381,7 +385,7 @@ public class SandboxCacheImpl implements SandboxCache {
 		final FilePath sandboxFolderFilePath = PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(sandbox.sandboxPjFile.getParent());
 
 		AbstractViewSandboxCommand command = new AbstractViewSandboxCommand(new ArrayList<VcsException>(), project.getComponent(MksVcs.class),
-			sandbox.sandboxPath, "--filter=file:" + MKSHelper.getRelativePath(filePath, sandboxFolderFilePath)) {
+				sandbox.sandboxPath, "--filter=file:" + MKSHelper.getRelativePath(filePath, sandboxFolderFilePath)) {
 			@Override
 			protected MksMemberState createState(String workingRev, String memberRev, String workingCpid, String locker, String lockedSandbox, String type, String deferred) throws VcsException {
 				return new MksMemberState(MksRevisionNumber.createRevision(workingRev), MksRevisionNumber.createRevision(memberRev), workingCpid, MksMemberState.Status.UNKNOWN);
