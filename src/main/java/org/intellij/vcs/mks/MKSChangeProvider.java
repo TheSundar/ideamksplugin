@@ -89,10 +89,12 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 			for (MksSandboxInfo sandbox : sandboxesToRefresh) {
 				@Nullable MksServerInfo sandboxServer = serversByHostAndPort.get(sandbox.hostAndPort);
 				if (sandboxServer == null) {
-					logger.warn("sandbox [" + sandbox.sandboxPath + "] bound to unknown or not connected server[" + sandbox.hostAndPort + "], skipping");
+					logger.warn("sandbox [" + sandbox.sandboxPath + "] bound to unknown or not connected server["
+							+ sandbox.hostAndPort + "], skipping");
 					continue;
 				}
-				final String message = MksBundle.message("requesting.mks.sandbox.name.index.total", sandbox.sandboxPath, ++refreshedSandbox, sandboxCountToRefresh);
+				final String message = MksBundle.message("requesting.mks.sandbox.name.index.total", sandbox.sandboxPath,
+						++refreshedSandbox, sandboxCountToRefresh);
 				setStatusInfo(statusLabel, message);
 				Map<String, MksChangePackage> changePackageMap = changePackagesPerServer.get(sandboxServer);
 				if (changePackageMap == null) {
@@ -131,7 +133,8 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 
 	}
 
-	private void checkNeededServersAreOnlineAndReconnectIfNeeded(Set<MksSandboxInfo> sandboxesToRefresh, ArrayList<MksServerInfo> servers) {
+	private void checkNeededServersAreOnlineAndReconnectIfNeeded(@NotNull Set<MksSandboxInfo> sandboxesToRefresh,
+																 @NotNull ArrayList<MksServerInfo> servers) {
 		Set<String> connectedServers = new HashSet<String>();
 		for (MksServerInfo server : servers) {
 			connectedServers.add(server.host + ":" + server.port);
@@ -176,11 +179,12 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 			if (!command.foundError() && (command.getServer() != null)) {
 				servers.add(command.getServer());
 			} else {
-				logger.warn("unable to connect to " + hostAndPort);
+				reportErrors(command.errors, "unable to connect to " + hostAndPort);
 			}
 		}
 	}
 
+	@NotNull
 	private Set<MksSandboxInfo> collectSandboxesToRefresh(VcsDirtyScope dirtyScope, JLabel statusLabel) {
 		setStatusInfo(statusLabel, MksBundle.message("collecting.relevant.sandboxes"));
 		Set<MksSandboxInfo> sandboxesToRefresh = new HashSet<MksSandboxInfo>();
@@ -216,18 +220,19 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 	}
 
 	private ChangelistBuilder createBuilderLoggingProxy(final ChangelistBuilder myBuilder) {
-		return (ChangelistBuilder) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{ChangelistBuilder.class}, new InvocationHandler() {
-			public Object invoke(final Object o, final Method method, final Object[] args) throws Throwable {
-				StringBuffer buffer = new StringBuffer("(");
-				for (Object arg : args) {
-					buffer.append(arg).append(",");
-				}
-				buffer.setLength(buffer.length() - 1);
-				buffer.append(")");
-				BUILDER_PROXY_LOGGER.debug(method.getName() + buffer);
-				return method.invoke(myBuilder, args);
-			}
-		});
+		return (ChangelistBuilder) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{ChangelistBuilder.class},
+				new InvocationHandler() {
+					public Object invoke(final Object o, final Method method, final Object[] args) throws Throwable {
+						StringBuffer buffer = new StringBuffer("(");
+						for (Object arg : args) {
+							buffer.append(arg).append(",");
+						}
+						buffer.setLength(buffer.length() - 1);
+						buffer.append(")");
+						BUILDER_PROXY_LOGGER.debug(method.getName() + buffer);
+						return method.invoke(myBuilder, args);
+					}
+				});
 	}
 
 	private Map<String, MksServerInfo> distributeServersByHostAndPort(final ArrayList<MksServerInfo> servers) {
@@ -346,7 +351,9 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 		return state.workingChangePackageId == null ? null : changePackages.get(state.workingChangePackageId);
 	}
 
-	private Map<String, MksMemberState> getSandboxState(@NotNull final MksSandboxInfo sandbox, final ArrayList<VcsException> errors, @NotNull final MksServerInfo server) {
+	@NotNull
+	private Map<String, MksMemberState> getSandboxState(@NotNull final MksSandboxInfo sandbox, @NotNull final ArrayList<VcsException> errors,
+														@NotNull final MksServerInfo server) {
 		Map<String, MksMemberState> states = new HashMap<String, MksMemberState>();
 
 		ViewSandboxWithoutChangesCommand fullSandboxCommand = new ViewSandboxWithoutChangesCommand(errors, getMksvcs(), sandbox.sandboxPath);
@@ -405,7 +412,7 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 			}
 			listCpsAction.execute();
 			if (listCpsAction.foundError()) {
-				logger.warn("error querying mks cps");
+				reportErrors(listCpsAction.errors, "error querying mks cps");
 			}
 			config.serverIsSiServer(listCpsAction.serverInfo, listCpsAction.serverInfo.isSIServer);
 
@@ -418,6 +425,7 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 		return changePackages;
 	}
 
+	@NotNull
 	private ArrayList<MksServerInfo> getMksServers(final ProgressIndicator progress, final ArrayList<VcsException> errors) {
 		final ListServers listServersAction = new ListServers(errors, getMksvcs());
 		if (progress != null) {
@@ -426,9 +434,15 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 		}
 		listServersAction.execute();
 		if (listServersAction.foundError()) {
-			logger.warn("encountered errors querying servers");
+			reportErrors(listServersAction.errors, "encountered errors querying servers");
 		}
 		return listServersAction.servers;
+	}
+
+	private void reportErrors(List<VcsException> errors, String message) {
+		for (VcsException error : errors) {
+			logger.warn(message, error);
+		}
 	}
 
 	public boolean isModifiedDocumentTrackingRequired() {
