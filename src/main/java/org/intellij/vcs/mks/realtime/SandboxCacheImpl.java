@@ -273,7 +273,11 @@ public class SandboxCacheImpl implements SandboxCache {
 	public Set<MksSandboxInfo> getSandboxesIntersecting(@NotNull final VirtualFile directory) {
 		Set<MksSandboxInfo> result = new HashSet<MksSandboxInfo>();
 
-		for (List<MksSandboxInfo> infoList : new ArrayList<List<MksSandboxInfo>>(sandboxByFolder.values())) {
+		final ArrayList<List<MksSandboxInfo>> sandboxInfoListOfList;
+		synchronized (lock) {
+			sandboxInfoListOfList = new ArrayList<List<MksSandboxInfo>>(sandboxByFolder.values());
+		}
+		for (List<MksSandboxInfo> infoList : sandboxInfoListOfList) {
 			for (MksSandboxInfo sandboxInfo : infoList) {
 				if (sandboxInfo.isSubSandbox) {
 					continue;
