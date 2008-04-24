@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vcs.FilePath;
+import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.changes.VcsDirtyScopeManager;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -79,6 +80,9 @@ public class SandboxCacheImpl implements SandboxCache {
 		backgroundUpdates.setDaemon(true);
 		backgroundUpdates.setPriority((Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) / 2);
 		backgroundUpdates.start();
+		ProjectLevelVcsManager.getInstance(project).addVcsListener(this);
+
+
 	}
 
 
@@ -251,6 +255,10 @@ public class SandboxCacheImpl implements SandboxCache {
 	}
 
 	public void rootsChanged(final ModuleRootEvent event) {
+		determineSandboxesInProject();
+	}
+
+	private void determineSandboxesInProject() {
 		LOGGER.info("rootsChanged, re computing in/out of project sandboxes");
 		synchronized (lock) {
 			List<MksSandboxInfo> allSandboxes = new ArrayList<MksSandboxInfo>(sandboxVFiles.size() + outOfScopeSandboxes.size());
@@ -263,6 +271,10 @@ public class SandboxCacheImpl implements SandboxCache {
 				addSandbox(sandbox);
 			}
 		}
+	}
+
+	public void directoryMappingChanged() {
+		determineSandboxesInProject();
 	}
 
 	/**

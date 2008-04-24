@@ -1,16 +1,20 @@
 package org.intellij.vcs.mks.realtime;
 
-import java.io.PrintWriter;
-import java.util.Set;
+import com.intellij.openapi.roots.ModuleRootListener;
+import com.intellij.openapi.vcs.VcsListener;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import com.intellij.openapi.roots.ModuleRootListener;
-import com.intellij.openapi.vfs.VirtualFile;
+
+import java.io.PrintWriter;
+import java.util.Set;
 
 /**
+ * subscribed to module root changing events from org.intellij.vcs.mks.MksVcs#activate()
+ *
  * @author Thibaut Fagart
  */
-public interface SandboxCache extends ModuleRootListener, SandboxListListener {
+public interface SandboxCache extends ModuleRootListener, SandboxListListener, VcsListener {
 
 	/**
 	 * @param virtualFile the file that needs a sandbox
