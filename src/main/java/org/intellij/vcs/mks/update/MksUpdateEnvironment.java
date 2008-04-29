@@ -1,17 +1,5 @@
 package org.intellij.vcs.mks.update;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.model.MksMemberState;
-import org.intellij.vcs.mks.realtime.MksSandboxInfo;
-import org.intellij.vcs.mks.sicommands.AbstractViewSandboxCommand;
-import org.intellij.vcs.mks.sicommands.ViewSandboxRemoteChangesCommand;
-import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.progress.ProcessCanceledException;
@@ -22,6 +10,14 @@ import com.intellij.openapi.vcs.update.FileGroup;
 import com.intellij.openapi.vcs.update.UpdateEnvironment;
 import com.intellij.openapi.vcs.update.UpdateSession;
 import com.intellij.openapi.vcs.update.UpdatedFiles;
+import org.intellij.vcs.mks.MksVcs;
+import org.intellij.vcs.mks.model.MksMemberState;
+import org.intellij.vcs.mks.realtime.MksSandboxInfo;
+import org.intellij.vcs.mks.sicommands.AbstractViewSandboxCommand;
+import org.intellij.vcs.mks.sicommands.ViewSandboxRemoteChangesCommand;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
 
 public class MksUpdateEnvironment implements UpdateEnvironment {
 	private final MksVcs mksVcs;
@@ -61,7 +57,8 @@ public class MksUpdateEnvironment implements UpdateEnvironment {
 	 * @return
 	 * @throws ProcessCanceledException
 	 */
-	public UpdateSession updateDirectories(FilePath[] filePaths, UpdatedFiles updatedFiles, ProgressIndicator progressIndicator) throws ProcessCanceledException {
+	public UpdateSession updateDirectories(FilePath[] filePaths, UpdatedFiles updatedFiles,
+										   ProgressIndicator progressIndicator) throws ProcessCanceledException {
 //		System.out.println("MksUpdateEnvironment.updateDirectories " + System.currentTimeMillis());
 		Set<MksSandboxInfo> sandboxes = new HashSet<MksSandboxInfo>();
 		for (FilePath filePath : filePaths) {
@@ -81,16 +78,19 @@ public class MksUpdateEnvironment implements UpdateEnvironment {
 				final MksMemberState state = entry.getValue();
 				switch (state.status) {
 					case REMOTELY_ADDED:
-						updatedFiles.getGroupById(FileGroup.CREATED_ID).add(entry.getKey(), mksVcs, state.memberRevision);
+						updatedFiles.getGroupById(FileGroup.CREATED_ID)
+								.add(entry.getKey(), mksVcs, state.memberRevision);
 						break;
 					case REMOTELY_DROPPED:
-						updatedFiles.getGroupById(FileGroup.REMOVED_FROM_REPOSITORY_ID).add(entry.getKey(), mksVcs, state.memberRevision);
+						updatedFiles.getGroupById(FileGroup.REMOVED_FROM_REPOSITORY_ID)
+								.add(entry.getKey(), mksVcs, state.memberRevision);
 						break;
 					case DROPPED:
 						updatedFiles.getGroupById(FileGroup.LOCALLY_REMOVED_ID).add(entry.getKey());
 						break;
 					case SYNC:
-						updatedFiles.getGroupById(FileGroup.UPDATED_ID).add(entry.getKey(), mksVcs, state.memberRevision);
+						updatedFiles.getGroupById(FileGroup.UPDATED_ID)
+								.add(entry.getKey(), mksVcs, state.memberRevision);
 						break;
 					default:
 						LOGGER.warn("unexpected status " + state.status + " for " + entry.getKey());

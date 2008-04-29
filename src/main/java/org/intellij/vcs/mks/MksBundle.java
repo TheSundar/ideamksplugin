@@ -1,8 +1,9 @@
 package org.intellij.vcs.mks;
 
+import com.intellij.CommonBundle;
+
 import java.lang.ref.SoftReference;
 import java.util.ResourceBundle;
-import com.intellij.CommonBundle;
 
 public class MksBundle {
 	public static String message(String key, Object... params) {

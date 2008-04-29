@@ -1,7 +1,5 @@
 package org.intellij.vcs.mks;
 
-import java.io.File;
-import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsException;
@@ -11,6 +9,9 @@ import mks.integrations.common.TriclopsException;
 import mks.integrations.common.TriclopsSiClient;
 import mks.integrations.common.TriclopsSiMembers;
 import mks.integrations.common.TriclopsSiSandbox;
+import org.intellij.vcs.mks.realtime.MksSandboxInfo;
+
+import java.io.File;
 
 public class MKSHelper {
 	private static final Logger LOGGER = Logger.getInstance(MKSHelper.class.getName());

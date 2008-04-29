@@ -1,17 +1,6 @@
 package org.intellij.vcs.mks.actions;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import org.intellij.vcs.mks.MksBundle;
-import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.MksVcsException;
-import org.jetbrains.annotations.NotNull;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
@@ -21,6 +10,14 @@ import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
+import org.intellij.vcs.mks.MksBundle;
+import org.intellij.vcs.mks.MksVcs;
+import org.intellij.vcs.mks.MksVcsException;
+import org.jetbrains.annotations.NotNull;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class BasicAction extends AnAction {
 	protected static final String ACTION_CANCELLED_MSG = "The command was cancelled.";
@@ -30,7 +27,8 @@ public abstract class BasicAction extends AnAction {
 		this.command = command;
 	}
 
-	protected final void perform(@NotNull Project project, MksVcs mksVcs, @NotNull List<VcsException> exceptions, @NotNull VirtualFile[] affectedFiles) {
+	protected final void perform(@NotNull Project project, MksVcs mksVcs, @NotNull List<VcsException> exceptions,
+								 @NotNull VirtualFile[] affectedFiles) {
 		try {
 			command.executeCommand(mksVcs, exceptions, affectedFiles);
 		} catch (VcsException e) {
@@ -38,7 +36,8 @@ public abstract class BasicAction extends AnAction {
 			exceptions.add(new MksVcsException(/*"Unable to obtain file status"*/ e.getMessage(), e));
 		}
 
-		WindowManager.getInstance().getStatusBar(project).setInfo(MessageFormat.format(MksBundle.message("action.complete"), getActionName(mksVcs)));
+		WindowManager.getInstance().getStatusBar(project)
+				.setInfo(MessageFormat.format(MksBundle.message("action.complete"), getActionName(mksVcs)));
 	}
 
 	@Override
@@ -165,6 +164,7 @@ public abstract class BasicAction extends AnAction {
 		presentation.setVisible(enabled);
 	}
 
-	protected abstract boolean isEnabled(@NotNull Project project, @NotNull MksVcs mksvcs, @NotNull VirtualFile... vFiles);
+	protected abstract boolean isEnabled(@NotNull Project project, @NotNull MksVcs mksvcs,
+										 @NotNull VirtualFile... vFiles);
 
 }

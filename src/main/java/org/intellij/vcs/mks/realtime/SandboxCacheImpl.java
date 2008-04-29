@@ -36,7 +36,8 @@ public class SandboxCacheImpl implements SandboxCache {
 	/**
 	 * sandboxFolder virtualFile => TriclopsSiSandbox
 	 */
-	private final HashMap<VirtualFile, List<MksSandboxInfo>> sandboxByFolder = new HashMap<VirtualFile, List<MksSandboxInfo>>();
+	private final HashMap<VirtualFile, List<MksSandboxInfo>> sandboxByFolder =
+			new HashMap<VirtualFile, List<MksSandboxInfo>>();
 	private final HashSet<VirtualFile> sandboxVFiles = new HashSet<VirtualFile>();
 	private final HashSet<MksSandboxInfo> outOfScopeSandboxes = new HashSet<MksSandboxInfo>();
 	@NotNull
@@ -81,8 +82,6 @@ public class SandboxCacheImpl implements SandboxCache {
 		backgroundUpdates.setPriority((Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) / 2);
 		backgroundUpdates.start();
 		ProjectLevelVcsManager.getInstance(project).addVcsListener(this);
-
-
 	}
 
 
@@ -90,10 +89,12 @@ public class SandboxCacheImpl implements SandboxCache {
 		return sandboxVFiles.contains(virtualFile) || virtualFile.getName().equals("project.pj");
 	}
 
-	public void addSandboxPath(@NotNull String sandboxPath, @NotNull final String mksHostAndPort, @NotNull String mksProject, @Nullable String devPath, boolean isSubSandbox) {
+	public void addSandboxPath(@NotNull String sandboxPath, @NotNull final String mksHostAndPort,
+							   @NotNull String mksProject, @Nullable String devPath, boolean isSubSandbox) {
 
 		VirtualFile sandboxVFile = VcsUtil.getVirtualFile(sandboxPath);
-		MksSandboxInfo sandboxInfo = new MksSandboxInfo(sandboxPath, mksHostAndPort, mksProject, devPath, sandboxVFile, isSubSandbox);
+		MksSandboxInfo sandboxInfo =
+				new MksSandboxInfo(sandboxPath, mksHostAndPort, mksProject, devPath, sandboxVFile, isSubSandbox);
 		addSandbox(sandboxInfo);
 
 	}
@@ -117,7 +118,8 @@ public class SandboxCacheImpl implements SandboxCache {
 		String sandboxPath;
 		VirtualFile sandboxVFile;
 		sandboxPath = sandboxInfo.sandboxPath;
-		sandboxVFile = sandboxInfo.sandboxPjFile == null ? VcsUtil.getVirtualFile(sandboxInfo.sandboxPath) : sandboxInfo.sandboxPjFile;
+		sandboxVFile = sandboxInfo.sandboxPjFile == null ? VcsUtil.getVirtualFile(sandboxInfo.sandboxPath) :
+				sandboxInfo.sandboxPjFile;
 		VirtualFile sandboxFolder;
 		if (sandboxVFile != null) {
 			sandboxFolder = (sandboxVFile.isDirectory()) ? sandboxVFile : sandboxVFile.getParent();
@@ -144,7 +146,8 @@ public class SandboxCacheImpl implements SandboxCache {
 							ApplicationManager.getApplication().runReadAction(new Runnable() {
 								public void run() {
 									if (!project.isDisposed()) {
-										VcsDirtyScopeManager.getInstance(project).dirDirtyRecursively(sandboxParentFolderVFile);
+										VcsDirtyScopeManager.getInstance(project)
+												.dirDirtyRecursively(sandboxParentFolderVFile);
 									}
 								}
 							});
@@ -161,8 +164,9 @@ public class SandboxCacheImpl implements SandboxCache {
 			LOGGER.warn("unable to find the virtualFile for " + sandboxPath);
 			VirtualFile sandboxPjFile = VcsUtil.getVirtualFile(sandboxPath);
 			if (sandboxPjFile != null) {
-				sandboxInfo = new MksSandboxInfo(sandboxInfo.sandboxPath, sandboxInfo.hostAndPort, sandboxInfo.mksProject,
-						sandboxInfo.devPath, sandboxPjFile, sandboxInfo.isSubSandbox);
+				sandboxInfo =
+						new MksSandboxInfo(sandboxInfo.sandboxPath, sandboxInfo.hostAndPort, sandboxInfo.mksProject,
+								sandboxInfo.devPath, sandboxPjFile, sandboxInfo.isSubSandbox);
 			}
 			addRejected(sandboxInfo);
 		}
@@ -261,7 +265,8 @@ public class SandboxCacheImpl implements SandboxCache {
 	private void determineSandboxesInProject() {
 		LOGGER.info("rootsChanged, re computing in/out of project sandboxes");
 		synchronized (lock) {
-			List<MksSandboxInfo> allSandboxes = new ArrayList<MksSandboxInfo>(sandboxVFiles.size() + outOfScopeSandboxes.size());
+			List<MksSandboxInfo> allSandboxes =
+					new ArrayList<MksSandboxInfo>(sandboxVFiles.size() + outOfScopeSandboxes.size());
 			for (List<MksSandboxInfo> infoList : sandboxByFolder.values()) {
 				allSandboxes.addAll(infoList);
 			}
@@ -398,15 +403,22 @@ public class SandboxCacheImpl implements SandboxCache {
 		if (!filePath.getIOFile().exists() || sandbox.sandboxPjFile == null) {
 			return false;
 		}
-		final FilePath sandboxFolderFilePath = PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(sandbox.sandboxPjFile.getParent());
+		final FilePath sandboxFolderFilePath =
+				PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(sandbox.sandboxPjFile.getParent());
 
-		AbstractViewSandboxCommand command = new AbstractViewSandboxCommand(new ArrayList<VcsException>(), project.getComponent(MksVcs.class),
-				sandbox.sandboxPath, "--filter=file:" + MKSHelper.getRelativePath(filePath, sandboxFolderFilePath)) {
-			@Override
-			protected MksMemberState createState(String workingRev, String memberRev, String workingCpid, String locker, String lockedSandbox, String type, String deferred) throws VcsException {
-				return new MksMemberState(MksRevisionNumber.createRevision(workingRev), MksRevisionNumber.createRevision(memberRev), workingCpid, MksMemberState.Status.UNKNOWN);
-			}
-		};
+		AbstractViewSandboxCommand command =
+				new AbstractViewSandboxCommand(new ArrayList<VcsException>(), project.getComponent(MksVcs.class),
+						sandbox.sandboxPath,
+						"--filter=file:" + MKSHelper.getRelativePath(filePath, sandboxFolderFilePath)) {
+					@Override
+					protected MksMemberState createState(String workingRev, String memberRev, String workingCpid,
+														 String locker, String lockedSandbox, String type,
+														 String deferred) throws VcsException {
+						return new MksMemberState(MksRevisionNumber.createRevision(workingRev),
+								MksRevisionNumber.createRevision(memberRev), workingCpid,
+								MksMemberState.Status.UNKNOWN);
+					}
+				};
 		command.execute();
 		if (command.foundError()) {
 			LOGGER.error("error while checking if sandbox " + sandbox + " contains " + virtualFile);

@@ -1,14 +1,15 @@
 package org.intellij.vcs.mks.history;
 
-import java.io.IOException;
-import java.util.Date;
-import org.intellij.vcs.mks.MksContentRevision;
-import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.history.VcsFileRevision;
 import com.intellij.openapi.vcs.history.VcsRevisionNumber;
+import org.intellij.vcs.mks.MksContentRevision;
+import org.intellij.vcs.mks.MksVcs;
+import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
+
+import java.io.IOException;
+import java.util.Date;
 
 public class MksVcsFileRevision implements VcsFileRevision {
 	private String author;

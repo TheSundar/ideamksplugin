@@ -1,9 +1,10 @@
 package org.intellij.vcs.mks;
 
-import java.util.StringTokenizer;
-import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.history.VcsRevisionNumber;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.StringTokenizer;
 
 /**
  * @author Thibaut Fagart

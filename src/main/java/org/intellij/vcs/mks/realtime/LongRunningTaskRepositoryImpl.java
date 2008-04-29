@@ -1,21 +1,18 @@
 package org.intellij.vcs.mks.realtime;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.project.Project;
+
+import java.util.*;
 
 /**
  * Keeps track of all long running tasks, and allows monitoring/start/stop of them. <br/>
  * Stops all tasks when project is closed
- * 
  */
-public class LongRunningTaskRepositoryImpl extends AbstractProjectComponent implements LongRunningTaskRepository, List<LongRunningTask> {
+public class LongRunningTaskRepositoryImpl extends AbstractProjectComponent
+		implements LongRunningTaskRepository, List<LongRunningTask> {
 	private final List<LongRunningTask> tasks = new ArrayList<LongRunningTask>();
+
 	public LongRunningTaskRepositoryImpl(Project project) {
 		super(project);
 	}
@@ -81,8 +78,8 @@ public class LongRunningTaskRepositoryImpl extends AbstractProjectComponent impl
 
 	public boolean retainAll(Collection<?> objects) {
 		synchronized (tasks) {
-			ArrayList <LongRunningTask>temp = new ArrayList<LongRunningTask>(tasks);
-			boolean changed = false ;
+			ArrayList<LongRunningTask> temp = new ArrayList<LongRunningTask>(tasks);
+			boolean changed = false;
 			for (LongRunningTask task : temp) {
 				if (!objects.contains(task)) {
 					changed |= tasks.remove(task);
@@ -105,7 +102,7 @@ public class LongRunningTaskRepositoryImpl extends AbstractProjectComponent impl
 	}
 
 	public void add(final int i, final LongRunningTask longRunningTask) {
-		tasks.add(i,longRunningTask);
+		tasks.add(i, longRunningTask);
 	}
 
 	public boolean addAll(final int i, final Collection<? extends LongRunningTask> longRunningTasks) {
@@ -134,7 +131,7 @@ public class LongRunningTaskRepositoryImpl extends AbstractProjectComponent impl
 
 	public LongRunningTask remove(final int i) {
 		synchronized (tasks) {
-			if (i>=0) {
+			if (i >= 0) {
 				LongRunningTask task = tasks.remove(i);
 				task.stop();
 				return task;
@@ -144,7 +141,7 @@ public class LongRunningTaskRepositoryImpl extends AbstractProjectComponent impl
 	}
 
 	public LongRunningTask set(final int i, final LongRunningTask longRunningTask) {
-		return tasks.set(i,longRunningTask);
+		return tasks.set(i, longRunningTask);
 	}
 
 	public List<LongRunningTask> subList(final int i, final int i1) {

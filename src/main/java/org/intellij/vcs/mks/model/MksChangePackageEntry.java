@@ -2,7 +2,7 @@ package org.intellij.vcs.mks.model;
 
 /**
  * An entry of a change package as returned by the si viewcp command. <br/>
- *
+ * <p/>
  * the 'member' attribute specifies a path relative to the 'project' owning directory
  *
  * @author Thibaut Fagart

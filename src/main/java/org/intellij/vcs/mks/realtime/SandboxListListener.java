@@ -13,5 +13,6 @@ public interface SandboxListListener {
 	 * @param devPath		   null if the sandbox is on the trunk
 	 * @param isSubSandbox	  true if the sandbox is not a top level sandbox
 	 */
-	void addSandboxPath(@NotNull String sandboxPath, @NotNull String serverHostAndPort, @NotNull String mksProject, @Nullable String devPath, boolean isSubSandbox);
+	void addSandboxPath(@NotNull String sandboxPath, @NotNull String serverHostAndPort, @NotNull String mksProject,
+						@Nullable String devPath, boolean isSubSandbox);
 }

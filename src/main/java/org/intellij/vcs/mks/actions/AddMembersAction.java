@@ -1,10 +1,10 @@
 package org.intellij.vcs.mks.actions;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.actions.triclops.AddMemberCommand;
 import org.jetbrains.annotations.NotNull;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 
 public class AddMembersAction extends MultipleTargetAction {
 

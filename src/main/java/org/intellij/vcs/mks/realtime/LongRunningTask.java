@@ -6,11 +6,14 @@ package org.intellij.vcs.mks.realtime;
  */
 public interface LongRunningTask {
 	void stop();
+
 	void restart();
+
 	boolean isAlive();
 
 	/**
 	 * a human readable description for the task
+	 *
 	 * @return
 	 */
 	String getDescription();

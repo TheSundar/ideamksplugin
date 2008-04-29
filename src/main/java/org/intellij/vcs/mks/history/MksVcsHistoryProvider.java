@@ -1,8 +1,13 @@
 package org.intellij.vcs.mks.history;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vcs.FilePath;
+import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.vcs.history.*;
+import com.intellij.util.ui.ColumnInfo;
+import com.intellij.vcsUtil.VcsUtil;
 import org.intellij.vcs.mks.MKSHelper;
 import org.intellij.vcs.mks.MksRevisionNumber;
 import org.intellij.vcs.mks.MksVcs;
@@ -15,19 +20,10 @@ import org.intellij.vcs.mks.sicommands.ViewMemberHistoryCommand;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vcs.FilePath;
-import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vcs.history.FileHistoryPanel;
-import com.intellij.openapi.vcs.history.HistoryAsTreeProvider;
-import com.intellij.openapi.vcs.history.VcsFileRevision;
-import com.intellij.openapi.vcs.history.VcsHistoryProvider;
-import com.intellij.openapi.vcs.history.VcsHistorySession;
-import com.intellij.openapi.vcs.history.VcsRevisionNumber;
-import com.intellij.util.ui.ColumnInfo;
-import com.intellij.vcsUtil.VcsUtil;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Allows fetching the history for a particular file. <br/>
@@ -85,21 +81,27 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 	 * @throws VcsException if fetching the revision fails
 	 */
 	@Nullable
-	private VcsRevisionNumber getCurrentRevision(@NotNull MksSandboxInfo sandbox, @NotNull final FilePath filePath) throws VcsException {
+	private VcsRevisionNumber getCurrentRevision(@NotNull MksSandboxInfo sandbox,
+												 @NotNull final FilePath filePath) throws VcsException {
 		FilePath sandboxPath = VcsUtil.getFilePath(sandbox.sandboxPath);
 		FilePath sandboxFolder = sandboxPath.getParentPath();
 		assert sandboxFolder != null : "sandbox parent folder can not be null";
 		assert filePath.getPath().startsWith(sandboxFolder.getPath()) :
 				"" + filePath.getPath() + " should start with " + sandboxFolder.getPath();
-		final AbstractViewSandboxCommand command = new AbstractViewSandboxCommand(new ArrayList<VcsException>(), vcs, sandbox.sandboxPath
-				, "--filter=file:" + MKSHelper.getRelativePath(filePath, sandboxFolder)
+		final AbstractViewSandboxCommand command =
+				new AbstractViewSandboxCommand(new ArrayList<VcsException>(), vcs, sandbox.sandboxPath
+						, "--filter=file:" + MKSHelper.getRelativePath(filePath, sandboxFolder)
 //				"--fields=workingrev",
 //				"--recurse"
-		) {
-			@Override
-			protected MksMemberState createState(String workingRev, String memberRev, String workingCpid, String locker, String lockedSandbox, String type, String deferred) throws VcsException {
-				return new MksMemberState((MksRevisionNumber.createRevision(workingRev)), (MksRevisionNumber.createRevision(memberRev)), workingCpid, MksMemberState.Status.UNKNOWN);
-			}
+				) {
+					@Override
+					protected MksMemberState createState(String workingRev, String memberRev, String workingCpid,
+														 String locker, String lockedSandbox, String type,
+														 String deferred) throws VcsException {
+						return new MksMemberState((MksRevisionNumber.createRevision(workingRev)),
+								(MksRevisionNumber.createRevision(memberRev)), workingCpid,
+								MksMemberState.Status.UNKNOWN);
+					}
 
 /*
 			@Override
@@ -122,7 +124,7 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 
 			}
 */
-		};
+				};
 		command.execute();
 		MksMemberState state = command.getMemberStates().get(filePath.getPath());
 		if (state == null) {
@@ -142,12 +144,14 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 	}
 
 	private List<VcsFileRevision> getRevisions(FilePath filePath) {
-		final ViewMemberHistoryCommand command = new ViewMemberHistoryCommand(new ArrayList<VcsException>(), vcs, filePath.getPath());
+		final ViewMemberHistoryCommand command =
+				new ViewMemberHistoryCommand(new ArrayList<VcsException>(), vcs, filePath.getPath());
 		command.execute();
 		if (command.foundError()) {
 			for (VcsException error : command.errors) {
 				if (error.getMessage().equals(GetRevisionInfo.NOT_A_MEMBER)) {
-					Messages.showMessageDialog("Not (or not any more) a member", "title", Messages.getInformationIcon());
+					Messages.showMessageDialog("Not (or not any more) a member", "title",
+							Messages.getInformationIcon());
 				} else {
 					LOGGER.warn(error);
 				}
@@ -176,19 +180,21 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 	}
 
 	public ColumnInfo<VcsFileRevision, String>[] getRevisionColumns() {
-		final ColumnInfo<VcsFileRevision, String> myColumnInfo = new ColumnInfo<VcsFileRevision, String>("change package") {
-			@Override
-			public String valueOf(VcsFileRevision vcsFileRevision) {
+		final ColumnInfo<VcsFileRevision, String> myColumnInfo =
+				new ColumnInfo<VcsFileRevision, String>("change package") {
+					@Override
+					public String valueOf(VcsFileRevision vcsFileRevision) {
 
-				if (vcsFileRevision instanceof MksVcsFileRevision) {
-					return ((MksVcsFileRevision) vcsFileRevision).getCpid();
-				} else {
-					return "unknown";
-				}
-			}
-		};
+						if (vcsFileRevision instanceof MksVcsFileRevision) {
+							return ((MksVcsFileRevision) vcsFileRevision).getCpid();
+						} else {
+							return "unknown";
+						}
+					}
+				};
 		//noinspection unchecked
-		final ColumnInfo<VcsFileRevision, String>[] array = (ColumnInfo<VcsFileRevision, String>[]) Array.newInstance(myColumnInfo.getClass(), 1);
+		final ColumnInfo<VcsFileRevision, String>[] array =
+				(ColumnInfo<VcsFileRevision, String>[]) Array.newInstance(myColumnInfo.getClass(), 1);
 		array[0] = myColumnInfo;
 		return array;
 	}//return null if your revisions cannot be tree

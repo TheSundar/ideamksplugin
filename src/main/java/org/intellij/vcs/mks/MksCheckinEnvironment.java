@@ -1,11 +1,5 @@
 package org.intellij.vcs.mks;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import org.intellij.vcs.mks.realtime.MksSandboxInfo;
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vcs.CheckinProjectPanel;
 import com.intellij.openapi.vcs.FilePath;
@@ -20,6 +14,13 @@ import com.intellij.vcsUtil.VcsUtil;
 import mks.integrations.common.TriclopsException;
 import mks.integrations.common.TriclopsSiMember;
 import mks.integrations.common.TriclopsSiMembers;
+import org.intellij.vcs.mks.realtime.MksSandboxInfo;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Thibaut Fagart
@@ -48,7 +49,8 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
 
 			}
 		}
-		DispatchBySandboxCommand dispatchAction = new DispatchBySandboxCommand(mksVcs, new ArrayList<VcsException>(), modifiedFiles.toArray(new VirtualFile[modifiedFiles.size()]));
+		DispatchBySandboxCommand dispatchAction = new DispatchBySandboxCommand(mksVcs, new ArrayList<VcsException>(),
+				modifiedFiles.toArray(new VirtualFile[modifiedFiles.size()]));
 		dispatchAction.execute();
 
 		List<VcsException> exceptions = dispatchAction.errors;

@@ -1,9 +1,10 @@
 package org.intellij.vcs.mks.model;
 
-import java.util.Date;
+import com.intellij.openapi.vcs.history.VcsRevisionNumber;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import com.intellij.openapi.vcs.history.VcsRevisionNumber;
+
+import java.util.Date;
 
 /**
  * Used to keep track of the current state of a sandbox. <br/> Is associated
@@ -70,8 +71,10 @@ public final class MksMemberState {
 
 	@Override
 	public String toString() {
-		return "memberRev " + ((memberRevision == null) ? "null" : memberRevision.asString()) + ", workingRev " + ((workingRevision == null) ? "null" : workingRevision.asString())
-				+ ", status " + status/* +", checkedout " + checkedout+ ", modified without checkout " + modifiedWithoutCheckout*/
+		return "memberRev " + ((memberRevision == null) ? "null" : memberRevision.asString()) + ", workingRev " +
+				((workingRevision == null) ? "null" : workingRevision.asString())
+				+ ", status " + status
+/* +", checkedout " + checkedout+ ", modified without checkout " + modifiedWithoutCheckout*/
 				+ ", wokingCpid " + workingChangePackageId;
 	}
 

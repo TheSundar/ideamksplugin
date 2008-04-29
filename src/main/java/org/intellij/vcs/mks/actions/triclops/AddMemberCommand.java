@@ -1,12 +1,12 @@
 package org.intellij.vcs.mks.actions.triclops;
 
+import com.intellij.openapi.vcs.AbstractVcs;
+import mks.integrations.common.TriclopsException;
+import mks.integrations.common.TriclopsSiMembers;
 import org.intellij.vcs.mks.MKSHelper;
 import org.intellij.vcs.mks.MksBundle;
 import org.intellij.vcs.mks.actions.MksCommand;
 import org.jetbrains.annotations.NotNull;
-import com.intellij.openapi.vcs.AbstractVcs;
-import mks.integrations.common.TriclopsException;
-import mks.integrations.common.TriclopsSiMembers;
 
 public class AddMemberCommand extends AbstractMultipleTargetTriclopsCommand implements MksCommand {
 	protected void perform(@NotNull TriclopsSiMembers siMembers) throws TriclopsException {

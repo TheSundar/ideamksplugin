@@ -17,7 +17,8 @@ import java.util.regex.Pattern;
 /**
  * @author Thibaut Fagart
  */
-public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer implements ApplicationComponent, SandboxListSynchronizer {
+public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
+		implements ApplicationComponent, SandboxListSynchronizer {
 	//	private static final String LINE_SEPARATOR = " -> ";
 	// $sandbox$ -> $project$[$sandboxtype$:$projectVersionOrDevPath$] ($server$:$port$)
 	private static final String patternString = "(.+) -> ([^\\[]+)(?:\\[([^:]+):([^:]+)\\])? \\((.+)\\)";
@@ -52,7 +53,8 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer impleme
 		try {
 			this.listeners.add(listener);
 			for (SandboxInfo sandbox : currentBatch) {
-				listener.addSandboxPath(sandbox.sandboxPath, sandbox.serverHostAndPort, sandbox.projectPath, sandbox.projectVersion, sandbox.subSandbox);
+				listener.addSandboxPath(sandbox.sandboxPath, sandbox.serverHostAndPort, sandbox.projectPath,
+						sandbox.projectVersion, sandbox.subSandbox);
 			}
 		} finally {
 			sandboxCacheLock.unlock();
@@ -114,7 +116,9 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer impleme
 				Matcher matcher = pattern.matcher(line);
 //				String[] parts = line.split(LINE_SEPARATOR);
 				if (!matcher.matches()) {
-					LOGGER.error("unexpected command output {" + line + "}, expected something matching " + patternString, "");
+					LOGGER.error(
+							"unexpected command output {" + line + "}, expected something matching " + patternString,
+							"");
 					// ignoring line
 				} else {
 					String sandboxPath = matcher.group(SANDBOX_PATH_GROUP_IDX);
@@ -122,16 +126,19 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer impleme
 					String projectType = matcher.group(PROJECT_TYPE_GROUP_IDX);
 					String projectVersion = matcher.group(PROJECT_VERSION_GROUP_IDX);
 					String serverHostAndPort = matcher.group(SERVER_GROUP_IDX);
-					final SandboxInfo info = resolveSandbox(sandboxPath, serverHostAndPort, projectPath, projectVersion);
+					final SandboxInfo info =
+							resolveSandbox(sandboxPath, serverHostAndPort, projectPath, projectVersion);
 					fireSandboxAdded(info);
 				}
 			}
 		} catch (Exception e) {
-			LOGGER.error("error parsing mks synchronizer output [" + line + "], skipping that line  because : " + e.getMessage(), e);
+			LOGGER.error("error parsing mks synchronizer output [" + line + "], skipping that line  because : " +
+					e.getMessage(), e);
 		}
 	}
 
-	private SandboxInfo resolveSandbox(String sandboxPath, String serverHostAndPort, String projectPath, String projectVersion) {
+	private SandboxInfo resolveSandbox(String sandboxPath, String serverHostAndPort, String projectPath,
+									   String projectVersion) {
 		boolean isSubSandbox = isSubSandbox(projectPath);
 		SandboxInfo info;
 		if (isSubSandbox) {
@@ -165,7 +172,8 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer impleme
 
 		}
 
-		public SandboxInfo(SandboxInfo parentSandbox, String sandboxPath, String subProjectPath, String projectVersion) {
+		public SandboxInfo(SandboxInfo parentSandbox, String sandboxPath, String subProjectPath,
+						   String projectVersion) {
 			this.sandboxPath = sandboxPath;
 			this.projectPath = parentSandbox.getServerFolder() + subProjectPath;
 			this.serverHostAndPort = parentSandbox.serverHostAndPort;
@@ -183,7 +191,8 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer impleme
 		try {
 			currentBatch.add(sandbox);
 			for (SandboxListListener listener : listeners) {
-				listener.addSandboxPath(sandbox.sandboxPath, sandbox.serverHostAndPort, sandbox.projectPath, sandbox.projectVersion, sandbox.subSandbox);
+				listener.addSandboxPath(sandbox.sandboxPath, sandbox.serverHostAndPort, sandbox.projectPath,
+						sandbox.projectVersion, sandbox.subSandbox);
 			}
 		} finally {
 			sandboxCacheLock.unlock();

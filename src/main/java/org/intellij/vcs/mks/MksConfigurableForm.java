@@ -66,7 +66,8 @@ public class MksConfigurableForm implements Configurable {
 
 		@Nls final String commandColumnName = "Command";
 		@Nls final String EncodingCommandName = "Encoding";
-		return new DefaultTableModel(createTableData(getConfiguration()), new String[]{commandColumnName, EncodingCommandName}) {
+		return new DefaultTableModel(createTableData(getConfiguration()),
+				new String[]{commandColumnName, EncodingCommandName}) {
 			@Override
 			public boolean isCellEditable(final int row, final int column) {
 				return column == 1;
@@ -82,7 +83,8 @@ public class MksConfigurableForm implements Configurable {
 		int i = 1;
 		for (final String command : knownCommands) {
 			final String commandEncoding = configuration.SI_ENCODINGS.getMap().get(command);
-			result[i++] = new String[]{command, (commandEncoding == null) ? MksConfigurableForm.DEFAULT_ENCODING_VALUE : commandEncoding};
+			result[i++] = new String[]{command,
+					(commandEncoding == null) ? MksConfigurableForm.DEFAULT_ENCODING_VALUE : commandEncoding};
 		}
 		return result;
 	}
@@ -111,8 +113,9 @@ public class MksConfigurableForm implements Configurable {
 		try {
 			configuration.setDatePattern(validateDatePattern());
 		} catch (Exception e) {
-			throw new ConfigurationException("Bad date pattern " + this.datePatternString.getText() + ", must be a valid" +
-					" java dateFormat pattern");
+			throw new ConfigurationException(
+					"Bad date pattern " + this.datePatternString.getText() + ", must be a valid" +
+							" java dateFormat pattern");
 
 		}
 		final List<MksServerInfo> ignoredServersListOld = parseIgnoredServers(configuration.getIgnoredServers());
@@ -147,7 +150,8 @@ public class MksConfigurableForm implements Configurable {
 		while (tok.hasMoreTokens()) {
 			final StringTokenizer tok2 = new StringTokenizer(tok.nextToken(), ":");
 			if (tok2.countTokens() != 2) {
-				throw new IllegalArgumentException("bad server list, it has to be a comma separated list of <host:port>, example \"myServer1:7001,myServer2:7001\"");
+				throw new IllegalArgumentException(
+						"bad server list, it has to be a comma separated list of <host:port>, example \"myServer1:7001,myServer2:7001\"");
 			}
 			ret.add(new MksServerInfo("anon", tok2.nextToken(), tok2.nextToken()));
 		}

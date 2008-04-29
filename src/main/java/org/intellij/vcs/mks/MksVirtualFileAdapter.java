@@ -24,37 +24,43 @@ class MksVirtualFileAdapter extends VirtualFileAdapter {
 
 	@Override
 	public void contentsChanged(VirtualFileEvent virtualFileEvent) {
-		super.contentsChanged(virtualFileEvent);	//To change body of overridden methods use File | Settings | File Templates.
+		super.contentsChanged(
+				virtualFileEvent);	//To change body of overridden methods use File | Settings | File Templates.
 		mksVcs.debug("contentsChanged[" + virtualFileEvent + "]");
 	}
 
 	@Override
 	public void beforeContentsChange(VirtualFileEvent virtualFileEvent) {
-		super.beforeContentsChange(virtualFileEvent);	//To change body of overridden methods use File | Settings | File Templates.
+		super.beforeContentsChange(
+				virtualFileEvent);	//To change body of overridden methods use File | Settings | File Templates.
 		mksVcs.debug("beforeContentsChange[" + virtualFileEvent + "]");
 	}
 
 	@Override
 	public void beforeFileDeletion(VirtualFileEvent virtualFileEvent) {
-		super.beforeFileDeletion(virtualFileEvent);	//To change body of overridden methods use File | Settings | File Templates.
+		super.beforeFileDeletion(
+				virtualFileEvent);	//To change body of overridden methods use File | Settings | File Templates.
 		mksVcs.debug("beforeFileDeletion[" + virtualFileEvent + "]");
 	}
 
 	@Override
 	public void fileCreated(VirtualFileEvent virtualFileEvent) {
-		super.fileCreated(virtualFileEvent);	//To change body of overridden methods use File | Settings | File Templates.
+		super.fileCreated(
+				virtualFileEvent);	//To change body of overridden methods use File | Settings | File Templates.
 		mksVcs.debug("fileCreated[" + virtualFileEvent + "]");
 	}
 
 	@Override
 	public void fileDeleted(VirtualFileEvent virtualFileEvent) {
-		super.fileDeleted(virtualFileEvent);	//To change body of overridden methods use File | Settings | File Templates.
+		super.fileDeleted(
+				virtualFileEvent);	//To change body of overridden methods use File | Settings | File Templates.
 		mksVcs.debug("fileDeleted[" + virtualFileEvent + "]");
 	}
 
 	@Override
 	public void beforePropertyChange(VirtualFilePropertyEvent event) {
-		super.beforePropertyChange(event);	//To change body of overridden methods use File | Settings | File Templates.
+		super.beforePropertyChange(
+				event);	//To change body of overridden methods use File | Settings | File Templates.
 		mksVcs.debug("beforePropertyChange[" + event + "]");
 		//			if (event.getPropertyName().equalsIgnoreCase(VirtualFile.PROP_NAME)) {
 		//				final VirtualFile file = event.getFile();
@@ -81,7 +87,8 @@ class MksVirtualFileAdapter extends VirtualFileAdapter {
 
 	@Override
 	public void fileMoved(VirtualFileMoveEvent virtualFileMoveEvent) {
-		super.fileMoved(virtualFileMoveEvent);	//To change body of overridden methods use File | Settings | File Templates.
+		super.fileMoved(
+				virtualFileMoveEvent);	//To change body of overridden methods use File | Settings | File Templates.
 		mksVcs.debug("fileMoved[" + virtualFileMoveEvent + "]");
 	}
 

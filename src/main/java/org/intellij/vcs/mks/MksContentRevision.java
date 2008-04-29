@@ -1,13 +1,14 @@
 package org.intellij.vcs.mks;
 
-import java.util.ArrayList;
-import org.intellij.vcs.mks.sicommands.GetContentRevision;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.changes.ContentRevision;
 import com.intellij.openapi.vcs.history.VcsRevisionNumber;
+import org.intellij.vcs.mks.sicommands.GetContentRevision;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
 
 /**
  * @author Thibaut Fagart

@@ -1,9 +1,5 @@
 package org.intellij.vcs.mks.actions;
 
-import java.util.ArrayList;
-import org.intellij.vcs.mks.MKSHelper;
-import org.intellij.vcs.mks.MksBundle;
-import org.intellij.vcs.mks.MksVcs;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
@@ -11,6 +7,11 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import mks.integrations.common.TriclopsException;
+import org.intellij.vcs.mks.MKSHelper;
+import org.intellij.vcs.mks.MksBundle;
+import org.intellij.vcs.mks.MksVcs;
+
+import java.util.ArrayList;
 
 public class SourceIntegrityPreferencesAction extends AnAction {
 

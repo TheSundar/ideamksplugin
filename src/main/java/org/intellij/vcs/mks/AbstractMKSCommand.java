@@ -1,9 +1,5 @@
 package org.intellij.vcs.mks;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -11,6 +7,11 @@ import mks.integrations.common.TriclopsException;
 import mks.integrations.common.TriclopsSiMember;
 import mks.integrations.common.TriclopsSiMembers;
 import mks.integrations.common.TriclopsSiSandbox;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Command pattern, also feeds the {@link #errors} attribute with errors happening during execution
@@ -35,7 +36,8 @@ public abstract class AbstractMKSCommand {
 	public abstract void execute();
 
 	@NotNull
-	protected TriclopsSiMembers queryMksMemberStatus(@NotNull ArrayList<VirtualFile> files, @NotNull TriclopsSiSandbox sandbox) throws TriclopsException {
+	protected TriclopsSiMembers queryMksMemberStatus(@NotNull ArrayList<VirtualFile> files,
+													 @NotNull TriclopsSiSandbox sandbox) throws TriclopsException {
 		TriclopsSiMembers members = MKSHelper.createMembers(sandbox);
 		for (VirtualFile virtualFile : files) {
 			members.addMember(new TriclopsSiMember(virtualFile.getPresentableUrl()));
@@ -45,13 +47,15 @@ public abstract class AbstractMKSCommand {
 	}
 
 	@NotNull
-	protected HashSet<VirtualFile> getAllMksKnownFoldersInProject(@NotNull VirtualFile sandboxFolder, @NotNull String[] projectMembers) {
+	protected HashSet<VirtualFile> getAllMksKnownFoldersInProject(@NotNull VirtualFile sandboxFolder,
+																  @NotNull String[] projectMembers) {
 		HashSet<VirtualFile> projectFolders = new HashSet<VirtualFile>();
 		projectFolders.add(sandboxFolder);
 		for (String projectMemberRelativePath : projectMembers) {
 			int lastIndexOfSlash = projectMemberRelativePath.lastIndexOf('/');
 			if (lastIndexOfSlash >= 0) {
-				VirtualFile projectFolder = sandboxFolder.findFileByRelativePath(projectMemberRelativePath.substring(0, lastIndexOfSlash));
+				VirtualFile projectFolder =
+						sandboxFolder.findFileByRelativePath(projectMemberRelativePath.substring(0, lastIndexOfSlash));
 				if (projectFolder != null && !projectFolders.contains(projectFolder)) {
 					if (LOGGER.isDebugEnabled()) {
 						LOGGER.debug("detected project folder :" + projectFolder);
@@ -61,7 +65,8 @@ public abstract class AbstractMKSCommand {
 						projectFolders.add(projectFolder);
 						projectFolder = projectFolder.getParent();
 					}
-					while (projectFolder != null && !projectFolders.contains(projectFolder) && !projectFolder.equals(sandboxFolder));
+					while (projectFolder != null && !projectFolders.contains(projectFolder) &&
+							!projectFolder.equals(sandboxFolder));
 				} else if (projectFolder == null) {
 					LOGGER.debug("can't find folder for path " + projectMemberRelativePath);
 				}

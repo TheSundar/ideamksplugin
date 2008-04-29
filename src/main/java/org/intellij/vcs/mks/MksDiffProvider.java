@@ -40,7 +40,8 @@ public class MksDiffProvider implements DiffProvider {
 	}
 
 	private GetRevisionInfo getRevisionInfo(final VirtualFile virtualFile, final ArrayList<VcsException> errors) {
-		GetRevisionInfo command = new GetRevisionInfo(errors, mksVcs, virtualFile.getPath(), VfsUtil.virtualToIoFile(virtualFile.getParent()));
+		GetRevisionInfo command = new GetRevisionInfo(errors, mksVcs, virtualFile.getPath(),
+				VfsUtil.virtualToIoFile(virtualFile.getParent()));
 		command.execute();
 		if (command.errors.isEmpty()) {
 			return command;
@@ -85,7 +86,8 @@ public class MksDiffProvider implements DiffProvider {
 			}
 			return null;
 		}
-		return new MksContentRevision(mksVcs, PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(virtualFile), vcsRevisionNumber);
+		return new MksContentRevision(mksVcs,
+				PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(virtualFile), vcsRevisionNumber);
 	}
 
 	private void showRevisionNotControlledErrorDialog() {

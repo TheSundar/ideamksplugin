@@ -1,9 +1,9 @@
 package org.intellij.vcs.mks.actions;
 
-import org.intellij.vcs.mks.MksVcs;
-import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.intellij.vcs.mks.MksVcs;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * An action only applicable on a single file

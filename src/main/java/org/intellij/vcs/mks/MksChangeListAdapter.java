@@ -1,10 +1,9 @@
 package org.intellij.vcs.mks;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.vcs.changes.*;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.intellij.vcs.mks.model.MksChangePackage;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.intellij.vcs.mks.sicommands.LockMemberCommand;
@@ -12,17 +11,8 @@ import org.intellij.vcs.mks.sicommands.RenameChangePackage;
 import org.intellij.vcs.mks.sicommands.UnlockMemberCommand;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vcs.changes.Change;
-import com.intellij.openapi.vcs.changes.ChangeList;
-import com.intellij.openapi.vcs.changes.ChangeListAdapter;
-import com.intellij.openapi.vcs.changes.ChangeListManager;
-import com.intellij.openapi.vcs.changes.ChangesUtil;
-import com.intellij.openapi.vcs.changes.ContentRevision;
-import com.intellij.openapi.vcs.changes.LocalChangeList;
-import com.intellij.openapi.vcs.changes.VcsDirtyScopeManager;
-import com.intellij.openapi.vfs.VirtualFile;
+
+import java.util.*;
 
 /**
  * @author Thibaut Fagart
@@ -43,6 +33,7 @@ class MksChangeListAdapter extends ChangeListAdapter {
 	void setUpdating(boolean b) {
 		isUpdating = b;
 	}
+
 	/**
 	 * registers the changePackage as a changeList and start keeping the two of them in sync
 	 *
@@ -55,7 +46,8 @@ class MksChangeListAdapter extends ChangeListAdapter {
 		if (changeListNameByChangePackageId.containsKey(changePackage.getId())) {
 			changePackageById.put(changePackage.getId(), changePackage);
 
-			LocalChangeList list = changeListManager.findChangeList(changeListNameByChangePackageId.get(changePackage.getId()));
+			LocalChangeList list =
+					changeListManager.findChangeList(changeListNameByChangePackageId.get(changePackage.getId()));
 			if (list != null) {
 				return list;
 			}
@@ -111,7 +103,8 @@ class MksChangeListAdapter extends ChangeListAdapter {
 //			logger.debug(
 			logger.debug("renaming MKS CP [" + mksChangePackage.getId() + "] => \"" + name + "\"");
 		}
-		RenameChangePackage renameChangePackage = new RenameChangePackage(new ArrayList<VcsException>(), mksVcs, mksChangePackage, name);
+		RenameChangePackage renameChangePackage =
+				new RenameChangePackage(new ArrayList<VcsException>(), mksVcs, mksChangePackage, name);
 		renameChangePackage.execute();
 		if (renameChangePackage.foundError()) {
 			logger.error("error renaming change package " + mksChangePackage);
@@ -127,7 +120,9 @@ class MksChangeListAdapter extends ChangeListAdapter {
 	 */
 	@Override
 	public void changesMoved(Collection<Change> changes, ChangeList fromList, ChangeList toList) {
-		if (isUpdating) return;
+		if (isUpdating) {
+			return;
+		}
 		if (true) {
 			// todo remove when change moving is definitely supported
 			return;
@@ -136,7 +131,8 @@ class MksChangeListAdapter extends ChangeListAdapter {
 
 			Map<MksSandboxInfo, ArrayList<VirtualFile>> filesBysandbox = dispatchBySandbox(changes);
 			// need to check the changes are controlled by mks
-			if (isChangeListMksControlled(fromList.getName()) && isChangeListMksControlled(toList.getName()  /* todo changelist*/)) {
+			if (isChangeListMksControlled(fromList.getName()) &&
+					isChangeListMksControlled(toList.getName()  /* todo changelist*/)) {
 				// unlock then lock the changes
 				final MksChangePackage aPackage = getMksChangePackage(toList.getName());
 				if (aPackage == null) {
@@ -181,7 +177,7 @@ class MksChangeListAdapter extends ChangeListAdapter {
 		} else {
 			super.changesMoved(changes, fromList, toList);
 		}
-		if (isChangeListMksControlled(fromList.getName()) !=  isChangeListMksControlled( toList.getName())) {
+		if (isChangeListMksControlled(fromList.getName()) != isChangeListMksControlled(toList.getName())) {
 			for (Change change : changes) {
 				final ContentRevision afterRevision = change.getAfterRevision();
 				final ContentRevision beforeRevision = change.getBeforeRevision();
@@ -213,7 +209,8 @@ class MksChangeListAdapter extends ChangeListAdapter {
 	}
 
 	private Map<MksSandboxInfo, ArrayList<VirtualFile>> dispatchBySandbox(Collection<Change> changes) {
-		DispatchBySandboxCommand dispatchAction = new DispatchBySandboxCommand(mksVcs, new ArrayList<VcsException>(), ChangesUtil.getFilesFromChanges(changes));
+		DispatchBySandboxCommand dispatchAction = new DispatchBySandboxCommand(mksVcs, new ArrayList<VcsException>(),
+				ChangesUtil.getFilesFromChanges(changes));
 		dispatchAction.execute();
 
 		List<VcsException> exceptions = dispatchAction.errors;
@@ -228,19 +225,21 @@ class MksChangeListAdapter extends ChangeListAdapter {
 	}
 
 	private void lock(MksSandboxInfo sandbox, MksChangePackage aPackage, String[] pathsToUnlock) {
-		final LockMemberCommand lockCmd = new LockMemberCommand(new ArrayList<VcsException>(), mksVcs, sandbox, 
+		final LockMemberCommand lockCmd = new LockMemberCommand(new ArrayList<VcsException>(), mksVcs, sandbox,
 				aPackage, pathsToUnlock);
 		lockCmd.execute();
 	}
 
 	private void unlock(MksSandboxInfo sandbox, String[] pathsToUnlock) {
-		final UnlockMemberCommand unlockCmd = new UnlockMemberCommand(new ArrayList<VcsException>(), mksVcs, sandbox, pathsToUnlock);
+		final UnlockMemberCommand unlockCmd =
+				new UnlockMemberCommand(new ArrayList<VcsException>(), mksVcs, sandbox, pathsToUnlock);
 		unlockCmd.execute();
 	}
 
 	/**
 	 * Lookup is done using the cpid, not the cp name.
 	 * This allows looking up a changelist even the change package has been renamed
+	 *
 	 * @param cp
 	 * @return the changelist mapped to the given change package if any
 	 */
@@ -249,10 +248,11 @@ class MksChangeListAdapter extends ChangeListAdapter {
 		final String changeListName = this.changeListNameByChangePackageId.get(cp.getId());
 		if (changeListName == null) {
 			return null;
-		} else{
+		} else {
 			return ChangeListManager.getInstance(mksVcs.getProject()).findChangeList(changeListName);
 		}
 	}
+
 	@Override
 	public void changeListRemoved(ChangeList list) {
 		if (!isUpdating && isChangeListMksControlled(list.getName())) {

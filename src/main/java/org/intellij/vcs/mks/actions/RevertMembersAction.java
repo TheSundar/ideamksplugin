@@ -1,12 +1,12 @@
 package org.intellij.vcs.mks.actions;
 
-import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.actions.triclops.RevertTriclopsCommand;
-import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.FileStatus;
 import com.intellij.openapi.vcs.FileStatusManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.intellij.vcs.mks.MksVcs;
+import org.intellij.vcs.mks.actions.triclops.RevertTriclopsCommand;
+import org.jetbrains.annotations.NotNull;
 
 public class RevertMembersAction extends MultipleTargetAction {
 
@@ -22,8 +22,9 @@ public class RevertMembersAction extends MultipleTargetAction {
 			if (status == FileStatus.DELETED_FROM_FS || status == FileStatus.OBSOLETE
 					|| status == FileStatus.HIJACKED || status == FileStatus.SWITCHED || status == FileStatus.ADDED
 					|| status == FileStatus.MERGE || status == FileStatus.MERGED_WITH_CONFLICTS
-					|| status == FileStatus.MODIFIED)
+					|| status == FileStatus.MODIFIED) {
 				return true;
+			}
 		}
 		return false;
 	}

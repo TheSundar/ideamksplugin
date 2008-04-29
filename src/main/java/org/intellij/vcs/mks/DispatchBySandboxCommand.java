@@ -1,12 +1,13 @@
 package org.intellij.vcs.mks;
 
+import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.vfs.VirtualFile;
+import org.intellij.vcs.mks.realtime.MksSandboxInfo;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.intellij.vcs.mks.realtime.MksSandboxInfo;
-import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vfs.VirtualFile;
 
 /**
  * @author Thibaut Fagart
@@ -45,7 +46,8 @@ public class DispatchBySandboxCommand extends AbstractMKSCommand {
 			}
 		}
 		if (MksVcs.DEBUG) {
-			MksVcs.LOGGER.debug("dispatched " + virtualFiles.length + " files to " + filesBySandbox.size() + " sandboxes");
+			MksVcs.LOGGER
+					.debug("dispatched " + virtualFiles.length + " files to " + filesBySandbox.size() + " sandboxes");
 		}
 	}
 

@@ -17,46 +17,49 @@ import java.util.List;
 import java.util.Map;
 
 public class ViewNonMembersCommand extends SiCLICommand {
-    private final Map<String, MksMemberState> memberStates = new HashMap<String, MksMemberState>();
-    @org.jetbrains.annotations.NonNls
-    public static final String COMMAND = "viewnonmembers";
+	private final Map<String, MksMemberState> memberStates = new HashMap<String, MksMemberState>();
+	@org.jetbrains.annotations.NonNls
+	public static final String COMMAND = "viewnonmembers";
 
-    /**
-     * @param errors
-     * @param mksCLIConfiguration
-     * @param sandbox             must be a directory
-     */
-    public ViewNonMembersCommand(@NotNull List<VcsException> errors, @NotNull MksCLIConfiguration mksCLIConfiguration, MksSandboxInfo sandbox) {
-        super(errors, mksCLIConfiguration, COMMAND, "--fields=absolutepath", "--recurse", "--sandbox=" + sandbox.sandboxPath,
-                "--hostname=" + sandbox.hostAndPort.substring(0, sandbox.hostAndPort.indexOf(':')));
-        setWorkingDir(new File(VcsUtil.getFilePath(sandbox.sandboxPath).getParentPath().getPath()));
-    }
+	/**
+	 * @param errors
+	 * @param mksCLIConfiguration
+	 * @param sandbox			 must be a directory
+	 */
+	public ViewNonMembersCommand(@NotNull List<VcsException> errors, @NotNull MksCLIConfiguration mksCLIConfiguration,
+								 MksSandboxInfo sandbox) {
+		super(errors, mksCLIConfiguration, COMMAND, "--fields=absolutepath", "--recurse",
+				"--sandbox=" + sandbox.sandboxPath,
+				"--hostname=" + sandbox.hostAndPort.substring(0, sandbox.hostAndPort.indexOf(':')));
+		setWorkingDir(new File(VcsUtil.getFilePath(sandbox.sandboxPath).getParentPath().getPath()));
+	}
 
-    @Override
-    public void execute() {
-        try {
-            executeCommand();
-        } catch (IOException e) {
-            //noinspection ThrowableInstanceNeverThrown
-            errors.add(new VcsException(e));
-            return;
-        }
-        BufferedReader reader = new BufferedReader(new StringReader(commandOutput));
-        String line;
-        try {
-            while ((line = reader.readLine()) != null) {
-                final String path = VcsUtil.getFilePath(line).getPath();
-                MksMemberState state = new MksMemberState(VcsRevisionNumber.NULL, VcsRevisionNumber.NULL, null, MksMemberState.Status.UNVERSIONED);
-                memberStates.put(path, state);
-            }
-        } catch (IOException e) {
-            LOGGER.error("error reading output " + commandOutput, e);
-            //noinspection ThrowableInstanceNeverThrown
-            errors.add(new VcsException(e));
-        }
-    }
+	@Override
+	public void execute() {
+		try {
+			executeCommand();
+		} catch (IOException e) {
+			//noinspection ThrowableInstanceNeverThrown
+			errors.add(new VcsException(e));
+			return;
+		}
+		BufferedReader reader = new BufferedReader(new StringReader(commandOutput));
+		String line;
+		try {
+			while ((line = reader.readLine()) != null) {
+				final String path = VcsUtil.getFilePath(line).getPath();
+				MksMemberState state = new MksMemberState(VcsRevisionNumber.NULL, VcsRevisionNumber.NULL, null,
+						MksMemberState.Status.UNVERSIONED);
+				memberStates.put(path, state);
+			}
+		} catch (IOException e) {
+			LOGGER.error("error reading output " + commandOutput, e);
+			//noinspection ThrowableInstanceNeverThrown
+			errors.add(new VcsException(e));
+		}
+	}
 
-    public Map<String, MksMemberState> getMemberStates() {
-        return memberStates;
-    }
+	public Map<String, MksMemberState> getMemberStates() {
+		return memberStates;
+	}
 }

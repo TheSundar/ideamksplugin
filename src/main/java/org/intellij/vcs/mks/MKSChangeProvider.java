@@ -38,7 +38,8 @@ import java.util.*;
  * @see com.intellij.openapi.vcs.changes.VcsDirtyScopeManager allows to notify
  *      idea if files should be marked dirty
  */
-class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvider, ChangeListDecorator, ProjectComponent {
+class MKSChangeProvider extends AbstractProjectComponent
+		implements ChangeProvider, ChangeListDecorator, ProjectComponent {
 	private final Logger logger = Logger.getInstance(getClass().getName());
 	private final Logger BUILDER_PROXY_LOGGER = Logger.getInstance(getClass().getName() + ".ChangelistBuilder");
 
@@ -53,7 +54,8 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 	}
 
 
-	public void getChanges(final VcsDirtyScope dirtyScope, ChangelistBuilder builder, final ProgressIndicator progress) throws VcsException {
+	public void getChanges(final VcsDirtyScope dirtyScope, ChangelistBuilder builder,
+						   final ProgressIndicator progress) throws VcsException {
 		ArrayList<VcsException> errors = new ArrayList<VcsException>();
 		logger.debug("start getChanges");
 		final JLabel statusLabel = new JLabel();
@@ -75,7 +77,8 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 
 			int sandboxCountToRefresh = sandboxesToRefresh.size();
 			int refreshedSandbox = 0;
-			final Map<MksServerInfo, Map<String, MksChangePackage>> changePackagesPerServer = getChangePackages(progress, errors, servers);
+			final Map<MksServerInfo, Map<String, MksChangePackage>> changePackagesPerServer =
+					getChangePackages(progress, errors, servers);
 			for (Map<String, MksChangePackage> packageMap : changePackagesPerServer.values()) {
 				for (Map.Entry<String, MksChangePackage> entry : packageMap.entrySet()) {
 					final ChangeList changeList = adapter.getChangeList(entry.getValue());
@@ -160,8 +163,10 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 				SwingUtilities.invokeAndWait(new Runnable() {
 					public void run() {
 						final String message = MksBundle.message("mks.reconnect.to.server", hostAndPort);
-						userAndPassword.user = Messages.showInputDialog(getMksvcs().getProject(), "user", message, null);
-						userAndPassword.password = Messages.showInputDialog(getMksvcs().getProject(), "password", message, null);
+						userAndPassword.user =
+								Messages.showInputDialog(getMksvcs().getProject(), "user", message, null);
+						userAndPassword.password =
+								Messages.showInputDialog(getMksvcs().getProject(), "password", message, null);
 
 					}
 				});
@@ -174,7 +179,8 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 			if (userAndPassword.user == null || userAndPassword.password == null) {
 				continue;
 			}
-			SiConnectCommand command = new SiConnectCommand(getMksvcs(), host, port, userAndPassword.user, userAndPassword.password);
+			SiConnectCommand command =
+					new SiConnectCommand(getMksvcs(), host, port, userAndPassword.user, userAndPassword.password);
 			command.execute();
 			if (!command.foundError() && (command.getServer() != null)) {
 				servers.add(command.getServer());
@@ -220,19 +226,21 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 	}
 
 	private ChangelistBuilder createBuilderLoggingProxy(final ChangelistBuilder myBuilder) {
-		return (ChangelistBuilder) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{ChangelistBuilder.class},
-				new InvocationHandler() {
-					public Object invoke(final Object o, final Method method, final Object[] args) throws Throwable {
-						StringBuffer buffer = new StringBuffer("(");
-						for (Object arg : args) {
-							buffer.append(arg).append(",");
-						}
-						buffer.setLength(buffer.length() - 1);
-						buffer.append(")");
-						BUILDER_PROXY_LOGGER.debug(method.getName() + buffer);
-						return method.invoke(myBuilder, args);
-					}
-				});
+		return (ChangelistBuilder) Proxy
+				.newProxyInstance(getClass().getClassLoader(), new Class[]{ChangelistBuilder.class},
+						new InvocationHandler() {
+							public Object invoke(final Object o, final Method method, final Object[] args) throws
+									Throwable {
+								StringBuffer buffer = new StringBuffer("(");
+								for (Object arg : args) {
+									buffer.append(arg).append(",");
+								}
+								buffer.setLength(buffer.length() - 1);
+								buffer.append(")");
+								BUILDER_PROXY_LOGGER.debug(method.getName() + buffer);
+								return method.invoke(myBuilder, args);
+							}
+						});
 	}
 
 	private Map<String, MksServerInfo> distributeServersByHostAndPort(final ArrayList<MksServerInfo> servers) {
@@ -243,7 +251,8 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 		return result;
 	}
 
-	private void processDirtySandbox(final ChangelistBuilder builder, @NotNull final Map<String, MksChangePackage> changePackages,
+	private void processDirtySandbox(final ChangelistBuilder builder,
+									 @NotNull final Map<String, MksChangePackage> changePackages,
 									 final Map<String, MksMemberState> states) {
 		final ChangeListManager listManager = ChangeListManager.getInstance(getProject());
 		for (Map.Entry<String, MksMemberState> entry : states.entrySet()) {
@@ -347,20 +356,24 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 	}
 
 	@Nullable
-	private MksChangePackage getChangePackage(@NotNull final Map<String, MksChangePackage> changePackages, @NotNull final MksMemberState state) {
+	private MksChangePackage getChangePackage(@NotNull final Map<String, MksChangePackage> changePackages,
+											  @NotNull final MksMemberState state) {
 		return state.workingChangePackageId == null ? null : changePackages.get(state.workingChangePackageId);
 	}
 
 	@NotNull
-	private Map<String, MksMemberState> getSandboxState(@NotNull final MksSandboxInfo sandbox, @NotNull final ArrayList<VcsException> errors,
+	private Map<String, MksMemberState> getSandboxState(@NotNull final MksSandboxInfo sandbox,
+														@NotNull final ArrayList<VcsException> errors,
 														@NotNull final MksServerInfo server) {
 		Map<String, MksMemberState> states = new HashMap<String, MksMemberState>();
 
-		ViewSandboxWithoutChangesCommand fullSandboxCommand = new ViewSandboxWithoutChangesCommand(errors, getMksvcs(), sandbox.sandboxPath);
+		ViewSandboxWithoutChangesCommand fullSandboxCommand =
+				new ViewSandboxWithoutChangesCommand(errors, getMksvcs(), sandbox.sandboxPath);
 		fullSandboxCommand.execute();
 		addNonExcludedStates(states, fullSandboxCommand.getMemberStates());
 
-		ViewSandboxLocalChangesOrLockedCommand localChangesCommand = new ViewSandboxLocalChangesOrLockedCommand(errors, getMksvcs(), server.user, sandbox.sandboxPath);
+		ViewSandboxLocalChangesOrLockedCommand localChangesCommand =
+				new ViewSandboxLocalChangesOrLockedCommand(errors, getMksvcs(), server.user, sandbox.sandboxPath);
 		localChangesCommand.execute();
 		addNonExcludedStates(states, localChangesCommand.getMemberStates());
 
@@ -368,7 +381,8 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 		nonMembersCommand.execute();
 		addNonExcludedStates(states, nonMembersCommand.getMemberStates());
 // todo the below belong to incoming changes
-		ViewSandboxOutOfSyncCommand outOfSyncCommand = new ViewSandboxOutOfSyncCommand(errors, getMksvcs(), sandbox.sandboxPath);
+		ViewSandboxOutOfSyncCommand outOfSyncCommand =
+				new ViewSandboxOutOfSyncCommand(errors, getMksvcs(), sandbox.sandboxPath);
 		outOfSyncCommand.execute();
 		states.putAll(outOfSyncCommand.getMemberStates());
 
@@ -397,8 +411,11 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 	 * @param servers  the si servers to query change packages for
 	 * @return Map <MksServerInfo, Map<MksChangePackage.id,MksChangePackage>>
 	 */
-	private Map<MksServerInfo, Map<String, MksChangePackage>> getChangePackages(final ProgressIndicator progress, final ArrayList<VcsException> errors, final ArrayList<MksServerInfo> servers) {
-		final Map<MksServerInfo, Map<String, MksChangePackage>> changePackages = new HashMap<MksServerInfo, Map<String, MksChangePackage>>();
+	private Map<MksServerInfo, Map<String, MksChangePackage>> getChangePackages(final ProgressIndicator progress,
+																				final ArrayList<VcsException> errors,
+																				final ArrayList<MksServerInfo> servers) {
+		final Map<MksServerInfo, Map<String, MksChangePackage>> changePackages =
+				new HashMap<MksServerInfo, Map<String, MksChangePackage>>();
 		final MksConfiguration config = ApplicationManager.getApplication().getComponent(MksConfiguration.class);
 		for (MksServerInfo server : servers) {
 			if (!config.isServerSiServer(server)) {
@@ -426,7 +443,8 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 	}
 
 	@NotNull
-	private ArrayList<MksServerInfo> getMksServers(final ProgressIndicator progress, final ArrayList<VcsException> errors) {
+	private ArrayList<MksServerInfo> getMksServers(final ProgressIndicator progress,
+												   final ArrayList<VcsException> errors) {
 		final ListServers listServersAction = new ListServers(errors, getMksvcs());
 		if (progress != null) {
 			progress.setIndeterminate(true);
@@ -455,14 +473,14 @@ class MKSChangeProvider extends AbstractProjectComponent implements ChangeProvid
 	}
 
 
-	public void decorateChangeList(LocalChangeList changeList, ColoredTreeCellRenderer cellRenderer, boolean selected, boolean expanded, boolean hasFocus) {
+	public void decorateChangeList(LocalChangeList changeList, ColoredTreeCellRenderer cellRenderer, boolean selected,
+								   boolean expanded, boolean hasFocus) {
 		MksChangeListAdapter changeListAdapter = getChangeListAdapter();
 		if (!changeListAdapter.isChangeListMksControlled(changeList.getName())) {
 			return;
 		}
 		MksChangePackage aPackage = changeListAdapter.getMksChangePackage(changeList.getName());
 		if (aPackage != null) {
-
 			cellRenderer.append(" - MKS #" + aPackage.getId(), SimpleTextAttributes.GRAY_ATTRIBUTES);
 		}
 	}

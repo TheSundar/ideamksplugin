@@ -242,11 +242,13 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		tasksTable.setModel(tasksModel);
 		tasksTable.getColumnModel().
 				getColumn(tasksModel.RESTART).setCellRenderer(new TableCellRenderer() {
-			public Component getTableCellRendererComponent(final JTable jTable, final Object o, final boolean b, final boolean b1, final int i, final int i1) {
+			public Component getTableCellRendererComponent(final JTable jTable, final Object o, final boolean b,
+														   final boolean b1, final int i, final int i1) {
 				return new JButton(new AbstractAction("restart") {
 					public void actionPerformed(ActionEvent e) {
 						System.err.println("restarting sandbox list listener");
-						final SandboxListSynchronizer synchronizer = ApplicationManager.getApplication().getComponent(SandboxListSynchronizer.class);
+						final SandboxListSynchronizer synchronizer =
+								ApplicationManager.getApplication().getComponent(SandboxListSynchronizer.class);
 						synchronizer.restart();
 					}
 				});
@@ -257,7 +259,8 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 				return true;
 			}
 
-			public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, final int row, int column) {
+			public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, final int row,
+														 int column) {
 				JButton button = new JButton("restart");
 				button.addActionListener(new ActionListener() {
 					public void actionPerformed(final ActionEvent event) {
@@ -394,7 +397,8 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 			DispatchBySandboxCommand dispatchCommand = new DispatchBySandboxCommand(mksVcs, errors, virtualFiles);
 			dispatchCommand.execute();
 			if (!dispatchCommand.errors.isEmpty()) {
-				Messages.showErrorDialog(MksBundle.message("unable.to.find.the.sandboxes.for.the.files.title"), MksBundle.message("could.not.start.checkout"));
+				Messages.showErrorDialog(MksBundle.message("unable.to.find.the.sandboxes.for.the.files.title"),
+						MksBundle.message("could.not.start.checkout"));
 				return;
 			}
 			for (Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : dispatchCommand.filesBySandbox.entrySet()) {
@@ -406,7 +410,8 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 					command.execute();
 				}
 				if (!command.errors.isEmpty()) {
-					Messages.showErrorDialog(errors.get(0).getLocalizedMessage(), MksBundle.message("could.not.start.checkout"));
+					Messages.showErrorDialog(errors.get(0).getLocalizedMessage(),
+							MksBundle.message("could.not.start.checkout"));
 					return;
 				}
 			}
@@ -507,7 +512,8 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 
 	private void postProjectLoadInit() {
 		if (!myProject.isDisposed()) {
-			final SandboxListSynchronizer synchronizer = ApplicationManager.getApplication().getComponent(SandboxListSynchronizer.class);
+			final SandboxListSynchronizer synchronizer =
+					ApplicationManager.getApplication().getComponent(SandboxListSynchronizer.class);
 			if (synchronizer == null) {
 				LOGGER.error("SandboxSynchronizer applicationComponent is not running, MKS vcs will not be loaded");
 				return;
@@ -526,7 +532,8 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		changeListManager.removeChangeListListener(changeListAdapter);
 		sandboxCache.release();
 
-		ApplicationManager.getApplication().getComponent(SandboxListSynchronizer.class).removeListener(getSandboxCache());
+		ApplicationManager.getApplication().getComponent(SandboxListSynchronizer.class)
+				.removeListener(getSandboxCache());
 		if (myMessageBusConnection != null) {
 			myMessageBusConnection.disconnect();
 		}

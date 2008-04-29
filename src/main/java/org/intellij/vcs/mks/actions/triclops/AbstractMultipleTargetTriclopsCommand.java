@@ -1,18 +1,20 @@
 package org.intellij.vcs.mks.actions.triclops;
 
-import java.text.MessageFormat;
-import java.util.List;
-import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.MksVcsException;
-import org.jetbrains.annotations.Nls;
-import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
 import mks.integrations.common.TriclopsException;
 import mks.integrations.common.TriclopsSiMembers;
+import org.intellij.vcs.mks.MksVcs;
+import org.intellij.vcs.mks.MksVcsException;
+import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.NotNull;
+
+import java.text.MessageFormat;
+import java.util.List;
 
 public abstract class AbstractMultipleTargetTriclopsCommand extends AbstractTriclopsCommand {
-	public void executeCommand(@NotNull MksVcs mksVcs, @NotNull List<VcsException> exceptions, @NotNull VirtualFile[] affectedFiles) throws VcsException {
+	public void executeCommand(@NotNull MksVcs mksVcs, @NotNull List<VcsException> exceptions,
+							   @NotNull VirtualFile[] affectedFiles) throws VcsException {
 		TriclopsSiMembers[] members = createSiMembers(mksVcs, affectedFiles);
 		for (TriclopsSiMembers siMembers : members) {
 			try {
@@ -22,7 +24,8 @@ public abstract class AbstractMultipleTargetTriclopsCommand extends AbstractTric
 				if (!MksVcs.isLastCommandCancelled()) {
 					@Nls final String message = "{0} Error: {1}";
 					//noinspection ThrowableInstanceNeverThrown
-					exceptions.add(new MksVcsException(MessageFormat.format(message, getActionName(mksVcs), MksVcs.getMksErrorMessage()), e));
+					exceptions.add(new MksVcsException(
+							MessageFormat.format(message, getActionName(mksVcs), MksVcs.getMksErrorMessage()), e));
 				}
 			}
 		}

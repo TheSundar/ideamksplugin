@@ -1,9 +1,5 @@
 package org.intellij.vcs.mks;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsException;
@@ -12,6 +8,11 @@ import com.intellij.openapi.vcs.changes.ContentRevision;
 import com.intellij.openapi.vcs.rollback.DefaultRollbackEnvironment;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MksRollbackEnvironment extends DefaultRollbackEnvironment {
 	private final Logger logger = Logger.getInstance(MksRollbackEnvironment.class.getName());

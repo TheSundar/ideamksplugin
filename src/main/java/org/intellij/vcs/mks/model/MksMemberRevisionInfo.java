@@ -1,7 +1,8 @@
 package org.intellij.vcs.mks.model;
 
-import java.util.Date;
 import com.intellij.openapi.vcs.history.VcsRevisionNumber;
+
+import java.util.Date;
 
 public class MksMemberRevisionInfo {
 	private String cpid;
