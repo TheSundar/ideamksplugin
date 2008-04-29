@@ -3,16 +3,16 @@
 	<groupId>mks-idea</groupId>
 	<artifactId>mks-idea</artifactId>
 	<packaging>jar</packaging>
-	<version>0.8-SNAPSHOT</version>
+	<version>0.7.1</version>
 	<name>IDEA MKS Plugin</name>
 	<description>Implementation of an IDEA MKS plugin.</description>
 	<properties>
 		<idea.version>7.0.7361</idea.version>
 	</properties>
 	<scm>
-		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/trunk</connection>
-		<developerConnection>scm:svn:https://ideamksplugin.googlecode.com/svn/trunk</developerConnection>
-		<url>http://ideamksplugin.googlecode.com/svn/</url>
+		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/tags/mks-idea-0.7.1</connection>
+		<developerConnection>scm:svn:https://ideamksplugin.googlecode.com/svn/tags/mks-idea-0.7.1</developerConnection>
+		<url>http://ideamksplugin.googlecode.com/svn/tags/mks-idea-0.7.1</url>
 	</scm>
 	<dependencies>
 		<dependency>
@@ -102,7 +102,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<!--<verbose>false</verbose>-->
 					<fork>false</fork>
 					<source>1.5</source>
 					<target>1.5</target>

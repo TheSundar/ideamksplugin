@@ -164,9 +164,8 @@ public class SandboxCacheImpl implements SandboxCache {
 			LOGGER.warn("unable to find the virtualFile for " + sandboxPath);
 			VirtualFile sandboxPjFile = VcsUtil.getVirtualFile(sandboxPath);
 			if (sandboxPjFile != null) {
-				sandboxInfo =
-						new MksSandboxInfo(sandboxInfo.sandboxPath, sandboxInfo.hostAndPort, sandboxInfo.mksProject,
-								sandboxInfo.devPath, sandboxPjFile, sandboxInfo.isSubSandbox);
+				sandboxInfo = new MksSandboxInfo(sandboxInfo.sandboxPath, sandboxInfo.hostAndPort,
+						sandboxInfo.mksProject, sandboxInfo.devPath, sandboxPjFile, sandboxInfo.isSubSandbox);
 			}
 			addRejected(sandboxInfo);
 		}
@@ -226,17 +225,18 @@ public class SandboxCacheImpl implements SandboxCache {
 				}
 			}
 		}
-		Comparator<MksSandboxInfo> comparator = new Comparator<MksSandboxInfo>() {
-			public int compare(final MksSandboxInfo first, final MksSandboxInfo other) {
-				if (first == null) {
-					return -1;
-				} else if (other == null) {
-					return 1;
-				} else {
-					return first.sandboxPath.compareTo(other.sandboxPath);
-				}
-			}
-		};
+		Comparator<MksSandboxInfo> comparator =
+				new Comparator<MksSandboxInfo>() {
+					public int compare(final MksSandboxInfo first, final MksSandboxInfo other) {
+						if (first == null) {
+							return -1;
+						} else if (other == null) {
+							return 1;
+						} else {
+							return first.sandboxPath.compareTo(other.sandboxPath);
+						}
+					}
+				};
 		Collections.sort(sortList, comparator);
 		for (MksSandboxInfo sandboxInfo : sortList) {
 			pw.println(sandboxInfo);
@@ -406,19 +406,17 @@ public class SandboxCacheImpl implements SandboxCache {
 		final FilePath sandboxFolderFilePath =
 				PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(sandbox.sandboxPjFile.getParent());
 
-		AbstractViewSandboxCommand command =
-				new AbstractViewSandboxCommand(new ArrayList<VcsException>(), project.getComponent(MksVcs.class),
-						sandbox.sandboxPath,
-						"--filter=file:" + MKSHelper.getRelativePath(filePath, sandboxFolderFilePath)) {
-					@Override
-					protected MksMemberState createState(String workingRev, String memberRev, String workingCpid,
-														 String locker, String lockedSandbox, String type,
-														 String deferred) throws VcsException {
-						return new MksMemberState(MksRevisionNumber.createRevision(workingRev),
-								MksRevisionNumber.createRevision(memberRev), workingCpid,
-								MksMemberState.Status.UNKNOWN);
-					}
-				};
+		AbstractViewSandboxCommand command = new AbstractViewSandboxCommand(new ArrayList<VcsException>(),
+				project.getComponent(MksVcs.class), sandbox.sandboxPath,
+				"--filter=file:" + MKSHelper.getRelativePath(filePath, sandboxFolderFilePath)) {
+			@Override
+			protected MksMemberState createState(String workingRev, String memberRev, String workingCpid, String locker,
+												 String lockedSandbox, String type, String deferred)
+					throws VcsException {
+				return new MksMemberState(MksRevisionNumber.createRevision(workingRev),
+						MksRevisionNumber.createRevision(memberRev), workingCpid, MksMemberState.Status.UNKNOWN);
+			}
+		};
 		command.execute();
 		if (command.foundError()) {
 			LOGGER.error("error while checking if sandbox " + sandbox + " contains " + virtualFile);
