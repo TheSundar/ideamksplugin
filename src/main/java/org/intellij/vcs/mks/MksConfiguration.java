@@ -15,6 +15,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+/**
+ * IMPORTANT : keep persisted properties PUBLIC or they won't be persisted !
+ */
 public class MksConfiguration
 		implements JDOMExternalizable, ApplicationComponent, MksCLIConfiguration {
 	public static final String DEFAULT_ENCODING = Charset.defaultCharset().name();
@@ -25,7 +28,7 @@ public class MksConfiguration
 	 * (host:port(,host:port)*)?
 	 */
 	public String nonSiServers = "";
-	private String datePattern;
+	public String datePattern;
 	private static final String DEFAULT_DATE_PATTERN = "MMM dd, yyyy - hh:mm a";
 
 
