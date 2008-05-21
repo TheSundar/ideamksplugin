@@ -25,12 +25,18 @@ public class ViewNonMembersCommand extends SiCLICommand {
 	 * @param errors
 	 * @param mksCLIConfiguration
 	 * @param sandbox			 must be a directory
+	 * @param includedDirs
+	 * @param recurse
 	 */
 	public ViewNonMembersCommand(@NotNull List<VcsException> errors, @NotNull MksCLIConfiguration mksCLIConfiguration,
-								 MksSandboxInfo sandbox) {
-		super(errors, mksCLIConfiguration, COMMAND, "--fields=absolutepath", "--recurse",
+								 MksSandboxInfo sandbox, String[] includedDirs, boolean recurse) {
+		super(errors, mksCLIConfiguration, COMMAND, "--fields=absolutepath", (recurse ? "--recurse" : "--norecurse"),
 				"--sandbox=" + sandbox.sandboxPath,
-				"--hostname=" + sandbox.hostAndPort.substring(0, sandbox.hostAndPort.indexOf(':')));
+				"--hostname=" + sandbox.hostAndPort.substring(0, sandbox.hostAndPort.indexOf(':'))
+		);
+		for (String dir : includedDirs) {
+			addArg(dir);
+		}
 		setWorkingDir(new File(VcsUtil.getFilePath(sandbox.sandboxPath).getParentPath().getPath()));
 	}
 

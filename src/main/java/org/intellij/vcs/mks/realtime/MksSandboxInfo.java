@@ -1,12 +1,15 @@
 package org.intellij.vcs.mks.realtime;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import mks.integrations.common.TriclopsException;
 import mks.integrations.common.TriclopsSiSandbox;
 import org.intellij.vcs.mks.MKSHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.File;
 
 /**
  * @author Thibaut Fagart
@@ -87,5 +90,26 @@ public final class MksSandboxInfo implements Comparable<MksSandboxInfo> {
 	@Override
 	public String toString() {
 		return "MksSandbox[" + sandboxPath + "," + hostAndPort + (isSubSandbox ? ",subsandbox" : "") + "]";
+	}
+
+	/**
+	 * returns true if file belongs to this sandbox
+	 *
+	 * @param file
+	 * @return
+	 */
+	public boolean contains(@NotNull VirtualFile file) {
+		return VfsUtil.isAncestor(sandboxPjFile.getParent(), file, false);
+	}
+
+	@NotNull
+	public String getRelativePath(@NotNull VirtualFile member) {
+		return VfsUtil.getRelativePath(member, sandboxPjFile.getParent(), File.separatorChar);
+	}
+
+	@NotNull
+	public VirtualFile getSandboxDir() {
+		assert sandboxPjFile != null : "sandbox not initialized";
+		return sandboxPjFile.getParent();
 	}
 }

@@ -23,6 +23,7 @@ public class MksConfigurableForm implements Configurable {
 	private JTable MKSSICommandLineTable;
 	private JTextArea ignoredServersTA;
 	private JTextField datePatternString;
+	private JCheckBox resyncNonMembers;
 	private DefaultTableModel tableModel;
 	private MksConfiguration configuration;
 	private JComboBox charsetEditorCombo = new JComboBox();
@@ -30,7 +31,7 @@ public class MksConfigurableForm implements Configurable {
 
 	public MksConfigurableForm(@NotNull final MksConfiguration configuration) {
 		this.configuration = configuration;
-
+		this.resyncNonMembers.setSelected(configuration.isSynchronizeNonMembers());
 		initSupportedCharsets();
 		reset();
 	}
@@ -110,6 +111,7 @@ public class MksConfigurableForm implements Configurable {
 //		configuration.PROJECT = myFldProject.getText();
 		configuration.SI_ENCODINGS.setMap(getEncodingMap());
 		configuration.defaultEncoding = getDefaultEncoding();
+		configuration.setSynchronizeNonMembers(this.resyncNonMembers.isSelected());
 		try {
 			configuration.setDatePattern(validateDatePattern());
 		} catch (Exception e) {
@@ -206,11 +208,16 @@ public class MksConfigurableForm implements Configurable {
 		} catch (Exception e) {
 			isDateChanged = true;
 		}
-		return isEncodingsModified(configuration)
+		return isResyncNonMembersModified(configuration)
+				|| isEncodingsModified(configuration)
 				|| (!configuration.getIgnoredServers().equals(ignoredServersTA.getText()))
 				|| isDateChanged
 //			&& configuration.PROJECT.equals(.getText())
 				;
+	}
+
+	private boolean isResyncNonMembersModified(MksConfiguration configuration) {
+		return configuration.isSynchronizeNonMembers() && this.resyncNonMembers.isSelected();
 	}
 
 	private boolean isEncodingsModified(final MksConfiguration configuration) {

@@ -4,14 +4,18 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.FileStatus;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.changes.*;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.ColoredTreeCellRenderer;
@@ -22,6 +26,7 @@ import org.intellij.vcs.mks.model.MksChangePackage;
 import org.intellij.vcs.mks.model.MksMemberState;
 import org.intellij.vcs.mks.model.MksServerInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
+import org.intellij.vcs.mks.realtime.SandboxCache;
 import org.intellij.vcs.mks.sicommands.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,12 +64,13 @@ class MKSChangeProvider extends AbstractProjectComponent
 		ArrayList<VcsException> errors = new ArrayList<VcsException>();
 		logger.debug("start getChanges");
 		final JLabel statusLabel = new JLabel();
-		final MksChangeListAdapter adapter = getMksvcs().getChangeListAdapter();
-		try {
+		final MksChangeListAdapter adapter = getChangeListAdapter();
 
+		try {
 			adapter.setUpdating(true);
 			WindowManager.getInstance().getStatusBar(getProject()).addCustomIndicationComponent(statusLabel);
-			Set<MksSandboxInfo> sandboxesToRefresh = collectSandboxesToRefresh(dirtyScope, statusLabel);
+			final SandboxesToRefresh newSandboxesToRefresh = processRecursively(dirtyScope);
+			Set<MksSandboxInfo> sandboxesToRefresh = newSandboxesToRefresh.getSandboxes();
 			setStatusInfo(statusLabel, MksBundle.message("collecting.servers"));
 			ArrayList<MksServerInfo> servers = getMksServers(progress, errors);
 			checkNeededServersAreOnlineAndReconnectIfNeeded(sandboxesToRefresh, servers);
@@ -79,16 +85,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 			int refreshedSandbox = 0;
 			final Map<MksServerInfo, Map<String, MksChangePackage>> changePackagesPerServer =
 					getChangePackages(progress, errors, servers);
-			for (Map<String, MksChangePackage> packageMap : changePackagesPerServer.values()) {
-				for (Map.Entry<String, MksChangePackage> entry : packageMap.entrySet()) {
-					final ChangeList changeList = adapter.getChangeList(entry.getValue());
-					if (changeList != null && !entry.getValue().getSummary().equals(changeList.getName())) {
-						if (changeList instanceof LocalChangeList) {
-							((LocalChangeList) changeList).setName(entry.getValue().getSummary());
-						}
-					}
-				}
-			}
+			updateChangeListNames(changePackagesPerServer);
 			for (MksSandboxInfo sandbox : sandboxesToRefresh) {
 				@Nullable MksServerInfo sandboxServer = serversByHostAndPort.get(sandbox.hostAndPort);
 				if (sandboxServer == null) {
@@ -103,7 +100,11 @@ class MKSChangeProvider extends AbstractProjectComponent
 				if (changePackageMap == null) {
 					changePackageMap = Collections.emptyMap();
 				}
-				processDirtySandbox(builder, changePackageMap, getSandboxState(sandbox, errors, sandboxServer));
+				newSandboxesToRefresh.getRecursivelyIncludedRoots(sandbox);
+
+				final Map<String, MksMemberState> sandboxState = getSandboxState(sandbox, errors, sandboxServer,
+						newSandboxesToRefresh);
+				processDirtySandbox(builder, changePackageMap, sandboxState);
 			}
 			final ChangelistBuilder finalBuilder = builder;
 			// iterate over the local dirty scope to flag unversioned files
@@ -134,6 +135,219 @@ class MKSChangeProvider extends AbstractProjectComponent
 		}
 
 
+	}
+
+	static final class SandboxesToRefresh {
+		final Map<MksSandboxInfo, ArrayList<VirtualFile>> excludedRootsPerSandbox =
+				new HashMap<MksSandboxInfo, ArrayList<VirtualFile>>();
+		private Map<MksSandboxInfo, HashSet<VirtualFile>> recursivelyIncludedRootsPerSandbox =
+				new HashMap<MksSandboxInfo, HashSet<VirtualFile>>();
+		private Map<MksSandboxInfo, HashSet<VirtualFile>> nonRecursivelyIncludedRootsPerSandbox =
+				new HashMap<MksSandboxInfo, HashSet<VirtualFile>>();
+		private boolean computed = false;
+
+		public void refresh(MksSandboxInfo sandbox, VirtualFile[] excludedRoots) {
+			assert !computed : "too late !";
+			ArrayList<VirtualFile> excluded = excludedRootsPerSandbox.get(sandbox);
+			if (excluded == null) {
+				excluded = new ArrayList<VirtualFile>();
+				excludedRootsPerSandbox.put(sandbox, excluded);
+			}
+			for (VirtualFile excludedRoot : excludedRoots) {
+				if (excludedRoot.isDirectory() && sandbox.contains(excludedRoot)) {
+					excluded.add(excludedRoot);
+				}
+			}
+		}
+
+		public String toString() {
+			StringBuffer buf = new StringBuffer();
+			buf.append("SandboxesToRefresh[");
+			for (Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : excludedRootsPerSandbox
+					.entrySet()) {
+				buf.append(entry.getKey());
+				final ArrayList<VirtualFile> excludedRoots = entry.getValue();
+				if (!excludedRoots.isEmpty()) {
+					buf.append("{");
+					for (VirtualFile root : excludedRoots) {
+						buf.append(root).append(",");
+					}
+					buf.append("}");
+				}
+				buf.append("\n");
+			}
+			buf.append("]");
+			return buf.toString();
+		}
+
+		public Set<MksSandboxInfo> getSandboxes() {
+			return excludedRootsPerSandbox.keySet();
+		}
+
+		public ArrayList<VirtualFile> getExcludedRoots(MksSandboxInfo sandbox) {
+			return excludedRootsPerSandbox.get(sandbox);
+		}
+
+		/**
+		 * returns a list a directories where each one needs to be refreshed inclusively
+		 *
+		 * @param sandbox
+		 * @return
+		 */
+		public HashSet<VirtualFile> getRecursivelyIncludedRoots(MksSandboxInfo sandbox) {
+			computeInclusions();
+			final HashSet<VirtualFile> files = recursivelyIncludedRootsPerSandbox.get(sandbox);
+			return files == null ? new HashSet<VirtualFile>() : files;
+		}
+
+		public void addNonRecursive(MksSandboxInfo owningSandbox, VirtualFile vFile) {
+			assert !computed : "too late !";
+			if (vFile.isDirectory()) {
+				addAndCreateSetIfAbsent(nonRecursivelyIncludedRootsPerSandbox, owningSandbox, vFile);
+			}
+		}
+
+		private static void addAndCreateSetIfAbsent(
+				Map<MksSandboxInfo, HashSet<VirtualFile>> map,
+				MksSandboxInfo sandboxInfo, VirtualFile root) {
+			HashSet<VirtualFile> files = map.get(sandboxInfo);
+			if (files == null) {
+				files = new HashSet<VirtualFile>();
+				map.put(sandboxInfo, files);
+			}
+			files.add(root);
+		}
+
+		private final static class DirectoryWalker {
+			public void process(SandboxesToRefresh refreshSpec) {
+				for (Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : refreshSpec
+						.excludedRootsPerSandbox.entrySet()) {
+					final VirtualFile root = entry.getKey().getSandboxDir();
+					processRecursivelyExcluding(entry.getKey(), root, entry.getValue(), refreshSpec);
+				}
+			}
+
+			private void processRecursivelyExcluding(MksSandboxInfo sandboxInfo, VirtualFile root,
+													 ArrayList<VirtualFile> excluded,
+													 SandboxesToRefresh spec) {
+				boolean containsExcluded = false;
+				if (root.isDirectory()) {
+					if (excluded.contains(root)) {
+						return;
+					}
+					for (VirtualFile file : excluded) {
+						if (file.isDirectory() && VfsUtil.isAncestor(root, file, false)) {
+							containsExcluded = true;
+							break;
+						}
+					}
+					if (containsExcluded) {
+//						System.out.println("adding " + root + " to nonRecursivelyIncludedRootsPerSandbox for " +
+//								sandboxInfo.getSandboxDir());
+						addAndCreateSetIfAbsent(spec.nonRecursivelyIncludedRootsPerSandbox, sandboxInfo, root);
+						for (VirtualFile child : root.getChildren()) {
+							if (child.isDirectory()) {
+								processRecursivelyExcluding(sandboxInfo, child, excluded, spec);
+							}
+						}
+					} else {
+//						System.out.println("adding " + root + " to recursivelyIncludedRootsPerSandbox for " +
+//								sandboxInfo.getSandboxDir());
+						addAndCreateSetIfAbsent(spec.recursivelyIncludedRootsPerSandbox, sandboxInfo, root);
+					}
+				}
+			}
+
+		}
+
+		private void computeInclusions() {
+			if (computed) {
+				return;
+			}
+			final DirectoryWalker walker = new DirectoryWalker();
+			walker.process(this);
+			computed = true;
+
+		}
+
+		/**
+		 * returns a list a directories where each one should be refreshed NOT inclusively
+		 *
+		 * @param sandbox
+		 * @return
+		 */
+		public HashSet<VirtualFile> getNonRecursivelyIncludedRoots(MksSandboxInfo sandbox) {
+			computeInclusions();
+			final HashSet<VirtualFile> files = nonRecursivelyIncludedRootsPerSandbox.get(sandbox);
+			return files == null ? new HashSet<VirtualFile>() : files;
+		}
+	}
+
+	@NotNull
+	private SandboxesToRefresh processRecursively(@NotNull VcsDirtyScope dirtyScope) {
+		final Set<FilePath> recursivelyDirtyDirectories = dirtyScope.getRecursivelyDirtyDirectories();
+		final SandboxesToRefresh sandboxesToRefresh = new SandboxesToRefresh();
+		final SandboxCache cache = getMksvcs().getSandboxCache();
+		for (FilePath directory : recursivelyDirtyDirectories) {
+
+			final VirtualFile dirVFile = directory.getVirtualFile();
+			if (dirVFile == null) {
+//				System.err.println("no vfile for " + directory);
+			} else {
+				processRecursively(dirVFile, cache, sandboxesToRefresh);
+			}
+		}
+		for (FilePath path : dirtyScope.getDirtyFiles()) {
+			final VirtualFile file = path.getVirtualFile();
+			if (null == file) {
+//				System.err.println("no vfile for " + file);
+			} else {
+				processRecursively(file, cache, sandboxesToRefresh);
+			}
+		}
+
+//		System.out.println("refreshSpec " + sandboxesToRefresh.toString());
+		return sandboxesToRefresh;
+	}
+
+	private void processRecursively(@NotNull final VirtualFile vFile,
+									@NotNull final SandboxCache cache,
+									@NotNull final SandboxesToRefresh refresh) {
+		final MksSandboxInfo owningSandbox = cache.getSandboxInfo(vFile);
+		if (owningSandbox != null) {
+			final Module module = ModuleUtil.findModuleForFile(vFile, getProject());
+			if (module == null) {
+				refresh.addNonRecursive(owningSandbox, vFile);
+			} else {
+				refresh.refresh(owningSandbox, ModuleRootManager.getInstance(module).getExcludeRoots());
+			}
+		} else if (vFile.isDirectory()) {
+			for (VirtualFile child : vFile.getChildren()) {
+				if (child.isDirectory()) {
+					processRecursively(child, cache, refresh);
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * renames change lists mapped to change packages if the change package was renamed
+	 *
+	 * @param changePackagesPerServer
+	 */
+	private void updateChangeListNames(Map<MksServerInfo, Map<String, MksChangePackage>> changePackagesPerServer) {
+		MksChangeListAdapter adapter = getChangeListAdapter();
+		for (Map<String, MksChangePackage> packageMap : changePackagesPerServer.values()) {
+			for (MksChangePackage changePackage : packageMap.values()) {
+				final ChangeList changeList = adapter.getChangeList(changePackage);
+				if (changeList != null && !changePackage.getSummary().equals(changeList.getName())
+						&& changeList instanceof LocalChangeList) {
+					((LocalChangeList) changeList).setName(changePackage.getSummary());
+				}
+
+			}
+		}
 	}
 
 	private void checkNeededServersAreOnlineAndReconnectIfNeeded(@NotNull Set<MksSandboxInfo> sandboxesToRefresh,
@@ -188,37 +402,6 @@ class MKSChangeProvider extends AbstractProjectComponent
 				reportErrors(command.errors, "unable to connect to " + hostAndPort);
 			}
 		}
-	}
-
-	@NotNull
-	private Set<MksSandboxInfo> collectSandboxesToRefresh(VcsDirtyScope dirtyScope, JLabel statusLabel) {
-		setStatusInfo(statusLabel, MksBundle.message("collecting.relevant.sandboxes"));
-		Set<MksSandboxInfo> sandboxesToRefresh = new HashSet<MksSandboxInfo>();
-		for (FilePath dir : dirtyScope.getRecursivelyDirtyDirectories()) {
-			getMksvcs().debug("VcsDirtyScope : recursivelyDirtyDir " + dir);
-			VirtualFile vFile = dir.getVirtualFile();
-			if (vFile != null) {
-				Set<MksSandboxInfo> sandboxes = getMksvcs().getSandboxCache().getSandboxesIntersecting(vFile);
-				StringBuffer log = new StringBuffer("=> dirtySandbox : ");
-				for (MksSandboxInfo sandbox : sandboxes) {
-					log.append(sandbox.sandboxPath).append(", ");
-				}
-				getMksvcs().debug(log.substring(0, log.length() - 2));
-				sandboxesToRefresh.addAll(sandboxes);
-			}
-		}
-		for (FilePath path : dirtyScope.getDirtyFiles()) {
-			getMksvcs().debug("VcsDirtyScope : dirtyFile " + path);
-			VirtualFile vFile = path.getVirtualFile();
-			if (vFile != null) {
-				final MksSandboxInfo mksSandboxInfo = getMksvcs().getSandboxCache().getSandboxInfo(vFile);
-				if (mksSandboxInfo != null) {
-					getMksvcs().debug("=> dirtySandbox : " + mksSandboxInfo.sandboxPath);
-					sandboxesToRefresh.add(mksSandboxInfo);
-				}
-			}
-		}
-		return sandboxesToRefresh;
 	}
 
 	private void setStatusInfo(JLabel statusLabel, String message) {
@@ -364,7 +547,8 @@ class MKSChangeProvider extends AbstractProjectComponent
 	@NotNull
 	private Map<String, MksMemberState> getSandboxState(@NotNull final MksSandboxInfo sandbox,
 														@NotNull final ArrayList<VcsException> errors,
-														@NotNull final MksServerInfo server) {
+														@NotNull final MksServerInfo server,
+														final SandboxesToRefresh refreshSpec) {
 		Map<String, MksMemberState> states = new HashMap<String, MksMemberState>();
 
 		ViewSandboxWithoutChangesCommand fullSandboxCommand =
@@ -377,9 +561,27 @@ class MKSChangeProvider extends AbstractProjectComponent
 		localChangesCommand.execute();
 		addNonExcludedStates(states, localChangesCommand.getMemberStates());
 
-		ViewNonMembersCommand nonMembersCommand = new ViewNonMembersCommand(errors, getMksvcs(), sandbox);
-		nonMembersCommand.execute();
-		addNonExcludedStates(states, nonMembersCommand.getMemberStates());
+		if (ApplicationManager.getApplication().getComponent(MksConfiguration.class).isSynchronizeNonMembers()) {
+			final HashSet<VirtualFile> recursivelyIncludedDirs = refreshSpec.getRecursivelyIncludedRoots(sandbox);
+			final HashSet<VirtualFile> nonRecursivelyIncludedDirs = refreshSpec.getNonRecursivelyIncludedRoots(sandbox);
+			String[] recursivelyIncludedDirsArray = convertToSandboxRelativePaths(sandbox, recursivelyIncludedDirs);
+			String[] nonRecursivelyIncludedDirsArray =
+					convertToSandboxRelativePaths(sandbox, nonRecursivelyIncludedDirs);
+
+			// process recursive inclusions
+			ViewNonMembersCommand nonMembersCommandRecursive = new ViewNonMembersCommand(errors, getMksvcs(), sandbox,
+					recursivelyIncludedDirsArray, true);
+			nonMembersCommandRecursive.execute();
+			addNonExcludedStates(states, nonMembersCommandRecursive.getMemberStates());
+
+			// process non recursive inclusions
+			ViewNonMembersCommand nonMembersCommandNonRecursive =
+					new ViewNonMembersCommand(errors, getMksvcs(), sandbox,
+							nonRecursivelyIncludedDirsArray, false);
+			nonMembersCommandNonRecursive.execute();
+			addNonExcludedStates(states, nonMembersCommandNonRecursive.getMemberStates());
+		}
+
 // todo the below belong to incoming changes
 		ViewSandboxOutOfSyncCommand outOfSyncCommand =
 				new ViewSandboxOutOfSyncCommand(errors, getMksvcs(), sandbox.sandboxPath);
@@ -391,6 +593,16 @@ class MKSChangeProvider extends AbstractProjectComponent
 //		states.putAll(missingCommand.getMemberStates());
 
 		return states;
+	}
+
+	private String[] convertToSandboxRelativePaths(MksSandboxInfo sandbox,
+												   HashSet<VirtualFile> recursivelyIncludedDirs) {
+		String[] recursivelyIncludedDirsArray = new String[recursivelyIncludedDirs.size()];
+		int i = 0;
+		for (VirtualFile dir : recursivelyIncludedDirs) {
+			recursivelyIncludedDirsArray[i++] = sandbox.getRelativePath(dir);
+		}
+		return recursivelyIncludedDirsArray;
 	}
 
 	private void addNonExcludedStates(Map<String, MksMemberState> collectingMap, Map<String, MksMemberState> source) {

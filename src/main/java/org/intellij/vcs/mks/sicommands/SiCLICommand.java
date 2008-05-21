@@ -46,6 +46,13 @@ public abstract class SiCLICommand extends AbstractMKSCommand implements Runnabl
 		this.args = args;
 	}
 
+	public void addArg(String arg) {
+		String[] newArgs = new String[args.length + 1];
+		System.arraycopy(args, 0, newArgs, 0, args.length);
+		newArgs[args.length] = arg;
+		args = newArgs;
+	}
+
 	public void setWorkingDir(File aDir) {
 		workingDir = aDir;
 	}

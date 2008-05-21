@@ -29,6 +29,7 @@ public class MksConfiguration
 	 */
 	public String nonSiServers = "";
 	public String datePattern;
+	public boolean synchronizeNonMembers = true;
 	private static final String DEFAULT_DATE_PATTERN = "MMM dd, yyyy - hh:mm a";
 
 
@@ -137,6 +138,14 @@ public class MksConfiguration
 	@NotNull
 	public String getDatePattern() {
 		return datePattern;
+	}
+
+	public boolean isSynchronizeNonMembers() {
+		return synchronizeNonMembers;
+	}
+
+	public void setSynchronizeNonMembers(boolean synchronizeNonMembers) {
+		this.synchronizeNonMembers = synchronizeNonMembers;
 	}
 
 	public static class StringMap implements JDOMExternalizable {
