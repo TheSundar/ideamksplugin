@@ -71,8 +71,11 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
 	public void initComponent() {
 		MKSHelper.startClient();
 		addIgnoredFiles();
-		// fill in the sandbox list
-		currentList = getNewSandboxList();
+		/*
+		 no need to fill in the sandbox list, si sandboxes --refresh issues 2 lists, one without the date, and
+		 the next one with it
+		  */
+
 		start();
 	}
 
@@ -124,9 +127,9 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
 		final ArrayList<SandboxListListener> listeners;
 		ArrayList<SandboxesCommand.SandboxInfo> newSandboxList;
 		try {
-			newSandboxList = getNewSandboxList();
-			listeners = this.listeners;
 			oldList = this.currentList;
+			listeners = new ArrayList<SandboxListListener>(this.listeners);
+			newSandboxList = getNewSandboxList();
 			this.currentList = newSandboxList;
 		} finally {
 			this.sandboxCacheLock.unlock();
