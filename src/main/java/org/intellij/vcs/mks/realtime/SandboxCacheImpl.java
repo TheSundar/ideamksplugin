@@ -430,16 +430,23 @@ public class SandboxCacheImpl implements SandboxCache {
 		return getSandbox(virtualFile, false);
 	}
 
-	private MksSandboxInfo getSandbox(VirtualFile virtualFile, boolean closest) {
+	/**
+	 * @param virtualFile
+	 * @param closest	 if true, then the deepest (sub)sandbox will be returned, if false only top level sandboxes will match
+	 * @return
+	 */
+	private MksSandboxInfo getSandbox(@NotNull VirtualFile virtualFile, boolean closest) {
 		MksSandboxInfo sandbox = null;
 		VirtualFile cursorDir = (virtualFile.isDirectory() ? virtualFile : virtualFile.getParent());
 		MksSandboxInfo foundSubSandbox = null;
+		// walk up directory hierarchy until we find a (or several) sandbox
 		for (; cursorDir != null && sandbox == null; cursorDir = cursorDir.getParent()) {
 			List<MksSandboxInfo> infoList = sandboxByFolder.get(cursorDir);
-			if (infoList == null) {
+			if (infoList == null || infoList.isEmpty()) {
 				// no sandbox for this folder
 				continue;
 			} else if (infoList.size() == 1) {
+				// only one sandbox
 				MksSandboxInfo sandboxInfo = infoList.get(0);
 				if (sandboxInfo.isSubSandbox) {
 					foundSubSandbox = sandboxInfo;
@@ -447,10 +454,11 @@ public class SandboxCacheImpl implements SandboxCache {
 					sandbox = sandboxInfo;
 				}
 			} else {
+				// several sandboxes in this directory
 				if (foundSubSandbox != null) {
 					sandbox = foundSubSandbox;
 				} else {
-					// ambiguous sandbox, try to find the good one
+					// ambiguous sandbox, check them all
 					for (MksSandboxInfo mksSandboxInfo : infoList) {
 						if (checkSandboxContains(mksSandboxInfo, virtualFile)) {
 							sandbox = mksSandboxInfo;
@@ -484,7 +492,7 @@ public class SandboxCacheImpl implements SandboxCache {
 				PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(sandbox.sandboxPjFile.getParent());
 
 		AbstractViewSandboxCommand command =
-				new AbstractViewSandboxCommand(new ArrayList<VcsException>(), project.getComponent(MksVcs.class),
+				new AbstractViewSandboxCommand(new ArrayList<VcsException>(), MksVcs.getInstance(project),
 						sandbox.sandboxPath,
 						"--filter=file:" + MKSHelper.getRelativePath(filePath, sandboxFolderFilePath)) {
 					@Override
