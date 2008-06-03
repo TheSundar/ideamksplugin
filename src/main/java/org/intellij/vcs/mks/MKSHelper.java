@@ -10,6 +10,7 @@ import mks.integrations.common.TriclopsSiClient;
 import mks.integrations.common.TriclopsSiMembers;
 import mks.integrations.common.TriclopsSiSandbox;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -242,7 +243,8 @@ public class MKSHelper {
 		return createMembers(key.getSiSandbox());
 	}
 
-	public static String getRelativePath(FilePath filePath, FilePath parentPath) {
-		return filePath.getPath().substring(parentPath.getPath().length() + 1);
+	public static String getRelativePath(@NotNull FilePath filePath, @NotNull FilePath parentPath) {
+		return VfsUtil.getRelativePath(filePath.getVirtualFile(), parentPath.getVirtualFile(), File.separatorChar);
+//		return filePath.getPath().substring(parentPath.getPath().length() + 1);
 	}
 }

@@ -50,7 +50,9 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
 			final ArrayList<SandboxesCommand.SandboxInfo> newList =
 					new ArrayList<SandboxesCommand.SandboxInfo>(currentList);
 			this.listeners.add(listener);
-			final ArrayList<SandboxListListener> listeners = new ArrayList<SandboxListListener>(this.listeners);
+			final ArrayList<SandboxListListener> listeners = new ArrayList<SandboxListListener>();
+			// only fire updates to the newly added listener
+			listeners.add(listener);
 			compareAndFireUpdates(new ArrayList<SandboxesCommand.SandboxInfo>(), newList, listeners);
 		} finally {
 			sandboxCacheLock.unlock();

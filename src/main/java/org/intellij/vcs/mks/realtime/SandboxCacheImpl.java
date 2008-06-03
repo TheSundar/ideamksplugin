@@ -188,6 +188,10 @@ public class SandboxCacheImpl implements SandboxCache {
 		sandboxPath = sandboxInfo.sandboxPath;
 		sandboxVFile = sandboxInfo.sandboxPjFile == null ? VcsUtil.getVirtualFile(sandboxInfo.sandboxPath) :
 				sandboxInfo.sandboxPjFile;
+		if (sandboxVFiles.contains(sandboxVFile)) {
+			LOGGER.warn("trying to add an already monitored sandbox " + sandboxInfo);
+			return;
+		}
 		VirtualFile sandboxFolder;
 		if (sandboxVFile != null) {
 			sandboxFolder = (sandboxVFile.isDirectory()) ? sandboxVFile : sandboxVFile.getParent();
@@ -422,7 +426,7 @@ public class SandboxCacheImpl implements SandboxCache {
 	/**
 	 * returns the highest level non ambiguous sandbox for the given file
 	 *
-	 * @param virtualFile the virtual file we want the parent sandbox for
+	 * @param virtualFile the virtual file we want the parent sandbox for (may be a directory)
 	 * @return the sandbox containing  the give file if one exists, null otherwise
 	 */
 	@Nullable
@@ -431,7 +435,7 @@ public class SandboxCacheImpl implements SandboxCache {
 	}
 
 	/**
-	 * @param virtualFile
+	 * @param virtualFile a file or a directory
 	 * @param closest	 if true, then the deepest (sub)sandbox will be returned, if false only top level sandboxes will match
 	 * @return
 	 */
@@ -457,7 +461,7 @@ public class SandboxCacheImpl implements SandboxCache {
 				// several sandboxes in this directory
 				if (foundSubSandbox != null) {
 					sandbox = foundSubSandbox;
-				} else {
+				} else if (!virtualFile.isDirectory()) {
 					// ambiguous sandbox, check them all
 					for (MksSandboxInfo mksSandboxInfo : infoList) {
 						if (checkSandboxContains(mksSandboxInfo, virtualFile)) {
@@ -465,6 +469,8 @@ public class SandboxCacheImpl implements SandboxCache {
 							break;
 						}
 					}
+				} else {
+					LOGGER.warn("unable to find sandbox for " + virtualFile);
 				}
 			}
 			if (closest && foundSubSandbox != null) {
@@ -484,6 +490,10 @@ public class SandboxCacheImpl implements SandboxCache {
 	 * @return true if sandbox is the bottom most subsandbox including virtualfile.
 	 */
 	private boolean checkSandboxContains(@NotNull MksSandboxInfo sandbox, @NotNull VirtualFile virtualFile) {
+		if (virtualFile.isDirectory()) {
+			throw new IllegalArgumentException("directories don't belong to sandboxes");
+		}
+
 		final FilePath filePath = PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(virtualFile);
 		if (!filePath.getIOFile().exists() || sandbox.sandboxPjFile == null) {
 			return false;
@@ -491,10 +501,16 @@ public class SandboxCacheImpl implements SandboxCache {
 		final FilePath sandboxFolderFilePath =
 				PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(sandbox.sandboxPjFile.getParent());
 
+		final String relativePath = MKSHelper.getRelativePath(filePath, sandboxFolderFilePath);
+		if ("".equals(relativePath.trim())) {
+			LOGGER.warn("no relative path for " + virtualFile + " from " + sandboxFolderFilePath +
+					", assuming different sandboxes");
+			return false;
+		}
 		AbstractViewSandboxCommand command =
 				new AbstractViewSandboxCommand(new ArrayList<VcsException>(), MksVcs.getInstance(project),
 						sandbox.sandboxPath,
-						"--filter=file:" + MKSHelper.getRelativePath(filePath, sandboxFolderFilePath)) {
+						"--filter=file:" + relativePath) {
 					@Override
 					protected MksMemberState createState(String workingRev, String memberRev, String workingCpid,
 														 String locker, String lockedSandbox, String type,
