@@ -104,18 +104,20 @@ public class SandboxCacheImpl implements SandboxCache {
 					final VirtualFile parent = sandboxVFile.getParent();
 					final List<MksSandboxInfo> infoList = sandboxByFolder.get(parent);
 
-					for (MksSandboxInfo sandboxInfo : infoList) {
+					for (Iterator<MksSandboxInfo> it = infoList.iterator(); it.hasNext();) {
+						MksSandboxInfo sandboxInfo = it.next();
 						if (sandboxInfo.sandboxPath.equals(sandboxPath)) {
-							infoList.remove(sandboxInfo);
+							it.remove();
 							break;
 						}
 					}
 				}
 			}
 		} else {
-			for (MksSandboxInfo sandbox : outOfScopeSandboxes) {
+			for (Iterator<MksSandboxInfo> it = outOfScopeSandboxes.iterator(); it.hasNext();) {
+				MksSandboxInfo sandbox = it.next();
 				if (sandboxPath.equals(sandbox.sandboxPath)) {
-					outOfScopeSandboxes.remove(sandbox);
+					it.remove();
 					return;
 				}
 			}
@@ -139,7 +141,6 @@ public class SandboxCacheImpl implements SandboxCache {
 							infoList.remove(sandboxInfo);
 							infoList.add(new MksSandboxInfo(sandboxPath, serverHostAndPort, mksProject, devPath,
 									sandboxVFile, isSubSandbox));
-
 							break;
 						}
 					}
@@ -338,10 +339,11 @@ public class SandboxCacheImpl implements SandboxCache {
 			List<VirtualFile> foldersToRemove = new ArrayList<VirtualFile>();
 			for (Map.Entry<VirtualFile, List<MksSandboxInfo>> entry : sandboxByFolder.entrySet()) {
 				List<MksSandboxInfo> sandboxes = entry.getValue();
-				for (MksSandboxInfo sandbox : sandboxes) {
+				for (Iterator<MksSandboxInfo> it = sandboxes.iterator(); it.hasNext();) {
+					MksSandboxInfo sandbox = it.next();
 					if (!this.doesSandboxIntersectProject(new File(sandbox.sandboxPath))) {
 						sandboxesRemovedFromProject.add(sandbox);
-						sandboxes.remove(sandbox);
+						it.remove();
 					}
 				}
 				if (sandboxes.isEmpty()) {
