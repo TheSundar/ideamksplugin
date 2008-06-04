@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -143,8 +144,8 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
 	/**
 	 * compares the 2 (sorted) lists of sandbox and fire updates appropriately to the provided list of listeners
 	 *
-	 * @param oldList
-	 * @param newList
+	 * @param oldList   supposed to be sorted
+	 * @param newList   supposed to be sorted
 	 * @param listeners
 	 */
 	protected void compareAndFireUpdates(ArrayList<SandboxesCommand.SandboxInfo> oldList,
@@ -212,6 +213,8 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
 		final SandboxesCommand command = new SandboxesCommand(new ArrayList<VcsException>(),
 				ApplicationManager.getApplication().getComponent(MksConfiguration.class));
 		command.execute();
+
+		Collections.sort(command.result, SandboxesCommand.SandboxInfo.COMPARATOR);
 		return command.result;
 	}
 }
