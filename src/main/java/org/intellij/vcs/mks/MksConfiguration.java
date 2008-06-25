@@ -1,6 +1,7 @@
 package org.intellij.vcs.mks;
 
 import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.ui.InputValidator;
 import com.intellij.openapi.util.DefaultJDOMExternalizer;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.JDOMExternalizable;
@@ -11,6 +12,9 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -193,4 +197,20 @@ public class MksConfiguration
 		}
 	}
 
+	public static class DatePatternValidator implements InputValidator {
+
+		public boolean checkInput(String s) {
+			try {
+				DateFormat format = new SimpleDateFormat(s);
+				format.format(new Date());
+				return true;
+			} catch (IllegalArgumentException e) {
+				return false;
+			}
+		}
+
+		public boolean canClose(String s) {
+			return checkInput(s);
+		}
+	}
 }

@@ -120,6 +120,7 @@
             </constraints>
             <properties>
               <text resource-bundle="org/intellij/vcs/mks/mksBundle" key="config.resyncNonMembers"/>
+              <toolTipText resource-bundle="org/intellij/vcs/mks/mksBundle" key="config.resyncNonMembers.hover"/>
             </properties>
           </component>
         </children>

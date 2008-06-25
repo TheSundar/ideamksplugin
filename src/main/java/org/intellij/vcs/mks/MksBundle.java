@@ -1,6 +1,7 @@
 package org.intellij.vcs.mks;
 
 import com.intellij.CommonBundle;
+import org.jetbrains.annotations.NonNls;
 
 import java.lang.ref.SoftReference;
 import java.util.ResourceBundle;
@@ -24,5 +25,6 @@ public class MksBundle {
 
 	@SuppressWarnings({"StaticVariableMayNotBeInitialized", "StaticNonFinalField"})
 	private static SoftReference<ResourceBundle> ourBundle;
+	@NonNls
 	private static final String BUNDLE = "org.intellij.vcs.mks.mksBundle";
 }

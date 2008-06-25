@@ -1,8 +1,12 @@
 package org.intellij.vcs.mks.sicommands;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.vcsUtil.VcsUtil;
+import org.intellij.vcs.mks.MksBundle;
 import org.intellij.vcs.mks.MksCLIConfiguration;
+import org.intellij.vcs.mks.MksConfiguration;
 import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
 import org.jetbrains.annotations.NonNls;
 
@@ -23,6 +27,7 @@ import java.util.regex.Pattern;
  * This command uses tabs to separate fields ...
  */
 public class ViewMemberHistoryCommand extends SiCLICommand {
+	@NonNls
 	public static final String COMMAND = "viewhistory";
 	private static final String descriptionPattern = "(.*)";
 	private static final int REVISION_IDX = 1;
@@ -31,7 +36,9 @@ public class ViewMemberHistoryCommand extends SiCLICommand {
 	private static final int CPID_IDX = 4;
 	private static final int DESCRIPTION_IDX = 5;
 
+	@NonNls
 	private static final String datePattern = "([^\\t+]*)";
+	@NonNls
 	public static final String wholeLinePatternString =
 			revisionPattern + "\\t"
 					+ datePattern + "\\t"
@@ -39,9 +46,7 @@ public class ViewMemberHistoryCommand extends SiCLICommand {
 					+ changePackageIdPattern + "\\t"
 					+ descriptionPattern;
 	private List<MksMemberRevisionInfo> revisionsInfo = new ArrayList<MksMemberRevisionInfo>();
-	@NonNls
-	private static final String DATE_PATTERN = "MMM dd, yyyy - hh:mm a";
-	private final DateFormat format;
+	private DateFormat format;
 	private final String member;
 
 	public ViewMemberHistoryCommand(List<VcsException> errors, MksCLIConfiguration mksCLIConfiguration, String member) {
@@ -81,7 +86,7 @@ public class ViewMemberHistoryCommand extends SiCLICommand {
 							String description = matcher.group(DESCRIPTION_IDX);
 							MksMemberRevisionInfo info = new MksMemberRevisionInfo();
 							info.setRevision(createRevision(rev));
-							info.setDate(parseDate(date));
+							info.setDate(parseDate(date, true));
 							info.setCPID(cpid);
 							info.setAuthor(author);
 							info.setDescription(description);
@@ -120,14 +125,32 @@ public class ViewMemberHistoryCommand extends SiCLICommand {
 		}
 	}
 
-	private Date parseDate(String date) throws VcsException {
+	private Date parseDate(String date, boolean updatePatternIfNeeded) throws VcsException {
 		try {
 			return format.parse(date);
 		} catch (ParseException e) {
-			throw new VcsException(
-					"unknown date format for " + date + " (expected [" + mksCLIConfiguration.getDatePattern() + "]). " +
-							"This may be an encoding issue, encoding used was " +
-							mksCLIConfiguration.getMksSiEncoding(COMMAND));
+
+			if (updatePatternIfNeeded) {
+				final String pattern = Messages.showInputDialog(
+						MksBundle.message("configuration.datepattern.incorrect.message", date,
+								mksCLIConfiguration.getDatePattern()),
+						MksBundle.message("configuration.datepattern.incorrect.title"), Messages.getErrorIcon(),
+						mksCLIConfiguration.getDatePattern(),
+						new MksConfiguration.DatePatternValidator());
+				if (pattern != null) {
+					ApplicationManager.getApplication().getComponent(MksConfiguration.class).setDatePattern(pattern);
+					format = new SimpleDateFormat(mksCLIConfiguration.getDatePattern());
+				}
+				return parseDate(date, false);
+
+			} else {
+				throw new VcsException(
+						"unknown date format for " + date + " (expected [" + mksCLIConfiguration.getDatePattern() +
+								"]). " +
+								"This may be an encoding issue, encoding used was " +
+								mksCLIConfiguration.getMksSiEncoding(COMMAND));
+
+			}
 		}
 	}
 
