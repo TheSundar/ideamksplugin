@@ -15,7 +15,10 @@
 	<idea-version since-build="7361" until-build="8000"/>
 
 	<change-notes><![CDATA[<ul>
-	<li>0.8 <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.8&can=1">googlecode issues resolved in 0.8</a> <br><br/>
+	<li>0.7.2 This a bugfix release. See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7.2&can=1">googlecode issues resolved in 0.7.2</a> <br><br/>
+	Main changes<br/>
+	Performance improvements related to non members and projects roots or registered sandboxes being updated.<br/>
+	Date pattern is not persisted<br/>
 	</li>
 	<li>0.7.1 This a bugfix release. See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7.1&can=1">googlecode issues resolved in 0.7.1</a> <br><br/>
 	Main changes<br/>
