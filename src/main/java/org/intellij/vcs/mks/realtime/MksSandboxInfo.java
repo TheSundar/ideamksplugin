@@ -99,6 +99,10 @@ public final class MksSandboxInfo implements Comparable<MksSandboxInfo> {
 	 * @return
 	 */
 	public boolean contains(@NotNull VirtualFile file) {
+		if (sandboxPjFile == null) {
+			LOGGER.warn("contains : sandboxPjFile == null, " + toString());
+			return false;
+		}
 		return VfsUtil.isAncestor(sandboxPjFile.getParent(), file, false);
 	}
 
