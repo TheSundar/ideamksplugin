@@ -144,6 +144,10 @@ public class MksConfiguration
 		return datePattern;
 	}
 
+	public CommandExecutionListener getCommandExecutionListener() {
+		return CommandExecutionListener.IDLE;
+	}
+
 	public boolean isSynchronizeNonMembers() {
 		return synchronizeNonMembers;
 	}

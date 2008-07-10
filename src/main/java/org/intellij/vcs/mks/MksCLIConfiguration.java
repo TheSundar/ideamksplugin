@@ -11,4 +11,6 @@ public interface MksCLIConfiguration {
 
 	@NotNull
 	String getDatePattern();
+
+	CommandExecutionListener getCommandExecutionListener();
 }

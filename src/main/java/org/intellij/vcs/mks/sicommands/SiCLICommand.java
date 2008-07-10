@@ -3,6 +3,7 @@ package org.intellij.vcs.mks.sicommands;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.history.VcsRevisionNumber;
 import org.intellij.vcs.mks.AbstractMKSCommand;
+import org.intellij.vcs.mks.CommandExecutionListener;
 import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.MksRevisionNumber;
 import org.intellij.vcs.mks.io.AsyncStreamBuffer;
@@ -58,8 +59,8 @@ public abstract class SiCLICommand extends AbstractMKSCommand implements Runnabl
 	}
 
 	public void addArg(String arg) {
-		String[] newArgs = new String[args.length + 1];
-		System.arraycopy(args, 0, newArgs, 0, args.length);
+		String[] newArgs = new String[args.length + COMMAND_IDX];
+		System.arraycopy(args, SI_IDX, newArgs, SI_IDX, args.length);
 		newArgs[args.length] = arg;
 		args = newArgs;
 	}
@@ -108,10 +109,21 @@ public abstract class SiCLICommand extends AbstractMKSCommand implements Runnabl
 			}
 			handleErrorOutput(errorOutput);
 		} finally {
-			LOGGER.debug(toString() + " finished in " + (System.currentTimeMillis() - start + " ms"));
+			fireCommandCompleted(start);
 		}
 		return buf.toString();
 	}
+
+	private void fireCommandCompleted(long start) {
+		CommandExecutionListener listener = getCommandExecutionListener();
+		listener.executionCompleted(command, System.currentTimeMillis() - start);
+		LOGGER.debug(toString() + " finished in " + (System.currentTimeMillis() - start + " ms"));
+	}
+
+	private CommandExecutionListener getCommandExecutionListener() {
+		return mksCLIConfiguration.getCommandExecutionListener();
+	}
+
 
 	private String[] createCommand() {
 		final int implicitArgCount = (batchMode) ? BATCH_IDX + 1 : BATCH_IDX;
@@ -127,9 +139,9 @@ public abstract class SiCLICommand extends AbstractMKSCommand implements Runnabl
 
 	protected void handleErrorOutput(String errorOutput) {
 		if (!"".equals(errorOutput)) {
-			if (exitValue == 0) {
+			if (exitValue == SI_IDX) {
 				LOGGER.warn("command [" + this + "] wrote to stderr " + errorOutput);
-			} else if (exitValue == 2 && errorOutput.startsWith("Connecting to ")) {
+			} else if (exitValue == BATCH_IDX && errorOutput.startsWith("Connecting to ")) {
 				LOGGER.warn("mks returned [" + errorOutput +
 						"], you probably need to reconnect to the server manually, try executing 'si connect --hostname=$mksHost$'");
 			} else {

@@ -55,7 +55,6 @@ import java.util.Map;
 
 public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	static final Logger LOGGER = Logger.getInstance(MksVcs.class.getName());
-	public static final String TOOL_WINDOW_ID = "MKS";
 	static final boolean DEBUG = false;
 	public static final String DATA_CONTEXT_PROJECT = "project";
 	public static final String DATA_CONTEXT_MODULE = "module";
@@ -139,6 +138,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		tabbedPane.add(panelDebug, "Log", 0);
 
 
+		tabbedPane.add(createCommandStatisticsPanel(), "Command statistics");
 		tabbedPane.add(createTasksPanel(), "Daemon processes");
 		mksPanel.add(tabbedPane, BorderLayout.CENTER);
 		registerToolWindow(toolWindowManager, mksPanel);
@@ -271,6 +271,31 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 				return button;
 			}
 		});
+		return jPanel;
+
+	}
+
+	private final CommandExecutionAdapter commandExecutionAdapter = new CommandExecutionAdapter();
+
+	public CommandExecutionListener getCommandExecutionListener() {
+		return commandExecutionAdapter;
+	}
+
+	private Component createCommandStatisticsPanel() {
+		JTable commandsTable = new JTable();
+
+		JPanel jPanel = new JPanel();
+		JPanel buttonsPanel = new JPanel();
+		buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.X_AXIS));
+		buttonsPanel.add(new JButton(new AbstractAction("Clear statistics") {
+			public void actionPerformed(final ActionEvent event) {
+				commandExecutionAdapter.clear();
+			}
+		}));
+		jPanel.setLayout(new BorderLayout());
+		jPanel.add(buttonsPanel, BorderLayout.NORTH);
+		jPanel.add(new JScrollPane(commandsTable), BorderLayout.CENTER);
+		commandsTable.setModel(commandExecutionAdapter);
 		return jPanel;
 
 	}
