@@ -246,7 +246,6 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 														   final boolean b1, final int i, final int i1) {
 				return new JButton(new AbstractAction("restart") {
 					public void actionPerformed(ActionEvent e) {
-						System.err.println("restarting sandbox list listener");
 						final SandboxListSynchronizer synchronizer =
 								ApplicationManager.getApplication().getComponent(SandboxListSynchronizer.class);
 						synchronizer.restart();
@@ -452,11 +451,16 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		return editFileProvider;
 	}
 
-	public Map<MksSandboxInfo, ArrayList<VirtualFile>> dispatchBySandbox(VirtualFile[] files) {
+	public Map<MksSandboxInfo, ArrayList<VirtualFile>> dispatchBySandbox(VirtualFile[] files, boolean topSandboxOnly) {
 		ArrayList<VcsException> dispatchErrors = new ArrayList<VcsException>();
-		DispatchBySandboxCommand dispatchCommand = new DispatchBySandboxCommand(this, dispatchErrors, files);
+		DispatchBySandboxCommand dispatchCommand =
+				new DispatchBySandboxCommand(this, dispatchErrors, files, topSandboxOnly);
 		dispatchCommand.execute();
 		return dispatchCommand.filesBySandbox;
+	}
+
+	public Map<MksSandboxInfo, ArrayList<VirtualFile>> dispatchBySandbox(VirtualFile[] files) {
+		return dispatchBySandbox(files, true);
 	}
 
 	/**

@@ -108,7 +108,12 @@ public final class MksSandboxInfo implements Comparable<MksSandboxInfo> {
 
 	@NotNull
 	public String getRelativePath(@NotNull VirtualFile member) {
-		return VfsUtil.getRelativePath(member, sandboxPjFile.getParent(), File.separatorChar);
+		final char separator = File.separatorChar;
+		return getRelativePath(member, separator);
+	}
+
+	public String getRelativePath(VirtualFile member, char separator) {
+		return VfsUtil.getRelativePath(member, sandboxPjFile.getParent(), separator);
 	}
 
 	@NotNull

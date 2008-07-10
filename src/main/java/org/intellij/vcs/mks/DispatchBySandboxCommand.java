@@ -18,11 +18,21 @@ public class DispatchBySandboxCommand extends AbstractMKSCommand {
 	protected Map<MksSandboxInfo, ArrayList<VirtualFile>> filesBySandbox =
 			new HashMap<MksSandboxInfo, ArrayList<VirtualFile>>();
 	protected ArrayList<VirtualFile> notInSandboxFiles = new ArrayList<VirtualFile>();
+	/**
+	 * if false, dispatching will be done using subsandboxes
+	 */
+	private boolean basedOnTopSanbox;
 
 	public DispatchBySandboxCommand(MksVcs mksVcs, List<VcsException> errors, VirtualFile[] virtualFiles) {
+		this(mksVcs, errors, virtualFiles, true);
+	}
+
+	public DispatchBySandboxCommand(MksVcs mksVcs, List<VcsException> errors, VirtualFile[] virtualFiles,
+									boolean topSandboxOnly) {
 		super(errors);
 		this.mksVcs = mksVcs;
 		this.virtualFiles = virtualFiles;
+		this.basedOnTopSanbox = topSandboxOnly;
 	}
 
 	@Override
@@ -32,7 +42,8 @@ public class DispatchBySandboxCommand extends AbstractMKSCommand {
 				LOGGER.warn("null virtual file passed to DispatchBySandboxCommand#execute");
 			} else {
 
-				final MksSandboxInfo sandbox = mksVcs.getSandboxCache().getSandboxInfo(file);
+				final MksSandboxInfo sandbox = (basedOnTopSanbox) ? mksVcs.getSandboxCache().getSandboxInfo(file) :
+						mksVcs.getSandboxCache().getSubSandbox(file);
 				if (sandbox == null) {
 					notInSandboxFiles.add(file);
 				} else {
