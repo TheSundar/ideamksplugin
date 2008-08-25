@@ -39,7 +39,7 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
 	}
 
 	protected SandboxListSynchronizerImpl(MksConfiguration config) {
-		super(ListSandboxes.COMMAND, config, "--displaySubs");
+		super(ListSandboxes.COMMAND, config);
 	}
 
 	public void addListener(@NotNull SandboxListListener listener) {
