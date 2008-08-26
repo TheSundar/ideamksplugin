@@ -56,9 +56,6 @@ import java.util.Map;
 public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	static final Logger LOGGER = Logger.getInstance(MksVcs.class.getName());
 	static final boolean DEBUG = false;
-	public static final String DATA_CONTEXT_PROJECT = "project";
-	public static final String DATA_CONTEXT_MODULE = "module";
-	public static final String DATA_CONTEXT_VIRTUAL_FILE_ARRAY = "virtualFileArray";
 
 	private JTextPane mksTextArea;
 	private final SandboxCache sandboxCache;
@@ -75,6 +72,10 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	@NonNls
 	public static final String VCS_NAME = "MKS";
 	private static final String MKS_TOOLWINDOW = "MKS";
+	@NonNls
+	public static final String PROJECT_PJ_FILE = "project.pj";
+	@NonNls
+	private static final String ICONS_MKS_GIF = "/icons/mks.gif";
 
 	public MksVcs(Project project) {
 		super(project);
@@ -306,9 +307,9 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		javax.swing.text.Style def = StyleContext.getDefaultStyleContext().getStyle("default");
 		javax.swing.text.Style regular = mksTextArea.addStyle("REGULAR", def);
 		StyleConstants.setFontFamily(def, "SansSerif");
-		javax.swing.text.Style s = mksTextArea.addStyle("ITALIC", regular);
+		javax.swing.text.Style s = mksTextArea.addStyle(StyleConstants.Italic.toString(), regular);
 		StyleConstants.setItalic(s, true);
-		s = mksTextArea.addStyle("BOLD", regular);
+		s = mksTextArea.addStyle(StyleConstants.Bold.toString(), regular);
 		StyleConstants.setBold(s, true);
 		return mksTextArea;
 	}
@@ -320,7 +321,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		content.setCloseable(false);
 		toolWindow.getContentManager().addContent(content);
 
-		toolWindow.setIcon(IconLoader.getIcon("/icons/mks.gif", getClass()));
+		toolWindow.setIcon(IconLoader.getIcon(ICONS_MKS_GIF, getClass()));
 		return toolWindow;
 	}
 
@@ -594,5 +595,11 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	@Nullable
 	public UpdateEnvironment getStatusEnvironment() {
 		return updateEnvironment;
+	}
+
+	public boolean isVersionedDirectory(VirtualFile virtualFile) {
+		// does not work currently as the vcs is not initialized yet ...
+		final VirtualFile child = virtualFile.findChild(PROJECT_PJ_FILE);
+		return null != child && child.exists();
 	}
 }

@@ -86,7 +86,7 @@ public class SandboxCacheImpl implements SandboxCache {
 
 
 	public boolean isSandboxProject(@NotNull VirtualFile virtualFile) {
-		return sandboxVFiles.contains(virtualFile) || virtualFile.getName().equals("project.pj");
+		return sandboxVFiles.contains(virtualFile) || virtualFile.getName().equals(MksVcs.PROJECT_PJ_FILE);
 	}
 
 	public void removeSandboxPath(@NotNull String sandboxPath, boolean isSubSandbox) {

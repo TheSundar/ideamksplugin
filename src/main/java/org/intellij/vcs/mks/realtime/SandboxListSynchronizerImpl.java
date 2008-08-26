@@ -6,6 +6,7 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.vcs.VcsException;
 import org.intellij.vcs.mks.MKSHelper;
 import org.intellij.vcs.mks.MksConfiguration;
+import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.sicommands.ListSandboxes;
 import org.intellij.vcs.mks.sicommands.SandboxesCommand;
 import org.jetbrains.annotations.NonNls;
@@ -27,8 +28,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
 		implements ApplicationComponent, SandboxListSynchronizer {
 	private final ArrayList<SandboxListListener> listeners = new ArrayList<SandboxListListener>();
-	//	private static final String LINE_SEPARATOR = " -> ";
-	private static final String MKS_PROJECT_PJ = "project.pj";
 
 
 	private ArrayList<SandboxesCommand.SandboxInfo> currentList = new ArrayList<SandboxesCommand.SandboxInfo>();
@@ -92,8 +91,9 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
 		String patterns = FileTypeManager.getInstance().getIgnoredFilesList();
 
 		StringBuffer newPattern = new StringBuffer(patterns);
-		if (patterns.indexOf(MKS_PROJECT_PJ) == -1) {
-			newPattern.append((newPattern.charAt(newPattern.length() - 1) == ';') ? "" : ";").append(MKS_PROJECT_PJ);
+		if (patterns.indexOf(MksVcs.PROJECT_PJ_FILE) == -1) {
+			newPattern.append((newPattern.charAt(newPattern.length() - 1) == ';') ? "" : ";")
+					.append(MksVcs.PROJECT_PJ_FILE);
 		}
 
 		final String newPatternString = newPattern.toString();
