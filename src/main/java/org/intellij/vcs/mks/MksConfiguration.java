@@ -25,16 +25,16 @@ import java.util.StringTokenizer;
 public class MksConfiguration
 		implements JDOMExternalizable, ApplicationComponent, MksCLIConfiguration {
 	public static final String DEFAULT_ENCODING = Charset.defaultCharset().name();
+	private static final String DEFAULT_DATE_PATTERN = "MMM dd, yyyy - hh:mm a";
 
 	public StringMap SI_ENCODINGS;
-	public String defaultEncoding;
+	public String defaultEncoding = DEFAULT_ENCODING;
 	/**
 	 * (host:port(,host:port)*)?
 	 */
 	public String nonSiServers = "";
-	public String datePattern;
+	public String datePattern = DEFAULT_DATE_PATTERN;
 	public boolean synchronizeNonMembers = true;
-	private static final String DEFAULT_DATE_PATTERN = "MMM dd, yyyy - hh:mm a";
 
 
 	public MksConfiguration() {
