@@ -142,14 +142,14 @@ public abstract class BasicAction extends AnAction {
 		super.update(e);
 		Presentation presentation = e.getPresentation();
 		DataContext dataContext = e.getDataContext();
-		Project project = (Project) dataContext.getData(MksVcs.DATA_CONTEXT_PROJECT);
+		Project project = DataKeys.PROJECT.getData(dataContext);
 		if (project == null) {
 			presentation.setEnabled(false);
 			presentation.setVisible(false);
 			return;
 		}
 
-		VirtualFile[] vFiles = (VirtualFile[]) dataContext.getData(MksVcs.DATA_CONTEXT_VIRTUAL_FILE_ARRAY);
+		VirtualFile[] vFiles = DataKeys.VIRTUAL_FILE_ARRAY.getData(dataContext);
 		if (vFiles == null || vFiles.length == 0) {
 			presentation.setEnabled(false);
 			presentation.setVisible(true);
