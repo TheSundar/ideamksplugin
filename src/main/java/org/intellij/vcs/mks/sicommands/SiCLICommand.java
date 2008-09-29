@@ -3,7 +3,6 @@ package org.intellij.vcs.mks.sicommands;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.history.VcsRevisionNumber;
 import org.intellij.vcs.mks.AbstractMKSCommand;
-import org.intellij.vcs.mks.CommandExecutionListener;
 import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.MksRevisionNumber;
 import org.intellij.vcs.mks.io.AsyncStreamBuffer;
@@ -33,8 +32,6 @@ public abstract class SiCLICommand extends AbstractMKSCommand implements Runnabl
 	protected static final String userPattern = "(?:(?:[^\\t]+? \\()?([^\\(\\s\\)]+)(?:\\))?)?";
 	protected static final String DEFERRED = "deferred";
 	private String commandString;
-	protected final MksCLIConfiguration mksCLIConfiguration;
-	private String command;
 	private String[] args;
 	protected String commandOutput;
 	private File workingDir;
@@ -51,10 +48,8 @@ public abstract class SiCLICommand extends AbstractMKSCommand implements Runnabl
 
 	public SiCLICommand(@NotNull List<VcsException> errors, @NotNull MksCLIConfiguration mksCLIConfiguration,
 						@NotNull String command, boolean batch, @NonNls String... args) {
-		super(errors);
+		super(errors, command, mksCLIConfiguration);
 		this.batchMode = batch;
-		this.mksCLIConfiguration = mksCLIConfiguration;
-		this.command = command;
 		this.args = args;
 	}
 
@@ -112,16 +107,6 @@ public abstract class SiCLICommand extends AbstractMKSCommand implements Runnabl
 			fireCommandCompleted(start);
 		}
 		return buf.toString();
-	}
-
-	private void fireCommandCompleted(long start) {
-		CommandExecutionListener listener = getCommandExecutionListener();
-		listener.executionCompleted(command, System.currentTimeMillis() - start);
-		LOGGER.debug(toString() + " finished in " + (System.currentTimeMillis() - start + " ms"));
-	}
-
-	private CommandExecutionListener getCommandExecutionListener() {
-		return mksCLIConfiguration.getCommandExecutionListener();
 	}
 
 

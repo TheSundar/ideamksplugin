@@ -25,6 +25,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.AbstractTableCellEditor;
 import mks.integrations.common.TriclopsException;
+import mks.integrations.common.TriclopsSiMember;
 import mks.integrations.common.TriclopsSiMembers;
 import mks.integrations.common.TriclopsSiSandbox;
 import org.intellij.vcs.mks.history.MksVcsHistoryProvider;
@@ -419,9 +420,9 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 
 		public void editFiles(VirtualFile[] virtualFiles) throws VcsException {
 			List<VcsException> errors = new ArrayList<VcsException>();
-			DispatchBySandboxCommand dispatchCommand = new DispatchBySandboxCommand(mksVcs, errors, virtualFiles);
+			DispatchBySandboxCommand dispatchCommand = new DispatchBySandboxCommand(mksVcs, virtualFiles);
 			dispatchCommand.execute();
-			if (!dispatchCommand.errors.isEmpty()) {
+			if (!dispatchCommand.getNotInSandboxFiles().isEmpty()) {
 				Messages.showErrorDialog(MksBundle.message("unable.to.find.the.sandboxes.for.the.files.title"),
 						MksBundle.message("could.not.start.checkout"));
 				return;
@@ -430,7 +431,8 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 				MksSandboxInfo sandbox = entry.getKey();
 				ArrayList<VirtualFile> files = entry.getValue();
 				errors = new ArrayList<VcsException>();
-				CheckoutFilesCommand command = new CheckoutFilesCommand(errors, sandbox.getSiSandbox(), files);
+				CheckoutFilesCommand command = new CheckoutFilesCommand(errors, sandbox.getSiSandbox(), files,
+						this.mksVcs);
 				synchronized (MksVcs.this) {
 					command.execute();
 				}
@@ -452,13 +454,12 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		private ArrayList<VirtualFile> files;
 
 		public CheckoutFilesCommand(List<VcsException> errors, TriclopsSiSandbox sandbox,
-									ArrayList<VirtualFile> files) {
-			super(errors);
+									ArrayList<VirtualFile> files, MksCLIConfiguration mksCLIConfiguration) {
+			super(errors, "co", mksCLIConfiguration);
 			this.sandbox = sandbox;
 			this.files = files;
 		}
 
-		@Override
 		public void execute() {
 			try {
 				TriclopsSiMembers members = queryMksMemberStatus(files, sandbox);
@@ -467,6 +468,17 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 				//noinspection ThrowableInstanceNeverThrown
 				errors.add(new MksVcsException("unable to checkout" + "\n" + getMksErrorMessage(), e));
 			}
+		}
+
+		@NotNull
+		private TriclopsSiMembers queryMksMemberStatus(@NotNull ArrayList<VirtualFile> files,
+													   @NotNull TriclopsSiSandbox sandbox) throws TriclopsException {
+			TriclopsSiMembers members = MKSHelper.createMembers(sandbox);
+			for (VirtualFile virtualFile : files) {
+				members.addMember(new TriclopsSiMember(virtualFile.getPresentableUrl()));
+			}
+			MKSHelper.getMembersStatus(members);
+			return members;
 		}
 
 	}
@@ -478,9 +490,8 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	}
 
 	public Map<MksSandboxInfo, ArrayList<VirtualFile>> dispatchBySandbox(VirtualFile[] files, boolean topSandboxOnly) {
-		ArrayList<VcsException> dispatchErrors = new ArrayList<VcsException>();
 		DispatchBySandboxCommand dispatchCommand =
-				new DispatchBySandboxCommand(this, dispatchErrors, files, topSandboxOnly);
+				new DispatchBySandboxCommand(this, files, topSandboxOnly);
 		dispatchCommand.execute();
 		return dispatchCommand.filesBySandbox;
 	}

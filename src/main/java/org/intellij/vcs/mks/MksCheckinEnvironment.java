@@ -49,11 +49,11 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
 
 			}
 		}
-		DispatchBySandboxCommand dispatchAction = new DispatchBySandboxCommand(mksVcs, new ArrayList<VcsException>(),
+		DispatchBySandboxCommand dispatchAction = new DispatchBySandboxCommand(mksVcs,
 				modifiedFiles.toArray(new VirtualFile[modifiedFiles.size()]));
 		dispatchAction.execute();
 
-		List<VcsException> exceptions = dispatchAction.errors;
+		List<VcsException> exceptions = new ArrayList<VcsException>();
 		Map<MksSandboxInfo, ArrayList<VirtualFile>> filesBysandbox = dispatchAction.getFilesBySandbox();
 		for (Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : filesBysandbox.entrySet()) {
 			TriclopsSiMembers members = MKSHelper.createMembers(entry.getKey());

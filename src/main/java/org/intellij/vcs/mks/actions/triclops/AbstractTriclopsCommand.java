@@ -30,7 +30,7 @@ public abstract class AbstractTriclopsCommand implements MksCommand {
 			VcsException {
 		try {
 			DispatchBySandboxCommand dispatchAction =
-					new DispatchBySandboxCommand(vcs, new ArrayList<VcsException>(), files);
+					new DispatchBySandboxCommand(vcs, files);
 			dispatchAction.execute();
 
 			Map<MksSandboxInfo, ArrayList<VirtualFile>> filesBysandbox = dispatchAction.getFilesBySandbox();

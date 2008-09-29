@@ -3,13 +3,8 @@ package org.intellij.vcs.mks;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
-import mks.integrations.common.TriclopsException;
-import mks.integrations.common.TriclopsSiMember;
-import mks.integrations.common.TriclopsSiMembers;
-import mks.integrations.common.TriclopsSiSandbox;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -23,28 +18,22 @@ public abstract class AbstractMKSCommand {
 	//		Logger.getInstance(getClass().getName());
 	public final List<VcsException> errors;
 	protected final int previousErrorCount;
+	protected final MksCLIConfiguration mksCLIConfiguration;
+	protected String command;
 
 	public boolean foundError() {
 		return errors.size() > previousErrorCount;
 	}
 
-	public AbstractMKSCommand(@NotNull List<VcsException> errors) {
+	public AbstractMKSCommand(@NotNull List<VcsException> errors, @NotNull String command,
+							  @NotNull MksCLIConfiguration mksCLIConfiguration) {
 		this.errors = errors;
 		previousErrorCount = errors.size();
+		this.command = command;
+		this.mksCLIConfiguration = mksCLIConfiguration;
 	}
 
 	public abstract void execute();
-
-	@NotNull
-	protected TriclopsSiMembers queryMksMemberStatus(@NotNull ArrayList<VirtualFile> files,
-													 @NotNull TriclopsSiSandbox sandbox) throws TriclopsException {
-		TriclopsSiMembers members = MKSHelper.createMembers(sandbox);
-		for (VirtualFile virtualFile : files) {
-			members.addMember(new TriclopsSiMember(virtualFile.getPresentableUrl()));
-		}
-		MKSHelper.getMembersStatus(members);
-		return members;
-	}
 
 	@NotNull
 	protected HashSet<VirtualFile> getAllMksKnownFoldersInProject(@NotNull VirtualFile sandboxFolder,
@@ -73,5 +62,15 @@ public abstract class AbstractMKSCommand {
 			}
 		}
 		return projectFolders;
+	}
+
+	protected void fireCommandCompleted(long start) {
+		CommandExecutionListener listener = getCommandExecutionListener();
+		listener.executionCompleted(command, System.currentTimeMillis() - start);
+		LOGGER.debug(toString() + " finished in " + (System.currentTimeMillis() - start + " ms"));
+	}
+
+	private CommandExecutionListener getCommandExecutionListener() {
+		return mksCLIConfiguration.getCommandExecutionListener();
 	}
 }

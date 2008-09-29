@@ -12,7 +12,10 @@ import org.intellij.vcs.mks.sicommands.UnlockMemberCommand;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Thibaut Fagart
@@ -209,16 +212,9 @@ class MksChangeListAdapter extends ChangeListAdapter {
 	}
 
 	private Map<MksSandboxInfo, ArrayList<VirtualFile>> dispatchBySandbox(Collection<Change> changes) {
-		DispatchBySandboxCommand dispatchAction = new DispatchBySandboxCommand(mksVcs, new ArrayList<VcsException>(),
+		DispatchBySandboxCommand dispatchAction = new DispatchBySandboxCommand(mksVcs,
 				ChangesUtil.getFilesFromChanges(changes));
 		dispatchAction.execute();
-
-		List<VcsException> exceptions = dispatchAction.errors;
-		if (!exceptions.isEmpty()) {
-			for (VcsException exception : exceptions) {
-				logger.warn(exception);
-			}
-		}
 
 		Map<MksSandboxInfo, ArrayList<VirtualFile>> filesBysandbox = dispatchAction.getFilesBySandbox();
 		return filesBysandbox;
