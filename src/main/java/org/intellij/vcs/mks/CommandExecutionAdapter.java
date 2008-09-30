@@ -43,21 +43,32 @@ final class CommandExecutionAdapter extends AbstractTableModel implements Comman
 			totalExecutionTime = 0;
 		}
 
+		public long averageInMs() {
+			return totalExecutionTime / executionCount;
+		}
+
+		public long totalExecutionTimeInS() {
+			return totalExecutionTime / 1000;
+		}
 	}
 
 	final Map<String, CommandStatistic> statisticsByCommand = new HashMap<String, CommandStatistic>();
 	final List<CommandStatistic> rows = new ArrayList<CommandStatistic>();
 	private static final int NAME = 0;
 	private static final int COUNT = 1;
-	private static final int TIME = 2;
-	private static final String[] COLUMN_TITLES = {"command", "execution count", "total execution time"};
+	private static final int AVERAGE_TIME = 2;
+	private static final int TOTAL_TIME = 3;
+	private static final String[] COLUMN_TITLES = {MksBundle.message("performance_tab.column.title.command"),
+			MksBundle.message("performance_tab.column.title.execution_count"),
+			MksBundle.message("performance_tab.column.title.average.time.ms"),
+			MksBundle.message("performance_tab.column.title.total.execution.time.s")};
 
 	public int getRowCount() {
 		return rows.size();
 	}
 
 	public int getColumnCount() {
-		return 3;
+		return 4;
 	}
 
 	public String getColumnName(int column) {
@@ -79,8 +90,10 @@ final class CommandExecutionAdapter extends AbstractTableModel implements Comman
 				return statistic.command;
 			case COUNT:
 				return statistic.executionCount;
-			case TIME:
-				return statistic.totalExecutionTime;
+			case AVERAGE_TIME:
+				return statistic.averageInMs();
+			case TOTAL_TIME:
+				return statistic.totalExecutionTimeInS();
 			default:
 				throw new IllegalArgumentException("unknown column index " + columnIndex);
 		}
