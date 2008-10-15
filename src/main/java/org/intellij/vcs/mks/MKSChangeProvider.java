@@ -89,8 +89,8 @@ class MKSChangeProvider extends AbstractProjectComponent
 			for (MksSandboxInfo sandbox : sandboxesToRefresh) {
 				@Nullable MksServerInfo sandboxServer = serversByHostAndPort.get(sandbox.hostAndPort);
 				if (sandboxServer == null) {
-					logger.warn("sandbox [" + sandbox.sandboxPath + "] bound to unknown or not connected server["
-							+ sandbox.hostAndPort + "], skipping");
+					logger.warn("sandbox [" + sandbox.sandboxPath + "] bound to unknown or not connected server[" +
+							sandbox.hostAndPort + "], skipping");
 					continue;
 				}
 				final String message = MksBundle.message("requesting.mks.sandbox.name.index.total", sandbox.sandboxPath,
@@ -114,7 +114,8 @@ class MKSChangeProvider extends AbstractProjectComponent
 					if (filePath.isDirectory()) {
 						return true;
 					} else if (filePath.getVirtualFile() == null) {
-						logger.warn("no VirtualFile for " + filePath.getPath() + ", ignoring");
+						logger.warn("no VirtualFile for " + filePath.getPath()
+								+ ", ignoring");
 						return true;
 					} else if (getMksvcs().getSandboxCache().isSandboxProject(filePath.getVirtualFile())) {
 						finalBuilder.processIgnoredFile(filePath.getVirtualFile());
@@ -376,7 +377,8 @@ class MKSChangeProvider extends AbstractProjectComponent
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
 					public void run() {
-						final String message = MksBundle.message("mks.reconnect.to.server", hostAndPort);
+						final String message = MksBundle
+								.message("mks.reconnect.to.server", hostAndPort);
 						userAndPassword.user =
 								Messages.showInputDialog(getMksvcs().getProject(), "user", message, null);
 						userAndPassword.password =
@@ -413,21 +415,20 @@ class MKSChangeProvider extends AbstractProjectComponent
 	}
 
 	private ChangelistBuilder createBuilderLoggingProxy(final ChangelistBuilder myBuilder) {
-		return (ChangelistBuilder) Proxy
-				.newProxyInstance(getClass().getClassLoader(), new Class[]{ChangelistBuilder.class},
-						new InvocationHandler() {
-							public Object invoke(final Object o, final Method method, final Object[] args) throws
-									Throwable {
-								StringBuffer buffer = new StringBuffer("(");
-								for (Object arg : args) {
-									buffer.append(arg).append(",");
-								}
-								buffer.setLength(buffer.length() - 1);
-								buffer.append(")");
-								BUILDER_PROXY_LOGGER.debug(method.getName() + buffer);
-								return method.invoke(myBuilder, args);
-							}
-						});
+		return (ChangelistBuilder) Proxy.newProxyInstance(
+				getClass().getClassLoader(), new Class[]{ChangelistBuilder.class},
+				new InvocationHandler() {
+					public Object invoke(final Object o, final Method method, final Object[] args) throws Throwable {
+						StringBuffer buffer = new StringBuffer("(");
+						for (Object arg : args) {
+							buffer.append(arg).append(",");
+						}
+						buffer.setLength(buffer.length() - 1);
+						buffer.append(")");
+						BUILDER_PROXY_LOGGER.debug(method.getName() + buffer);
+						return method.invoke(myBuilder, args);
+					}
+				});
 	}
 
 	private Map<String, MksServerInfo> distributeServersByHostAndPort(final ArrayList<MksServerInfo> servers) {
@@ -460,10 +461,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 			switch (state.status) {
 				case ADDED: {
 					MksChangePackage changePackage = getChangePackage(changePackages, state);
-					Change change = new Change(
-							null,
-							CurrentContentRevision.create(filePath),
-							FileStatus.ADDED);
+					Change change = new Change(null, CurrentContentRevision.create(filePath), FileStatus.ADDED);
 					if (changePackage == null) {
 						builder.processChange(change);
 					} else {
@@ -474,10 +472,8 @@ class MKSChangeProvider extends AbstractProjectComponent
 				}
 				case CHECKED_OUT: {
 					MksChangePackage changePackage = getChangePackage(changePackages, state);
-					Change change = new Change(
-							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
-							CurrentContentRevision.create(filePath),
-							FileStatus.MODIFIED);
+					Change change = new Change(new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
+							CurrentContentRevision.create(filePath), FileStatus.MODIFIED);
 					if (changePackage == null) {
 						builder.processChange(change);
 					} else {
@@ -498,15 +494,12 @@ class MKSChangeProvider extends AbstractProjectComponent
 					// todo some of those changes belong to the Incoming tab
 					builder.processChange(new Change(
 							new MksContentRevision(getMksvcs(), filePath, state.workingRevision),
-							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
-							FileStatus.OBSOLETE));
+							new MksContentRevision(getMksvcs(), filePath, state.memberRevision), FileStatus.OBSOLETE));
 					break;
 				case DROPPED: {
 					MksChangePackage changePackage = getChangePackage(changePackages, state);
-					Change change = new Change(
-							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
-							CurrentContentRevision.create(filePath),
-							FileStatus.DELETED);
+					Change change = new Change(new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
+							CurrentContentRevision.create(filePath), FileStatus.DELETED);
 					if (changePackage == null) {
 						builder.processChange(change);
 					} else {
@@ -524,15 +517,13 @@ class MKSChangeProvider extends AbstractProjectComponent
 				case REMOTELY_DROPPED: {
 					builder.processChange(new Change(
 							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
-							new MksContentRevision(getMksvcs(), filePath, state.workingRevision),
-							FileStatus.OBSOLETE));
+							new MksContentRevision(getMksvcs(), filePath, state.workingRevision), FileStatus.OBSOLETE));
 					break;
 				}
 				case UNKNOWN: {
 					builder.processChange(new Change(
 							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
-							new MksContentRevision(getMksvcs(), filePath, state.workingRevision),
-							FileStatus.UNKNOWN));
+							new MksContentRevision(getMksvcs(), filePath, state.workingRevision), FileStatus.UNKNOWN));
 					break;
 				}
 				default: {
@@ -555,8 +546,8 @@ class MKSChangeProvider extends AbstractProjectComponent
 														final SandboxesToRefresh refreshSpec) {
 		Map<String, MksMemberState> states = new HashMap<String, MksMemberState>();
 
-		ViewSandboxWithoutChangesCommand fullSandboxCommand =
-				new ViewSandboxWithoutChangesCommand(errors, getMksvcs(), sandbox.sandboxPath);
+		ViewSandboxWithoutChangesCommand fullSandboxCommand = new ViewSandboxWithoutChangesCommand(errors, getMksvcs(),
+				sandbox.sandboxPath);
 		fullSandboxCommand.execute();
 		addNonExcludedStates(states, fullSandboxCommand.getMemberStates());
 

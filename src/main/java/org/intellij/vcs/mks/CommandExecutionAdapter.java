@@ -44,7 +44,7 @@ final class CommandExecutionAdapter extends AbstractTableModel implements Comman
 		}
 
 		public long averageInMs() {
-			return totalExecutionTime / executionCount;
+			return (executionCount == 0) ? 0 : totalExecutionTime / executionCount;
 		}
 
 		public long totalExecutionTimeInS() {

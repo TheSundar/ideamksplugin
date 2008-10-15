@@ -1,20 +1,18 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>mks-idea</groupId>
 	<artifactId>mks-idea</artifactId>
 	<packaging>jar</packaging>
-	<version>0.8-SNAPSHOT</version>
+	<version>0.7.3</version>
 	<name>IDEA MKS Plugin</name>
 	<description>Implementation of an IDEA MKS plugin.</description>
 	<properties>
 		<idea.version>7.0.7361</idea.version>
 	</properties>
 	<scm>
-		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/branches/IDEA 7.x/mks-idea-0.7</connection>
-		<developerConnection>scm:svn:https://ideamksplugin.googlecode.com/svn/branches/IDEA 7.x/mks-idea-0.7
-		</developerConnection>
-		<url>http://ideamksplugin.googlecode.com/svn/branches/IDEA 7.x/mks-idea-0.7</url>
+		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/tags/mks-idea-0.7.3</connection>
+		<developerConnection>scm:svn:https://ideamksplugin.googlecode.com/svn/tags/mks-idea-0.7.3</developerConnection>
+		<url>http://ideamksplugin.googlecode.com/svn/tags/mks-idea-0.7.3</url>
 	</scm>
 	<dependencies>
 		<dependency>
@@ -109,22 +107,22 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
-			<!--
-			   <plugin>
-				   <groupId>org.apache.maven.plugins</groupId>
-				   <artifactId>maven-javadoc-plugin</artifactId>
-				   <executions>
-					   <execution>
-						   <id>dist</id>
-						   <phase>package</phase>
-						   <goals>
-							   <goal>javadoc</goal>
-							   <goal>jar</goal>
-						   </goals>
-					   </execution>
-				   </executions>
-			   </plugin>
-   -->
+<!--
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>dist</id>
+						<phase>package</phase>
+						<goals>
+							<goal>javadoc</goal>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+-->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>

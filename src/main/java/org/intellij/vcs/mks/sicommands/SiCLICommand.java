@@ -7,9 +7,9 @@ import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.MksRevisionNumber;
 import org.intellij.vcs.mks.io.AsyncStreamBuffer;
 import org.intellij.vcs.mks.model.MksMemberState;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NonNls;
 
 import java.io.File;
 import java.io.IOException;
