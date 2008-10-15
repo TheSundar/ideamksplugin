@@ -2,8 +2,8 @@ package org.intellij.vcs.mks.sicommands;
 
 import com.intellij.openapi.vcs.VcsException;
 import junit.framework.TestCase;
-import org.intellij.vcs.mks.CommandExecutionListener;
 import org.intellij.vcs.mks.MksCLIConfiguration;
+import org.intellij.vcs.mks.CommandExecutionListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;

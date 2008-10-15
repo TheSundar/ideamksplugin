@@ -21,7 +21,6 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,17 +44,8 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 			LOGGER.warn("can't find sandbox for " + filePath);
 			return null;
 		}
-		return new VcsHistorySession(null) {
-			private List<VcsFileRevision> revisions;
-
-			@Override
-			public synchronized List<VcsFileRevision> getRevisionList() {
-				if (revisions == null) {
-					revisions = getRevisions(filePath);
-				}
-				return revisions;
-			}
-
+		final List<VcsFileRevision> myRevisions = getRevisions(filePath);
+		return new VcsHistorySession(myRevisions) {
 			@Override
 			@Nullable
 			public VcsRevisionNumber calcCurrentRevisionNumber() {
@@ -102,28 +92,6 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 								(MksRevisionNumber.createRevision(memberRev)), workingCpid,
 								MksMemberState.Status.UNKNOWN);
 					}
-
-/*
-			@Override
-			public void execute() {
-				try {
-					super.executeCommand();
-					BufferedReader reader = new BufferedReader(new StringReader(commandOutput));
-					String line ;
-					while ((line = reader.readLine()) != null && !"".equals(line)) {
-						if (currentRevisionHolder[0] == null) {
-							currentRevisionHolder[0] = line;
-						} else {
-							LOGGER.warn("multiple members retrieved for "+filePath+"!!");
-						}
-					}
-
-				} catch (IOException e) {
-					LOGGER.error("error obtaining current revision for " + filePath, e);
-				}
-
-			}
-*/
 				};
 		command.execute();
 		MksMemberState state = command.getMemberStates().get(filePath.getPath());
@@ -169,6 +137,20 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 		return vcs.getSandboxCache().getSubSandbox(filePath.getVirtualFile());
 	}
 
+	public ColumnInfo[] getRevisionColumns(VcsHistorySession vcsHistorySession) {
+		return getRevisionColumns();
+	}
+	private static final class CpidColumnInfo extends ColumnInfo<VcsFileRevision, String> {
+		private CpidColumnInfo() {
+			super("Cpid");
+		}
+
+		public String valueOf(VcsFileRevision vcsFileRevision) {
+			return (vcsFileRevision instanceof MksVcsFileRevision) ?
+					((MksVcsFileRevision)vcsFileRevision).getCpid() : "";
+		}
+	}
+
 	public AnAction[] getAdditionalActions(FileHistoryPanel panel) {
 		return new AnAction[0];
 	}
@@ -178,30 +160,21 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 	public String getHelpId() {
 		return null;
 	}
-
-	public ColumnInfo<VcsFileRevision, String>[] getRevisionColumns() {
-		final ColumnInfo<VcsFileRevision, String> myColumnInfo =
-				new ColumnInfo<VcsFileRevision, String>("change package") {
-					@Override
-					public String valueOf(VcsFileRevision vcsFileRevision) {
-
-						if (vcsFileRevision instanceof MksVcsFileRevision) {
-							return ((MksVcsFileRevision) vcsFileRevision).getCpid();
-						} else {
-							return "unknown";
-						}
-					}
-				};
+	/**
+	 * @deprecated from IDEA7.x
+	 */
+	private ColumnInfo<VcsFileRevision, String>[] getRevisionColumns() {
 		//noinspection unchecked
-		final ColumnInfo<VcsFileRevision, String>[] array =
-				(ColumnInfo<VcsFileRevision, String>[]) Array.newInstance(myColumnInfo.getClass(), 1);
-		array[0] = myColumnInfo;
-		return array;
+		return new ColumnInfo[]{new CpidColumnInfo()};
 	}//return null if your revisions cannot be tree
 
 	@Nullable
 	public HistoryAsTreeProvider getTreeHistoryProvider() {
 		return new MksMemberHistoryAsTreeProvider();
+	}
+
+	public boolean supportsHistoryForDirectories() {
+		return false;
 	}
 
 	public boolean isDateOmittable() {

@@ -1,20 +1,18 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>mks-idea</groupId>
 	<artifactId>mks-idea</artifactId>
 	<packaging>jar</packaging>
-	<version>0.8-SNAPSHOT</version>
+	<version>0.7.3-Diana</version>
 	<name>IDEA MKS Plugin</name>
 	<description>Implementation of an IDEA MKS plugin.</description>
 	<properties>
-		<idea.version>7.0.7361</idea.version>
+		<idea.version>8.0.8890</idea.version> <!--8.0.M1-->
 	</properties>
 	<scm>
-		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/branches/IDEA 7.x/mks-idea-0.7</connection>
-		<developerConnection>scm:svn:https://ideamksplugin.googlecode.com/svn/branches/IDEA 7.x/mks-idea-0.7
-		</developerConnection>
-		<url>http://ideamksplugin.googlecode.com/svn/branches/IDEA 7.x/mks-idea-0.7</url>
+		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/tags/mks-idea-0.7.3-Diana</connection>
+		<developerConnection>scm:svn:https://ideamksplugin.googlecode.com/svn/tags/mks-idea-0.7.3-Diana</developerConnection>
+		<url>http://ideamksplugin.googlecode.com/svn/tags/mks-idea-0.7.3-Diana</url>
 	</scm>
 	<dependencies>
 		<dependency>
@@ -47,24 +45,30 @@
 		<!--<scope>provided</scope>-->
 		<!--</dependency>-->
 		<dependency>
-			<groupId>com.intellij.idea</groupId>
+			<groupId>com.intellij</groupId>
 			<artifactId>openapi</artifactId>
 			<version>${idea.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.intellij.idea</groupId>
+			<groupId>com.intellij</groupId>
 			<artifactId>annotations</artifactId>
 			<version>${idea.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.intellij.idea</groupId>
+			<groupId>com.intellij</groupId>
 			<artifactId>extensions</artifactId>
 			<version>${idea.version}</version>
 			<scope>provided</scope>
 		</dependency>
-	</dependencies>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>util</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 	<build>
 		<resources>
 			<resource>
@@ -109,22 +113,22 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
-			<!--
-			   <plugin>
-				   <groupId>org.apache.maven.plugins</groupId>
-				   <artifactId>maven-javadoc-plugin</artifactId>
-				   <executions>
-					   <execution>
-						   <id>dist</id>
-						   <phase>package</phase>
-						   <goals>
-							   <goal>javadoc</goal>
-							   <goal>jar</goal>
-						   </goals>
-					   </execution>
-				   </executions>
-			   </plugin>
-   -->
+<!--
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>dist</id>
+						<phase>package</phase>
+						<goals>
+							<goal>javadoc</goal>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+-->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
@@ -148,15 +152,4 @@
 			</plugin>
 		</plugins>
 	</build>
-	<repositories>
-		<!-- mevenide provides com.intellij.idea group with 6.0.4 versions-->
-		<repository>
-			<id>mevenide</id>
-			<name>Mevenide's M2 repo</name>
-			<url>http://mevenide.codehaus.org/m2-repository</url>
-			<!--<snapshots>-->
-			<!--<updatePolicy>always</updatePolicy>-->
-			<!--</snapshots-->
-		</repository>
-	</repositories>
 </project>

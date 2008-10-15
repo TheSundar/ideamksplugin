@@ -3,12 +3,13 @@ package org.intellij.vcs.mks;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.vcs.actions.VcsContextFactory;
 import com.intellij.openapi.vcs.changes.ContentRevision;
 import com.intellij.openapi.vcs.diff.DiffProvider;
+import com.intellij.openapi.vcs.diff.ItemLatestState;
 import com.intellij.openapi.vcs.history.VcsRevisionNumber;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.peer.PeerFactory;
 import org.intellij.vcs.mks.sicommands.GetRevisionInfo;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,11 +56,11 @@ public class MksDiffProvider implements DiffProvider {
 	}
 
 	@Nullable
-	public VcsRevisionNumber getLastRevision(final VirtualFile virtualFile) {
+	public ItemLatestState getLastRevision(final VirtualFile virtualFile) {
 		ArrayList<VcsException> errors = new ArrayList<VcsException>();
 		GetRevisionInfo command = getRevisionInfo(virtualFile, errors);
 		if (errors.isEmpty()) {
-			return command.getMemberRev();
+			return new ItemLatestState(command.getMemberRev(),true);
 		} else {
 			LOGGER.warn("error occurred org.intellij.vcs.mks.MksDiffProvider.getLastRevision");
 			return null;
@@ -86,11 +87,13 @@ public class MksDiffProvider implements DiffProvider {
 			}
 			return null;
 		}
-		return new MksContentRevision(mksVcs,
-				PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(virtualFile), vcsRevisionNumber);
+		return new MksContentRevision(mksVcs, VcsContextFactory.SERVICE.getInstance().createFilePathOn(virtualFile),
+				vcsRevisionNumber);
 	}
 
 	private void showRevisionNotControlledErrorDialog() {
 		Messages.showWarningDialog("This revision is not mks controlled", "Error");
 	}
+
+
 }
