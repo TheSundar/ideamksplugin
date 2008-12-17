@@ -15,6 +15,12 @@
 	<idea-version since-build="8890"/>
 
 	<change-notes><![CDATA[<ul>
+	<li>0.7.4 This a bugfix release. See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7.4&can=1">googlecode issues resolved in 0.7.3</a> <br><br/>
+	Main changes<br/>
+	Support for IDEA 8.1 EAP<br/>
+	Performance Improvements<br/>
+	Preferences action in popup menu opens the about box.<br/>
+	</li>
 	<li>0.7.3 This a bugfix release. See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7.3&can=1">googlecode issues resolved in 0.7.3</a> <br><br/>
 	Main changes<br/>
 	Support for IDEA 8.x EAP<br/>

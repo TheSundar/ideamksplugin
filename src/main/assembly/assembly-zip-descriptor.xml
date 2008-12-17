@@ -5,13 +5,13 @@
 	</formats>
 	<includeBaseDirectory>true</includeBaseDirectory>
 	<fileSets>
-		<fileSet>
+<!--		<fileSet>
 			<directory>target</directory>
 			<outputDirectory>/lib</outputDirectory>
 			<includes>
 				<include>*.jar</include>
 			</includes>
-		</fileSet>
+		</fileSet> -->
 		<fileSet>
 			<directory>target/classes/META-INF</directory>
 			<outputDirectory></outputDirectory>
