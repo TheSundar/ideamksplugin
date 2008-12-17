@@ -12,10 +12,20 @@
 	<vendor logo="/icons/mks.png" url="http://code.google.com/p/ideamksplugin/">Eric Sheffer, Thibaut Fagart</vendor>
 	<resource-bundle>org.intellij.vcs.mks.mksBundle</resource-bundle>
 	<category>VCS Integration</category>
-	<idea-version since-build="7361" until-build="8000"/>
+	<idea-version since-build="8890"/>
 
 	<change-notes><![CDATA[<ul>
-	<li>0.8 <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.8&can=1">googlecode issues resolved in 0.8</a> <br><br/>
+	<li>0.7.3 This a bugfix release. See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7.3&can=1">googlecode issues resolved in 0.7.3</a> <br><br/>
+	Main changes<br/>
+	Support for IDEA 8.x EAP<br/>
+	Auto detect MKS controlled directories<br/>
+	Performance Improvements<br/>
+	Exception when accessing some members' history .<br/>
+	</li>
+	<li>0.7.2 This a bugfix release. See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7.2&can=1">googlecode issues resolved in 0.7.2</a> <br><br/>
+	Main changes<br/>
+	Performance improvements related to non members and projects roots or registered sandboxes being updated.<br/>
+	Date pattern is not persisted<br/>
 	</li>
 	<li>0.7.1 This a bugfix release. See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7.1&can=1">googlecode issues resolved in 0.7.1</a> <br><br/>
 	Main changes<br/>
@@ -136,12 +146,12 @@
 					class="org.intellij.vcs.mks.actions.AboutMksAction"
 					text="About MKS..."
 					description="Information about MKS Source Integrity"/>
-			<!--
-			   <action id="MKS.DiffAction"
-			   class="org.intellij.vcs.mks.actions.RevertNotModifiedAction"
-			   text="Revert Not modified"
-			   description="Revert Not modified"/>
-   -->
+<!--
+           <action id="MKS.DiffAction"
+                   class="org.intellij.vcs.mks.actions.RevertNotModifiedAction"
+                   text="Revert Not modified"
+                   description="Reverts files if they are not different from the member revision"/>
+-->
 			<separator/>
 			<reference id="UpdateFiles"/>
 			<reference id="CheckStatusForFiles"/>
@@ -155,12 +165,6 @@
 			<add-to-group group-id="VcsGroup" anchor="last"/>
 			<add-to-group group-id="VcsGroups" anchor="last"/>
 			<add-to-group group-id="UpdateActionGroup" anchor="last"/>
-		</group>
-
-		<group id="MKS.Vcs.CheckinProjectPopup" text="_MKS" popup="true"
-			   class="org.intellij.vcs.mks.actions.MksGroup">
-			<reference id="MKS.MemberDiffsAction"/>
-			<add-to-group group-id="Vcs.CheckinProjectPopup" anchor="last"/>
 		</group>
 	</actions>
 </idea-plugin>

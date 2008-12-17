@@ -8,11 +8,13 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.vcs.actions.VcsContextFactory;
+import com.intellij.openapi.vcs.actions.VcsContextFactory;
 import com.intellij.openapi.vcs.changes.VcsDirtyScopeManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.peer.PeerFactory;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.ProjectScope;
 import com.intellij.vcsUtil.VcsUtil;
 import org.intellij.vcs.mks.MKSHelper;
 import org.intellij.vcs.mks.MksRevisionNumber;
@@ -252,7 +254,7 @@ public class SandboxCacheImpl implements SandboxCache {
 	 */
 	private boolean doesSandboxIntersectProject(@NotNull File sandboxFile) {
 		File sandboxFolder = sandboxFile.getParentFile();
-		GlobalSearchScope projectScope = project.getProjectScope();
+		GlobalSearchScope projectScope = ProjectScope.getProjectScope(project);
 		VirtualFile sandboxVFile = VcsUtil.getVirtualFile(sandboxFile);
 		boolean sandboxRelevant = (sandboxVFile != null) && projectScope.contains(sandboxVFile);
 		if (!sandboxRelevant) {
@@ -492,16 +494,13 @@ public class SandboxCacheImpl implements SandboxCache {
 	 * @return true if sandbox is the bottom most subsandbox including virtualfile.
 	 */
 	private boolean checkSandboxContains(@NotNull MksSandboxInfo sandbox, @NotNull VirtualFile virtualFile) {
-		if (virtualFile.isDirectory()) {
-			throw new IllegalArgumentException("directories don't belong to sandboxes");
-		}
-
-		final FilePath filePath = PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(virtualFile);
+		VcsContextFactory vcsContextFactory =
+				VcsContextFactory.SERVICE.getInstance();
+		final FilePath filePath = vcsContextFactory.createFilePathOn(virtualFile);
 		if (!filePath.getIOFile().exists() || sandbox.sandboxPjFile == null) {
 			return false;
 		}
-		final FilePath sandboxFolderFilePath =
-				PeerFactory.getInstance().getVcsContextFactory().createFilePathOn(sandbox.sandboxPjFile.getParent());
+		final FilePath sandboxFolderFilePath = vcsContextFactory.createFilePathOn(sandbox.sandboxPjFile.getParent());
 
 		final String relativePath = MKSHelper.getRelativePath(filePath, sandboxFolderFilePath);
 		if ("".equals(relativePath.trim())) {

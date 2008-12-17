@@ -72,14 +72,14 @@ public class ListChangePackages extends SiCLICommand {
 		super.handleErrorOutput(errorOutput);
 
 		if (exitValue == 128 && errorOutput.contains("(it may be down)")) {
-			final IsServerSiServerDialog dialog = new IsServerSiServerDialog(serverInfo.host + ":" + serverInfo.port);
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
+                SwingUtilities.invokeAndWait(new Runnable() {
 					public void run() {
+                        final IsServerSiServerDialog dialog = new IsServerSiServerDialog(serverInfo.host + ":" + serverInfo.port);
 						dialog.show();
+                        serverInfo.isSIServer = dialog.isSiServer;
 					}
 				});
-				serverInfo.isSIServer = dialog.isSiServer;
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			} catch (InvocationTargetException e) {

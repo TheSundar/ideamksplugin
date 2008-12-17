@@ -1,9 +1,5 @@
 package org.intellij.vcs.mks.sicommands;
 
-import com.intellij.openapi.vcs.VcsException;
-import org.intellij.vcs.mks.MksCLIConfiguration;
-import org.jetbrains.annotations.NotNull;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -12,6 +8,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.intellij.vcs.mks.MksCLIConfiguration;
+import org.jetbrains.annotations.NotNull;
+
+import com.intellij.openapi.vcs.VcsException;
 
 /**
  * Returns a list of all sandboxes registered on the system, including subsandboxes

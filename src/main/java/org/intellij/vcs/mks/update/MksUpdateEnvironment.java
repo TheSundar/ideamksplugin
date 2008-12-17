@@ -6,16 +6,15 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vcs.update.FileGroup;
-import com.intellij.openapi.vcs.update.UpdateEnvironment;
-import com.intellij.openapi.vcs.update.UpdateSession;
-import com.intellij.openapi.vcs.update.UpdatedFiles;
+import com.intellij.openapi.vcs.update.*;
+import com.intellij.openapi.util.Ref;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksMemberState;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.intellij.vcs.mks.sicommands.AbstractViewSandboxCommand;
 import org.intellij.vcs.mks.sicommands.ViewSandboxRemoteChangesCommand;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -39,7 +38,7 @@ public class MksUpdateEnvironment implements UpdateEnvironment {
 //		new Exception().printStackTrace();
 	}
 
-	/**
+    /**
 	 * si viewsandbox --filter=changed:newmem : files remotely added
 	 * si viewsandbox --filter=changed:sync files with a new revision on server
 	 * si viewsandbox --filter=changed:missing : files locally deleted
@@ -57,9 +56,9 @@ public class MksUpdateEnvironment implements UpdateEnvironment {
 	 * @return
 	 * @throws ProcessCanceledException
 	 */
-	public UpdateSession updateDirectories(FilePath[] filePaths, UpdatedFiles updatedFiles,
-										   ProgressIndicator progressIndicator) throws ProcessCanceledException {
-//		System.out.println("MksUpdateEnvironment.updateDirectories " + System.currentTimeMillis());
+    @NotNull
+    public UpdateSession updateDirectories(@NotNull FilePath[] filePaths, UpdatedFiles updatedFiles, ProgressIndicator progressIndicator, @NotNull Ref<SequentialUpdatesContext> sequentialUpdatesContextRef) throws ProcessCanceledException {
+    	//		System.out.println("MksUpdateEnvironment.updateDirectories " + System.currentTimeMillis());
 		Set<MksSandboxInfo> sandboxes = new HashSet<MksSandboxInfo>();
 		for (FilePath filePath : filePaths) {
 			if (filePath.isDirectory()) {
@@ -150,5 +149,9 @@ public class MksUpdateEnvironment implements UpdateEnvironment {
 				return false;
 			}
 		};
+	}
+
+	public boolean validateOptions(Collection<FilePath> filePaths) {
+		return true;  //To change body of implemented methods use File | Settings | File Templates.
 	}
 }

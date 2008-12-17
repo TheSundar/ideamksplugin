@@ -20,8 +20,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.peer.PeerFactory;
 import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.AbstractTableCellEditor;
 import mks.integrations.common.TriclopsException;
@@ -317,8 +317,8 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 
 	private ToolWindow registerToolWindow(final ToolWindowManager toolWindowManager, final JPanel mksPanel) {
 		ToolWindow toolWindow = toolWindowManager.registerToolWindow(MKS_TOOLWINDOW, true, ToolWindowAnchor.BOTTOM);
-		PeerFactory pf = com.intellij.peer.PeerFactory.getInstance();
-		Content content = pf.getContentFactory().createContent(mksPanel, "", false); // first arg is a JPanel
+		Content content =
+				ContentFactory.SERVICE.getInstance().createContent(mksPanel, "", false); // first arg is a JPanel
 		content.setCloseable(false);
 		toolWindow.getContentManager().addContent(content);
 
