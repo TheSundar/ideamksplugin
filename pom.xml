@@ -8,7 +8,7 @@
     <name>IDEA MKS Plugin</name>
     <description>Implementation of an IDEA MKS plugin.</description>
     <properties>
-        <idea.version>8.1.9572</idea.version>
+        <idea.version>8.1.9886</idea.version>
         <!--8.1.EAP-->
     </properties>
     <scm>

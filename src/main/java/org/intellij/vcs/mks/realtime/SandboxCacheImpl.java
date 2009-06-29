@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.peer.PeerFactory;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.ProjectScope;
 import com.intellij.vcsUtil.VcsUtil;
 import org.intellij.vcs.mks.MKSHelper;
 import org.intellij.vcs.mks.MksRevisionNumber;
@@ -24,7 +25,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Thibaut Fagart
@@ -252,7 +261,7 @@ public class SandboxCacheImpl implements SandboxCache {
 	 */
 	private boolean doesSandboxIntersectProject(@NotNull File sandboxFile) {
 		File sandboxFolder = sandboxFile.getParentFile();
-		GlobalSearchScope projectScope = project.getProjectScope();
+		GlobalSearchScope projectScope = ProjectScope.getProjectScope(project);
 		VirtualFile sandboxVFile = VcsUtil.getVirtualFile(sandboxFile);
 		boolean sandboxRelevant = (sandboxVFile != null) && projectScope.contains(sandboxVFile);
 		if (!sandboxRelevant) {

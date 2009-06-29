@@ -5,7 +5,12 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vcs.history.*;
+import com.intellij.openapi.vcs.history.FileHistoryPanel;
+import com.intellij.openapi.vcs.history.HistoryAsTreeProvider;
+import com.intellij.openapi.vcs.history.VcsFileRevision;
+import com.intellij.openapi.vcs.history.VcsHistoryProvider;
+import com.intellij.openapi.vcs.history.VcsHistorySession;
+import com.intellij.openapi.vcs.history.VcsRevisionNumber;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.vcsUtil.VcsUtil;
 import org.intellij.vcs.mks.MKSHelper;
@@ -169,6 +174,15 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 		return vcs.getSandboxCache().getSubSandbox(filePath.getVirtualFile());
 	}
 
+	/**
+	 * todo
+	 * @param vcsHistorySession
+	 * @return
+	 */
+	public ColumnInfo[] getRevisionColumns(VcsHistorySession vcsHistorySession) {
+		return getRevisionColumns();
+	}
+
 	public AnAction[] getAdditionalActions(FileHistoryPanel panel) {
 		return new AnAction[0];
 	}
@@ -202,6 +216,10 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 	@Nullable
 	public HistoryAsTreeProvider getTreeHistoryProvider() {
 		return new MksMemberHistoryAsTreeProvider();
+	}
+
+	public boolean supportsHistoryForDirectories() {
+		return false;
 	}
 
 	public boolean isDateOmittable() {

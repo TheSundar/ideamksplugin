@@ -14,10 +14,20 @@ import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.FileStatus;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vcs.changes.*;
+import com.intellij.openapi.vcs.changes.Change;
+import com.intellij.openapi.vcs.changes.ChangeList;
+import com.intellij.openapi.vcs.changes.ChangeListDecorator;
+import com.intellij.openapi.vcs.changes.ChangeListManager;
+import com.intellij.openapi.vcs.changes.ChangeListManagerGate;
+import com.intellij.openapi.vcs.changes.ChangeProvider;
+import com.intellij.openapi.vcs.changes.ChangelistBuilder;
+import com.intellij.openapi.vcs.changes.CurrentContentRevision;
+import com.intellij.openapi.vcs.changes.LocalChangeList;
+import com.intellij.openapi.vcs.changes.VcsDirtyScope;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
+import com.intellij.psi.search.ProjectScope;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.Processor;
@@ -27,7 +37,13 @@ import org.intellij.vcs.mks.model.MksMemberState;
 import org.intellij.vcs.mks.model.MksServerInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.intellij.vcs.mks.realtime.SandboxCache;
-import org.intellij.vcs.mks.sicommands.*;
+import org.intellij.vcs.mks.sicommands.ListChangePackages;
+import org.intellij.vcs.mks.sicommands.ListServers;
+import org.intellij.vcs.mks.sicommands.SiConnectCommand;
+import org.intellij.vcs.mks.sicommands.ViewNonMembersCommand;
+import org.intellij.vcs.mks.sicommands.ViewSandboxLocalChangesOrLockedCommand;
+import org.intellij.vcs.mks.sicommands.ViewSandboxOutOfSyncCommand;
+import org.intellij.vcs.mks.sicommands.ViewSandboxWithoutChangesCommand;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +52,13 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Thibaut Fagart
@@ -60,7 +82,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 
 
 	public void getChanges(final VcsDirtyScope dirtyScope, ChangelistBuilder builder,
-						   final ProgressIndicator progress) throws VcsException {
+						   final ProgressIndicator progress, ChangeListManagerGate changeListManagerGate) throws VcsException {
 		ArrayList<VcsException> errors = new ArrayList<VcsException>();
 		logger.debug("start getChanges");
 		final JLabel statusLabel = new JLabel();
@@ -449,7 +471,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 			if (null == virtualFile || getMksvcs().getSandboxCache().isSandboxProject(virtualFile)) {
 				continue;
 			}
-			if (!myProject.getAllScope().contains(virtualFile)) {
+			if (!ProjectScope.getAllScope(myProject).contains(virtualFile)) {
 				logger.warn("project excluded file, skipping " + virtualFile);
 				continue;
 			}
@@ -612,7 +634,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 	private void addNonExcludedStates(Map<String, MksMemberState> collectingMap, Map<String, MksMemberState> source) {
 		for (Map.Entry<String, MksMemberState> entry : source.entrySet()) {
 			final FilePath path = VcsUtil.getFilePath(entry.getKey());
-			if (path.getVirtualFile() != null && myProject.getProjectScope().contains(path.getVirtualFile())) {
+			if (path.getVirtualFile() != null && ProjectScope.getProjectScope(myProject).contains(path.getVirtualFile())) {
 				collectingMap.put(entry.getKey(), entry.getValue());
 			} else if (logger.isDebugEnabled()) {
 				logger.debug("skipping " + path.getPath());
@@ -705,4 +727,15 @@ class MKSChangeProvider extends AbstractProjectComponent
 	private MksVcs getMksvcs() {
 		return (MksVcs) ProjectLevelVcsManager.getInstance(myProject).findVcsByName(MksVcs.VCS_NAME);
 	}
+
+	/**
+	 * todo
+	 *
+	 * @param virtualFiles
+	 */
+	public void doCleanup(List<VirtualFile> virtualFiles) {
+
+	}
+
+
 }

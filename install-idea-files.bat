@@ -1,6 +1,6 @@
 rem complete your IDEA Home folder here
-set IDEA_HOME=C:\Documents and Settings\A6253567\Progs\JetBrains\IntelliJ IDEA 9572-jdk5
-set IDEA_VERSION=8.1.9572
+set IDEA_HOME=C:\Documents and Settings\A6253567\Progs\JetBrains\IntelliJ IDEA 8.1.3
+set IDEA_VERSION=8.1.9886
 set MKS_VERSION=8.3.2392
 set IDEA_GROUP_ID=com.intellij
 

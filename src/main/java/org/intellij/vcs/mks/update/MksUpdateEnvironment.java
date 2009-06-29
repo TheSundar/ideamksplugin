@@ -4,9 +4,11 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.update.FileGroup;
+import com.intellij.openapi.vcs.update.SequentialUpdatesContext;
 import com.intellij.openapi.vcs.update.UpdateEnvironment;
 import com.intellij.openapi.vcs.update.UpdateSession;
 import com.intellij.openapi.vcs.update.UpdatedFiles;
@@ -15,9 +17,15 @@ import org.intellij.vcs.mks.model.MksMemberState;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.intellij.vcs.mks.sicommands.AbstractViewSandboxCommand;
 import org.intellij.vcs.mks.sicommands.ViewSandboxRemoteChangesCommand;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MksUpdateEnvironment implements UpdateEnvironment {
 	private final MksVcs mksVcs;
@@ -58,7 +66,8 @@ public class MksUpdateEnvironment implements UpdateEnvironment {
 	 * @throws ProcessCanceledException
 	 */
 	public UpdateSession updateDirectories(FilePath[] filePaths, UpdatedFiles updatedFiles,
-										   ProgressIndicator progressIndicator) throws ProcessCanceledException {
+										   ProgressIndicator progressIndicator,
+										   @NotNull Ref<SequentialUpdatesContext> sequentialUpdatesContextRef) throws ProcessCanceledException {
 //		System.out.println("MksUpdateEnvironment.updateDirectories " + System.currentTimeMillis());
 		Set<MksSandboxInfo> sandboxes = new HashSet<MksSandboxInfo>();
 		for (FilePath filePath : filePaths) {
@@ -150,5 +159,15 @@ public class MksUpdateEnvironment implements UpdateEnvironment {
 				return false;
 			}
 		};
+	}
+
+	/**
+	 * todo
+	 *
+	 * @param filePaths
+	 * @return
+	 */
+	public boolean validateOptions(Collection<FilePath> filePaths) {
+		return true;
 	}
 }

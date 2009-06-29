@@ -6,6 +6,7 @@ import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.FileStatus;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.changes.Change;
+import com.intellij.openapi.vcs.changes.ChangeList;
 import com.intellij.openapi.vcs.changes.ContentRevision;
 import com.intellij.openapi.vcs.checkin.CheckinEnvironment;
 import com.intellij.openapi.vcs.ui.RefreshableOnComponent;
@@ -31,6 +32,19 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
 
 	public MksCheckinEnvironment(MksVcs mksVcs) {
 		this.mksVcs = mksVcs;
+	}
+
+	/**
+	 * todo
+	 *
+	 * @param changes
+	 * @param preparedComment
+	 * @param parameters
+	 * @return
+	 */
+	public List<VcsException> commit(List<Change> changes,
+									 String preparedComment, Object parameters) {
+		return commit(changes, preparedComment);
 	}
 
 	public List<VcsException> commit(List<Change> changes, String preparedComment) {
@@ -125,6 +139,15 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
 	}
 
 	public boolean showCheckinDialogInAnyCase() {
+		return false;
+	}
+
+	/**
+	 * todo
+	 * @param changeList
+	 * @return
+	 */
+	public boolean keepChangeListAfterCommit(ChangeList changeList) {
 		return false;
 	}
 }
