@@ -77,6 +77,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	public static final String PROJECT_PJ_FILE = "project.pj";
 	@NonNls
 	private static final String ICONS_MKS_GIF = "/icons/mks.gif";
+	private Boolean isMks2007 = null;
 
 	public MksVcs(Project project) {
 		super(project);
@@ -281,6 +282,18 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 
 	public CommandExecutionListener getCommandExecutionListener() {
 		return commandExecutionAdapter;
+	}
+
+	public boolean isMks2007() {
+		if (null == this.isMks2007) {
+			final SiAboutCommand command =
+					new SiAboutCommand(new ArrayList<VcsException>(), this);
+			command.execute();
+			if (!command.foundError()) {
+				this.isMks2007 = command.isMks2007();
+			}
+		}
+		return this.isMks2007.booleanValue();
 	}
 
 	private Component createCommandStatisticsPanel() {

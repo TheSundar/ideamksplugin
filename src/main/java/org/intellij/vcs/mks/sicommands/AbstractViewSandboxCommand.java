@@ -25,14 +25,14 @@ public abstract class AbstractViewSandboxCommand extends SiCLICommand {
 
 	private static final String fieldsParam;
 	protected static final String wholeLinePatternString;
-	//	protected static final String typePattern = "((?:sandbox)|(?:subsandbox)|(?:shared-subsandbox)|(?:shared-variant-subsandbox)" +
-	//			"|(?:shared-build-subsandbox)|(?:member)|(?:archived)|(?:dropped)|(?:variant-subsandbox)" +
-	//			"|(?:" + DEFERRED_ADD + ")|(?:" + DEFERRED_DROP + "))";
+	//		 protected static final String typePattern = "((?:sandbox)|(?:subsandbox)|(?:shared-subsandbox)|(?:shared-variant-subsandbox)" +
+	//		 		 		 "|(?:shared-build-subsandbox)|(?:member)|(?:archived)|(?:dropped)|(?:variant-subsandbox)" +
+	//		 		 		 "|(?:" + DEFERRED_ADD + ")|(?:" + DEFERRED_DROP + "))";
 	protected static final String typePattern = "([^\\s]+)";
 
 	static {
 		// --fields=workingrev,memberrev,workingcpid,deferred,pendingcpid,revsyncdelta,type,wfdelta,name
-		fieldsParam = "--fields=locker,workingrev,workingcpid,deferred,type,name,memberrev,locksandbox";
+		fieldsParam = "--fields=locker,workingrev,workingcpid,deferred,type,name,memberrev";
 		wholeLinePatternString = "^" + userPattern
 				+ " " + revisionPattern + " " + changePackageIdPattern
 				+ " " + deferredPattern + " " + typePattern
@@ -60,17 +60,22 @@ public abstract class AbstractViewSandboxCommand extends SiCLICommand {
 	protected AbstractViewSandboxCommand(final List<VcsException> errors, final MksCLIConfiguration mksCLIConfiguration,
 										 final String sandboxPath, final String... filters) {
 		super(errors, mksCLIConfiguration, COMMAND,
-				createParams(fieldsParam, "--recurse", "--sandbox=" + sandboxPath, filters));
+				createParams(mksCLIConfiguration, fieldsParam, "--recurse", "--sandbox=" + sandboxPath, filters));
 		this.sandboxPath = sandboxPath;
 	}
 
-	private static String[] createParams(final String fieldsParam, final String s, final String s1,
+	private static String[] createParams(MksCLIConfiguration mksCLIConfiguration, final String fieldsParam, final String s, final String s1,
 										 final String[] filters) {
-		String[] params = new String[3 + filters.length];
-		params[0] = fieldsParam;
-		params[1] = s;
-		params[2] = s1;
-		System.arraycopy(filters, 0, params, 3, filters.length);
+		final boolean isMks2007 = mksCLIConfiguration.isMks2007();
+		String[] params = new String[3 + (isMks2007 ? 1 : 0) + filters.length];
+		int i = 0;
+		params[i++] = fieldsParam + (isMks2007 ? ",lockrecord" : ",locksandbox");
+		if (isMks2007) {
+			params[i++] = "--lockrecordformat={sandbox}";
+		}
+		params[i++] = s;
+		params[i++] = s1;
+		System.arraycopy(filters, 0, params, (params.length - filters.length), filters.length);
 		return params;
 	}
 

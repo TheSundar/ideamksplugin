@@ -148,6 +148,10 @@ public class MksConfiguration
 		return CommandExecutionListener.IDLE;
 	}
 
+	public boolean isMks2007() {
+		throw new UnsupportedOperationException("this is not a static parameter");
+	}
+
 	public boolean isSynchronizeNonMembers() {
 		return synchronizeNonMembers;
 	}

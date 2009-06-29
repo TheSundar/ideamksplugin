@@ -42,6 +42,10 @@ public class SandboxesCommandTest extends TestCase {
 			public CommandExecutionListener getCommandExecutionListener() {
 				return CommandExecutionListener.IDLE;
 			}
+
+			public boolean isMks2007() {
+				return false;
+			}
 		};
 		return new SandboxesCommand(errors, mksCLIConfiguration) {
 			@Override

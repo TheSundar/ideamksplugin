@@ -64,6 +64,10 @@ public class ViewSandboxWithoutChangesCommandTest extends TestCase {
 			public CommandExecutionListener getCommandExecutionListener() {
 				return CommandExecutionListener.IDLE;
 			}
+
+			public boolean isMks2007() {
+				return false;
+			}
 		};
 		return new ViewSandboxWithoutChangesCommand(errors, mksCLIConfiguration, sandboxPath) {
 			@Override

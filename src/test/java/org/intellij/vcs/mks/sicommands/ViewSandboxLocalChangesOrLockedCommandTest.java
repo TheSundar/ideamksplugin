@@ -133,6 +133,10 @@ public class ViewSandboxLocalChangesOrLockedCommandTest extends TestCase {
 			public CommandExecutionListener getCommandExecutionListener() {
 				return CommandExecutionListener.IDLE;
 			}
+
+			public boolean isMks2007() {
+				return false;
+			}
 		};
 		return new ViewSandboxLocalChangesOrLockedCommand(errors, mksCLIConfiguration, "e9310750", sandboxPath) {
 			@Override
