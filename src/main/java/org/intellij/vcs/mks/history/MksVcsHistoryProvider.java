@@ -5,12 +5,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vcs.history.FileHistoryPanel;
-import com.intellij.openapi.vcs.history.HistoryAsTreeProvider;
-import com.intellij.openapi.vcs.history.VcsFileRevision;
-import com.intellij.openapi.vcs.history.VcsHistoryProvider;
-import com.intellij.openapi.vcs.history.VcsHistorySession;
-import com.intellij.openapi.vcs.history.VcsRevisionNumber;
+import com.intellij.openapi.vcs.history.*;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.vcsUtil.VcsUtil;
 import org.intellij.vcs.mks.MKSHelper;
@@ -26,6 +21,7 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +39,7 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 	}
 
 	@Nullable
+	@Override
 	public VcsHistorySession createSessionFor(final FilePath filePath) throws VcsException {
 		final boolean isDirectory = filePath.isDirectory();
 		final MksSandboxInfo sandbox = getSandbox(filePath);
@@ -175,20 +172,22 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 	}
 
 	/**
-	 * todo
 	 * @param vcsHistorySession
 	 * @return
+	 * @deprecated
 	 */
 	public ColumnInfo[] getRevisionColumns(VcsHistorySession vcsHistorySession) {
 		return getRevisionColumns();
 	}
 
+	@Override
 	public AnAction[] getAdditionalActions(FileHistoryPanel panel) {
 		return new AnAction[0];
 	}
 
 	@Nullable
 	@NonNls
+	@Override
 	public String getHelpId() {
 		return null;
 	}
@@ -214,15 +213,24 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 	}//return null if your revisions cannot be tree
 
 	@Nullable
+	@Override
 	public HistoryAsTreeProvider getTreeHistoryProvider() {
 		return new MksMemberHistoryAsTreeProvider();
 	}
 
+	@Override
 	public boolean supportsHistoryForDirectories() {
 		return false;
 	}
 
+	@Override
 	public boolean isDateOmittable() {
 		return false;
+	}
+
+	@Override
+	public VcsDependentHistoryComponents getUICustomization(
+			VcsHistorySession session, JComponent forShortcutRegistration) {
+		return new VcsDependentHistoryComponents(getRevisionColumns(session), null, null);
 	}
 }
