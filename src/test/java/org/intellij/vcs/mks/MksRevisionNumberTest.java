@@ -12,7 +12,7 @@ public class MksRevisionNumberTest extends TestCase {
 
 	public void testMainBranchRevision() throws VcsException {
 		MksRevisionNumber rev = new MksRevisionNumber("1.5");
-		assertEquals("1.4", rev.getParentRevision());
+		assertEquals("", rev.getParentRevision());
 	}
 
 	public void testBranchingFromRootRevision() throws VcsException {
@@ -27,7 +27,7 @@ public class MksRevisionNumberTest extends TestCase {
 
 	public void testNormalInBranch() throws VcsException {
 		MksRevisionNumber rev = new MksRevisionNumber("1.2.2.3");
-		assertEquals("1.2.2.2", rev.getParentRevision());
+		assertEquals("1.2", rev.getParentRevision());
 	}
 
 	public void testBranchFromBranch() throws VcsException {

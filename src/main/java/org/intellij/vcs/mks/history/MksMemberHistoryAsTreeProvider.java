@@ -28,7 +28,6 @@ public class MksMemberHistoryAsTreeProvider implements HistoryAsTreeProvider {
 		Map<VcsRevisionNumber, VcsFileRevision> revisionsByRevNumber =
 				new HashMap<VcsRevisionNumber, VcsFileRevision>();
 		for (VcsFileRevision revision : allRevisions) {
-//            MksVcsFileRevision mksRevision = (MksVcsFileRevision) revision;
 			revisionsByRevNumber.put(revision.getRevisionNumber(), revision);
 		}
 		// first order the revisions, so we can simply process the list and be sure
@@ -36,31 +35,20 @@ public class MksMemberHistoryAsTreeProvider implements HistoryAsTreeProvider {
 		List<VcsRevisionNumber> orderedRevisions = new ArrayList<VcsRevisionNumber>(revisionsByRevNumber.keySet());
 		List<TreeItem<VcsFileRevision>> result = new ArrayList<TreeItem<VcsFileRevision>>(orderedRevisions.size());
 		Collections.sort(orderedRevisions);
-
 		for (VcsRevisionNumber revisionNumber : orderedRevisions) {
 			VcsFileRevision revision = revisionsByRevNumber.get(revisionNumber);
 			TreeItem<VcsFileRevision> treeItem = new TreeItem<VcsFileRevision>(revision);
 			treeItemMap.put(revisionNumber, treeItem);
-			result.add(treeItem);
 			// now look for parents and set parent/child relationships
-			String parentRevString = ((MksRevisionNumber) revision.getRevisionNumber()).getParentRevision();
-
+			String parentRevString = ((MksRevisionNumber) revisionNumber).getParentRevision();
 			try {
-				if (parentRevString != null && !"".equals(parentRevString)) {
-					final TreeItem<VcsFileRevision> parentItem;
-					parentItem = treeItemMap.get(MksRevisionNumber.createRevision(parentRevString));
-					if (parentItem == null) {
-						LOGGER.warn("missing parent revision " + parentRevString);
-					} else {
-//					parentItem.addChild(treeItem);
-						// we want to keep newer revisions on top, thus reverse the order
-						parentItem.addChild(treeItem);
-//						treeItem.addChild(parentItem);
-						// remove children so they don't appear multiple times
-						if (result.contains(treeItem)) {
-							result.remove(treeItem);
-						}
-					}
+				TreeItem<VcsFileRevision> parentItem = "".equals(parentRevString) ?
+						null : treeItemMap.get(MksRevisionNumber.createRevision(parentRevString));
+				if (null == parentItem) {
+					result.add(treeItem);
+				} else {
+					// we want to keep newer revisions on top, thus reverse the order
+					parentItem.addChild(treeItem);
 				}
 			} catch (VcsException e) {
 				LOGGER.error("should not happen", e);
@@ -68,11 +56,19 @@ public class MksMemberHistoryAsTreeProvider implements HistoryAsTreeProvider {
 				LOGGER.error(e);
 				throw e;
 			}
-
-
 		}
+		// put more recent entries on the top
+		reorderRevisions(result);
 		return result;
 
 	}
 
+	private void reorderRevisions(List<TreeItem<VcsFileRevision>> nodes) {
+		Collections.reverse(nodes);
+		for (TreeItem<VcsFileRevision> node : nodes) {
+			if (!node.getChildren().isEmpty()) {
+				Collections.reverse(node.getChildren());
+			}
+		}
+	}
 }

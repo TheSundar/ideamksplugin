@@ -58,6 +58,15 @@ public class MksRevisionNumber implements VcsRevisionNumber {
 	}
 
 	/**
+	 * this returns the revision in the previous BRANCH.
+	 * <p/>
+	 * examples <pre>
+	 * 1.1 => ""
+	 * 1.1.1.1 => 1.1
+	 * 1.1.1.5 => 1.1
+	 * 1.5.2.6 => 1.5
+	 * </pre>
+	 *
 	 * @return the parent revision of of this revision
 	 */
 	public String getParentRevision() {
@@ -69,21 +78,12 @@ public class MksRevisionNumber implements VcsRevisionNumber {
 
 		assert tokens.length % 2 == 0 : "expecting a non-odd number of tokens";
 		StringBuffer parentRevBuf = new StringBuffer(revision.length());
-		if (tokens[tokens.length - 1] != 1) {
-			// parent version is in the same branch, decrement last token
-			for (int i = 0; i < tokens.length - 1; i++) {
-				int token = tokens[i];
-				parentRevBuf.append(token).append('.');
-			}
-			parentRevBuf.append(tokens[tokens.length - 1] - 1);
-		} else {
-			// this is start of a branch, drop the last 2 tokens
-			for (int i = 0; i < tokens.length - 2; i++) {
-				int token = tokens[i];
-				parentRevBuf.append(token);
-				if (i < tokens.length - 3) {
-					parentRevBuf.append('.');
-				}
+		// this is start of a branch, drop the last 2 tokens
+		for (int i = 0; i < tokens.length - 2; i++) {
+			int token = tokens[i];
+			parentRevBuf.append(token);
+			if (i < tokens.length - 3) {
+				parentRevBuf.append('.');
 			}
 		}
 		return parentRevBuf.toString();
