@@ -22,6 +22,7 @@ import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.peer.PeerFactory;
 import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.AbstractTableCellEditor;
 import mks.integrations.common.TriclopsException;
@@ -72,6 +73,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	private final MksUpdateEnvironment updateEnvironment = new MksUpdateEnvironment(this);
 	@NonNls
 	public static final String VCS_NAME = "MKS";
+	public static final VcsKey OUR_KEY = createKey(VCS_NAME);
 	private static final String MKS_TOOLWINDOW = "MKS";
 	@NonNls
 	public static final String PROJECT_PJ_FILE = "project.pj";
@@ -80,7 +82,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	private Boolean isMks2007 = null;
 
 	public MksVcs(Project project) {
-		super(project);
+		super(project, VCS_NAME);
 		sandboxCache = new SandboxCacheImpl(project);
 	}
 
@@ -91,12 +93,6 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 
 	@Override
 	public String getDisplayName() {
-		return VCS_NAME;
-	}
-
-
-	@Override
-	public String getName() {
 		return VCS_NAME;
 	}
 
@@ -111,6 +107,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 			buffer.append(action).append(" Error: ");
 			VcsException e;
 			for (Iterator<VcsException> iterator = list.iterator(); iterator.hasNext(); buffer.append(e.getMessage())) {
+				//noinspection ThrowableResultOfMethodCallIgnored
 				e = iterator.next();
 				buffer.append("\n");
 			}
@@ -331,7 +328,8 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	private ToolWindow registerToolWindow(final ToolWindowManager toolWindowManager, final JPanel mksPanel) {
 		ToolWindow toolWindow = toolWindowManager.registerToolWindow(MKS_TOOLWINDOW, true, ToolWindowAnchor.BOTTOM);
 		PeerFactory pf = com.intellij.peer.PeerFactory.getInstance();
-		Content content = pf.getContentFactory().createContent(mksPanel, "", false); // first arg is a JPanel
+		final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+		Content content = contentFactory.createContent(mksPanel, "", false); // first arg is a JPanel
 		content.setCloseable(false);
 		toolWindow.getContentManager().addContent(content);
 
@@ -414,11 +412,13 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		return myProject.getComponent(MKSChangeProvider.class);
 	}
 
+	@Override
 	@NotNull
 	public String getMksSiEncoding(String command) {
 		return ApplicationManager.getApplication().getComponent(MksConfiguration.class).getMksSiEncoding(command);
 	}
 
+	@Override
 	@NotNull
 	public String getDatePattern() {
 		return ApplicationManager.getApplication().getComponent(MksConfiguration.class).getDatePattern();
@@ -431,8 +431,8 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 			this.mksVcs = mksVcs;
 		}
 
+		@Override
 		public void editFiles(VirtualFile[] virtualFiles) throws VcsException {
-			List<VcsException> errors = new ArrayList<VcsException>();
 			DispatchBySandboxCommand dispatchCommand = new DispatchBySandboxCommand(mksVcs, virtualFiles);
 			dispatchCommand.execute();
 			if (!dispatchCommand.getNotInSandboxFiles().isEmpty()) {
@@ -443,13 +443,14 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 			for (Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : dispatchCommand.filesBySandbox.entrySet()) {
 				MksSandboxInfo sandbox = entry.getKey();
 				ArrayList<VirtualFile> files = entry.getValue();
-				errors = new ArrayList<VcsException>();
+				List<VcsException> errors = new ArrayList<VcsException>();
 				CheckoutFilesCommand command = new CheckoutFilesCommand(errors, sandbox.getSiSandbox(), files,
 						this.mksVcs);
 				synchronized (MksVcs.this) {
 					command.execute();
 				}
 				if (!command.errors.isEmpty()) {
+					//noinspection ThrowableResultOfMethodCallIgnored
 					Messages.showErrorDialog(errors.get(0).getLocalizedMessage(),
 							MksBundle.message("could.not.start.checkout"));
 					return;
@@ -457,6 +458,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 			}
 		}
 
+		@Override
 		public String getRequestText() {
 			return MksBundle.message("edit.file.provider.request.text");
 		}
@@ -473,6 +475,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 			this.files = files;
 		}
 
+		@Override
 		public void execute() {
 			try {
 				TriclopsSiMembers members = queryMksMemberStatus(files, sandbox);
@@ -553,6 +556,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		// (eg when the user chooses a vcs for the project)
 		if (!myProject.isInitialized()) {
 			StartupManager.getInstance(myProject).registerPostStartupActivity(new Runnable() {
+				@Override
 				public void run() {
 					postProjectLoadInit();
 				}
@@ -621,6 +625,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		return updateEnvironment;
 	}
 
+	@Override
 	public boolean isVersionedDirectory(VirtualFile virtualFile) {
 		// does not work currently as the vcs is not initialized yet ...
 		final VirtualFile child = virtualFile.findChild(PROJECT_PJ_FILE);

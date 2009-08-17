@@ -10,20 +10,8 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vcs.FilePath;
-import com.intellij.openapi.vcs.FileStatus;
-import com.intellij.openapi.vcs.ProjectLevelVcsManager;
-import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vcs.changes.Change;
-import com.intellij.openapi.vcs.changes.ChangeList;
-import com.intellij.openapi.vcs.changes.ChangeListDecorator;
-import com.intellij.openapi.vcs.changes.ChangeListManager;
-import com.intellij.openapi.vcs.changes.ChangeListManagerGate;
-import com.intellij.openapi.vcs.changes.ChangeProvider;
-import com.intellij.openapi.vcs.changes.ChangelistBuilder;
-import com.intellij.openapi.vcs.changes.CurrentContentRevision;
-import com.intellij.openapi.vcs.changes.LocalChangeList;
-import com.intellij.openapi.vcs.changes.VcsDirtyScope;
+import com.intellij.openapi.vcs.*;
+import com.intellij.openapi.vcs.changes.*;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
@@ -37,13 +25,7 @@ import org.intellij.vcs.mks.model.MksMemberState;
 import org.intellij.vcs.mks.model.MksServerInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.intellij.vcs.mks.realtime.SandboxCache;
-import org.intellij.vcs.mks.sicommands.ListChangePackages;
-import org.intellij.vcs.mks.sicommands.ListServers;
-import org.intellij.vcs.mks.sicommands.SiConnectCommand;
-import org.intellij.vcs.mks.sicommands.ViewNonMembersCommand;
-import org.intellij.vcs.mks.sicommands.ViewSandboxLocalChangesOrLockedCommand;
-import org.intellij.vcs.mks.sicommands.ViewSandboxOutOfSyncCommand;
-import org.intellij.vcs.mks.sicommands.ViewSandboxWithoutChangesCommand;
+import org.intellij.vcs.mks.sicommands.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,13 +34,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Thibaut Fagart
@@ -479,6 +455,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 				builder.processIgnoredFile(virtualFile);
 				continue;
 			}
+			final VcsKey key = MksVcs.OUR_KEY;
 			switch (state.status) {
 				case ADDED: {
 					MksChangePackage changePackage = getChangePackage(changePackages, state);
@@ -487,10 +464,10 @@ class MKSChangeProvider extends AbstractProjectComponent
 							CurrentContentRevision.create(filePath),
 							FileStatus.ADDED);
 					if (changePackage == null) {
-						builder.processChange(change);
+						builder.processChange(change, key);
 					} else {
 						ChangeList changeList = getMksvcs().getChangeListAdapter().trackMksChangePackage(changePackage);
-						builder.processChangeInList(change, changeList);
+						builder.processChangeInList(change, changeList, key);
 					}
 					break;
 				}
@@ -501,10 +478,10 @@ class MKSChangeProvider extends AbstractProjectComponent
 							CurrentContentRevision.create(filePath),
 							FileStatus.MODIFIED);
 					if (changePackage == null) {
-						builder.processChange(change);
+						builder.processChange(change, key);
 					} else {
 						ChangeList changeList = getMksvcs().getChangeListAdapter().trackMksChangePackage(changePackage);
-						builder.processChangeInList(change, changeList);
+						builder.processChangeInList(change, changeList, key);
 					}
 					break;
 				}
@@ -521,7 +498,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 					builder.processChange(new Change(
 							new MksContentRevision(getMksvcs(), filePath, state.workingRevision),
 							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
-							FileStatus.OBSOLETE));
+							FileStatus.OBSOLETE), key);
 					break;
 				case DROPPED: {
 					MksChangePackage changePackage = getChangePackage(changePackages, state);
@@ -530,10 +507,10 @@ class MKSChangeProvider extends AbstractProjectComponent
 							CurrentContentRevision.create(filePath),
 							FileStatus.DELETED);
 					if (changePackage == null) {
-						builder.processChange(change);
+						builder.processChange(change, key);
 					} else {
 						ChangeList changeList = getMksvcs().getChangeListAdapter().trackMksChangePackage(changePackage);
-						builder.processChangeInList(change, changeList);
+						builder.processChangeInList(change, changeList, key);
 					}
 					break;
 				}
@@ -547,14 +524,14 @@ class MKSChangeProvider extends AbstractProjectComponent
 					builder.processChange(new Change(
 							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
 							new MksContentRevision(getMksvcs(), filePath, state.workingRevision),
-							FileStatus.OBSOLETE));
+							FileStatus.OBSOLETE), key);
 					break;
 				}
 				case UNKNOWN: {
 					builder.processChange(new Change(
 							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
 							new MksContentRevision(getMksvcs(), filePath, state.workingRevision),
-							FileStatus.UNKNOWN));
+							FileStatus.UNKNOWN), key);
 					break;
 				}
 				default: {
