@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * How to connect to a given mks server as returned by si servers. <br/>
- */ // when offline you have like "79310750@vhvhcl50.us.hsbc:7001 (offline)"
+ */ // when offline you have like "user@host:7001 (offline)"
 public final class MksServerInfo {
 	@NotNull
 	public final String user;
