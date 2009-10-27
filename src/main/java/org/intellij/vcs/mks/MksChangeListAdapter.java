@@ -185,9 +185,11 @@ class MksChangeListAdapter extends ChangeListAdapter {
 				final ContentRevision afterRevision = change.getAfterRevision();
 				final ContentRevision beforeRevision = change.getBeforeRevision();
 				if (afterRevision != null) {
+					logger.warn("dirtying file " + afterRevision.getFile());
 					VcsDirtyScopeManager.getInstance(mksVcs.getProject()).fileDirty(afterRevision.getFile());
 				}
 				if (beforeRevision != null) {
+					logger.warn("dirtying file " + beforeRevision.getFile());
 					VcsDirtyScopeManager.getInstance(mksVcs.getProject()).fileDirty(beforeRevision.getFile());
 				}
 			}

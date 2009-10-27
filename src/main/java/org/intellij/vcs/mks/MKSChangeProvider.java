@@ -4,15 +4,14 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vcs.*;
+import com.intellij.openapi.vcs.FilePath;
+import com.intellij.openapi.vcs.FileStatus;
+import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.vcs.VcsKey;
 import com.intellij.openapi.vcs.changes.*;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.search.ProjectScope;
@@ -24,7 +23,6 @@ import org.intellij.vcs.mks.model.MksChangePackage;
 import org.intellij.vcs.mks.model.MksMemberState;
 import org.intellij.vcs.mks.model.MksServerInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
-import org.intellij.vcs.mks.realtime.SandboxCache;
 import org.intellij.vcs.mks.sicommands.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,24 +48,17 @@ class MKSChangeProvider extends AbstractProjectComponent
 		super(project);
 	}
 
-	private
-	@NotNull
-	Project getProject() {
-		return getMksvcs().getProject();
-	}
-
-
 	public void getChanges(final VcsDirtyScope dirtyScope, ChangelistBuilder builder,
 						   final ProgressIndicator progress, ChangeListManagerGate changeListManagerGate) throws VcsException {
 		ArrayList<VcsException> errors = new ArrayList<VcsException>();
-		logger.debug("start getChanges");
+		logger.info("start getChanges " + dirtyScope);
 		final JLabel statusLabel = new JLabel();
 		final MksChangeListAdapter adapter = getChangeListAdapter();
 
 		try {
 			adapter.setUpdating(true);
-			WindowManager.getInstance().getStatusBar(getProject()).addCustomIndicationComponent(statusLabel);
-			final SandboxesToRefresh newSandboxesToRefresh = processRecursively(dirtyScope);
+			WindowManager.getInstance().getStatusBar(myProject).addCustomIndicationComponent(statusLabel);
+			final DirtySandboxCollector.SandboxesToRefresh newSandboxesToRefresh = collectAffectedSandboxes(dirtyScope);
 			Set<MksSandboxInfo> sandboxesToRefresh = newSandboxesToRefresh.getSandboxes();
 			setStatusInfo(statusLabel, MksBundle.message("collecting.servers"));
 			ArrayList<MksServerInfo> servers = getMksServers(progress, errors);
@@ -114,7 +105,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 					} else if (filePath.getVirtualFile() == null) {
 						logger.warn("no VirtualFile for " + filePath.getPath() + ", ignoring");
 						return true;
-					} else if (getMksvcs().getSandboxCache().isSandboxProject(filePath.getVirtualFile())) {
+					} else if (MksVcs.getInstance(myProject).getSandboxCache().isSandboxProject(filePath.getVirtualFile())) {
 						finalBuilder.processIgnoredFile(filePath.getVirtualFile());
 						//                        System.err.println("ignoring project.pj file");
 						return true;
@@ -125,209 +116,23 @@ class MKSChangeProvider extends AbstractProjectComponent
 			});
 		} finally {
 			adapter.setUpdating(false);
-			WindowManager.getInstance().getStatusBar(getProject()).removeCustomIndicationComponent(statusLabel);
+			WindowManager.getInstance().getStatusBar(myProject).removeCustomIndicationComponent(statusLabel);
 			logger.debug("end getChanges");
 		}
 		if (!errors.isEmpty()) {
-			getMksvcs().showErrors(errors, "ChangeProvider");
+			MksVcs.getInstance(myProject).showErrors(errors, "ChangeProvider");
 		}
 
 
 	}
 
-	static final class SandboxesToRefresh {
-		final Map<MksSandboxInfo, ArrayList<VirtualFile>> excludedRootsPerSandbox =
-				new HashMap<MksSandboxInfo, ArrayList<VirtualFile>>();
-		private Map<MksSandboxInfo, HashSet<VirtualFile>> recursivelyIncludedRootsPerSandbox =
-				new HashMap<MksSandboxInfo, HashSet<VirtualFile>>();
-		private Map<MksSandboxInfo, HashSet<VirtualFile>> nonRecursivelyIncludedRootsPerSandbox =
-				new HashMap<MksSandboxInfo, HashSet<VirtualFile>>();
-		private boolean computed = false;
-
-		public void refresh(MksSandboxInfo sandbox, VirtualFile[] excludedRoots) {
-			assert !computed : "too late !";
-			ArrayList<VirtualFile> excluded = excludedRootsPerSandbox.get(sandbox);
-			if (excluded == null) {
-				excluded = new ArrayList<VirtualFile>();
-				excludedRootsPerSandbox.put(sandbox, excluded);
-			}
-			for (VirtualFile excludedRoot : excludedRoots) {
-				if (excludedRoot.isDirectory() && sandbox.contains(excludedRoot)) {
-					excluded.add(excludedRoot);
-				}
-			}
-		}
-
-		public String toString() {
-			StringBuffer buf = new StringBuffer();
-			buf.append("SandboxesToRefresh[");
-			for (Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : excludedRootsPerSandbox
-					.entrySet()) {
-				buf.append(entry.getKey());
-				final ArrayList<VirtualFile> excludedRoots = entry.getValue();
-				if (!excludedRoots.isEmpty()) {
-					buf.append("{");
-					for (VirtualFile root : excludedRoots) {
-						buf.append(root).append(",");
-					}
-					buf.append("}");
-				}
-				buf.append("\n");
-			}
-			buf.append("]");
-			return buf.toString();
-		}
-
-		public Set<MksSandboxInfo> getSandboxes() {
-			return excludedRootsPerSandbox.keySet();
-		}
-
-		public ArrayList<VirtualFile> getExcludedRoots(MksSandboxInfo sandbox) {
-			return excludedRootsPerSandbox.get(sandbox);
-		}
-
-		/**
-		 * returns a list a directories where each one needs to be refreshed inclusively
-		 *
-		 * @param sandbox
-		 * @return
-		 */
-		public HashSet<VirtualFile> getRecursivelyIncludedRoots(MksSandboxInfo sandbox) {
-			computeInclusions();
-			final HashSet<VirtualFile> files = recursivelyIncludedRootsPerSandbox.get(sandbox);
-			return files == null ? new HashSet<VirtualFile>() : files;
-		}
-
-		public void addNonRecursive(MksSandboxInfo owningSandbox, VirtualFile vFile) {
-			assert !computed : "too late !";
-			if (vFile.isDirectory()) {
-				addAndCreateSetIfAbsent(nonRecursivelyIncludedRootsPerSandbox, owningSandbox, vFile);
-			}
-		}
-
-		private static void addAndCreateSetIfAbsent(
-				Map<MksSandboxInfo, HashSet<VirtualFile>> map,
-				MksSandboxInfo sandboxInfo, VirtualFile root) {
-			HashSet<VirtualFile> files = map.get(sandboxInfo);
-			if (files == null) {
-				files = new HashSet<VirtualFile>();
-				map.put(sandboxInfo, files);
-			}
-			files.add(root);
-		}
-
-		private final static class DirectoryWalker {
-			public void process(SandboxesToRefresh refreshSpec) {
-				for (Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : refreshSpec
-						.excludedRootsPerSandbox.entrySet()) {
-					final VirtualFile root = entry.getKey().getSandboxDir();
-					processRecursivelyExcluding(entry.getKey(), root, entry.getValue(), refreshSpec);
-				}
-			}
-
-			private void processRecursivelyExcluding(MksSandboxInfo sandboxInfo, VirtualFile root,
-													 ArrayList<VirtualFile> excluded,
-													 SandboxesToRefresh spec) {
-				boolean containsExcluded = false;
-				if (root.isDirectory()) {
-					if (excluded.contains(root)) {
-						return;
-					}
-					for (VirtualFile file : excluded) {
-						if (file.isDirectory() && VfsUtil.isAncestor(root, file, false)) {
-							containsExcluded = true;
-							break;
-						}
-					}
-					if (containsExcluded) {
-//						System.out.println("adding " + root + " to nonRecursivelyIncludedRootsPerSandbox for " +
-//								sandboxInfo.getSandboxDir());
-						addAndCreateSetIfAbsent(spec.nonRecursivelyIncludedRootsPerSandbox, sandboxInfo, root);
-						for (VirtualFile child : root.getChildren()) {
-							if (child.isDirectory()) {
-								processRecursivelyExcluding(sandboxInfo, child, excluded, spec);
-							}
-						}
-					} else {
-//						System.out.println("adding " + root + " to recursivelyIncludedRootsPerSandbox for " +
-//								sandboxInfo.getSandboxDir());
-						addAndCreateSetIfAbsent(spec.recursivelyIncludedRootsPerSandbox, sandboxInfo, root);
-					}
-				}
-			}
-
-		}
-
-		private void computeInclusions() {
-			if (computed) {
-				return;
-			}
-			final DirectoryWalker walker = new DirectoryWalker();
-			walker.process(this);
-			computed = true;
-
-		}
-
-		/**
-		 * returns a list a directories where each one should be refreshed NOT inclusively
-		 *
-		 * @param sandbox
-		 * @return
-		 */
-		public HashSet<VirtualFile> getNonRecursivelyIncludedRoots(MksSandboxInfo sandbox) {
-			computeInclusions();
-			final HashSet<VirtualFile> files = nonRecursivelyIncludedRootsPerSandbox.get(sandbox);
-			return files == null ? new HashSet<VirtualFile>() : files;
-		}
-	}
+	private final DirtySandboxCollector dirtySandboxCollector = new DirtySandboxCollector(myProject);
 
 	@NotNull
-	private SandboxesToRefresh processRecursively(@NotNull VcsDirtyScope dirtyScope) {
-		final Set<FilePath> recursivelyDirtyDirectories = dirtyScope.getRecursivelyDirtyDirectories();
-		final SandboxesToRefresh sandboxesToRefresh = new SandboxesToRefresh();
-		final SandboxCache cache = getMksvcs().getSandboxCache();
-		for (FilePath directory : recursivelyDirtyDirectories) {
-
-			final VirtualFile dirVFile = directory.getVirtualFile();
-			if (dirVFile == null) {
-//				System.err.println("no vfile for " + directory);
-			} else {
-				processRecursively(dirVFile, cache, sandboxesToRefresh);
-			}
-		}
-		for (FilePath path : dirtyScope.getDirtyFiles()) {
-			final VirtualFile file = path.getVirtualFile();
-			if (null == file) {
-//				System.err.println("no vfile for " + file);
-			} else {
-				processRecursively(file, cache, sandboxesToRefresh);
-			}
-		}
-
-//		System.out.println("refreshSpec " + sandboxesToRefresh.toString());
-		return sandboxesToRefresh;
+	private DirtySandboxCollector.SandboxesToRefresh collectAffectedSandboxes(@NotNull VcsDirtyScope dirtyScope) {
+		return dirtySandboxCollector.collectAffectedSandboxes(dirtyScope);
 	}
 
-	private void processRecursively(@NotNull final VirtualFile vFile,
-									@NotNull final SandboxCache cache,
-									@NotNull final SandboxesToRefresh refresh) {
-		final MksSandboxInfo owningSandbox = cache.getSandboxInfo(vFile);
-		if (owningSandbox != null) {
-			final Module module = ModuleUtil.findModuleForFile(vFile, getProject());
-			if (module == null) {
-				refresh.addNonRecursive(owningSandbox, vFile);
-			} else {
-				refresh.refresh(owningSandbox, ModuleRootManager.getInstance(module).getExcludeRoots());
-			}
-		} else if (vFile.isDirectory()) {
-			for (VirtualFile child : vFile.getChildren()) {
-				if (child.isDirectory()) {
-					processRecursively(child, cache, refresh);
-				}
-			}
-		}
-
-	}
 
 	/**
 	 * renames change lists mapped to change packages if the change package was renamed
@@ -376,9 +181,9 @@ class MKSChangeProvider extends AbstractProjectComponent
 					public void run() {
 						final String message = MksBundle.message("mks.reconnect.to.server", hostAndPort);
 						userAndPassword.user =
-								Messages.showInputDialog(getMksvcs().getProject(), "user", message, null);
+								Messages.showInputDialog(MksVcs.getInstance(myProject).getProject(), "user", message, null);
 						userAndPassword.password =
-								Messages.showInputDialog(getMksvcs().getProject(), "password", message, null);
+								Messages.showInputDialog(MksVcs.getInstance(myProject).getProject(), "password", message, null);
 
 					}
 				});
@@ -392,7 +197,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 				continue;
 			}
 			SiConnectCommand command =
-					new SiConnectCommand(getMksvcs(), host, port, userAndPassword.user, userAndPassword.password);
+					new SiConnectCommand(MksVcs.getInstance(myProject), host, port, userAndPassword.user, userAndPassword.password);
 			command.execute();
 			if (!command.foundError() && (command.getServer() != null)) {
 				servers.add(command.getServer());
@@ -439,12 +244,12 @@ class MKSChangeProvider extends AbstractProjectComponent
 	private void processDirtySandbox(final ChangelistBuilder builder,
 									 @NotNull final Map<String, MksChangePackage> changePackages,
 									 final Map<String, MksMemberState> states) {
-		final ChangeListManager listManager = ChangeListManager.getInstance(getProject());
+		final ChangeListManager listManager = ChangeListManager.getInstance(myProject);
 		for (Map.Entry<String, MksMemberState> entry : states.entrySet()) {
 			MksMemberState state = entry.getValue();
 			FilePath filePath = VcsUtil.getFilePath(entry.getKey());
 			VirtualFile virtualFile = VcsUtil.getVirtualFile(entry.getKey());
-			if (null == virtualFile || getMksvcs().getSandboxCache().isSandboxProject(virtualFile)) {
+			if (null == virtualFile || MksVcs.getInstance(myProject).getSandboxCache().isSandboxProject(virtualFile)) {
 				continue;
 			}
 			if (!ProjectScope.getAllScope(myProject).contains(virtualFile)) {
@@ -466,7 +271,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 					if (changePackage == null) {
 						builder.processChange(change, key);
 					} else {
-						ChangeList changeList = getMksvcs().getChangeListAdapter().trackMksChangePackage(changePackage);
+						ChangeList changeList = MksVcs.getInstance(myProject).getChangeListAdapter().trackMksChangePackage(changePackage);
 						builder.processChangeInList(change, changeList, key);
 					}
 					break;
@@ -474,13 +279,13 @@ class MKSChangeProvider extends AbstractProjectComponent
 				case CHECKED_OUT: {
 					MksChangePackage changePackage = getChangePackage(changePackages, state);
 					Change change = new Change(
-							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
+							new MksContentRevision(MksVcs.getInstance(myProject), filePath, state.memberRevision),
 							CurrentContentRevision.create(filePath),
 							FileStatus.MODIFIED);
 					if (changePackage == null) {
 						builder.processChange(change, key);
 					} else {
-						ChangeList changeList = getMksvcs().getChangeListAdapter().trackMksChangePackage(changePackage);
+						ChangeList changeList = MksVcs.getInstance(myProject).getChangeListAdapter().trackMksChangePackage(changePackage);
 						builder.processChangeInList(change, changeList, key);
 					}
 					break;
@@ -496,20 +301,20 @@ class MKSChangeProvider extends AbstractProjectComponent
 				case SYNC:
 					// todo some of those changes belong to the Incoming tab
 					builder.processChange(new Change(
-							new MksContentRevision(getMksvcs(), filePath, state.workingRevision),
-							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
+							new MksContentRevision(MksVcs.getInstance(myProject), filePath, state.workingRevision),
+							new MksContentRevision(MksVcs.getInstance(myProject), filePath, state.memberRevision),
 							FileStatus.OBSOLETE), key);
 					break;
 				case DROPPED: {
 					MksChangePackage changePackage = getChangePackage(changePackages, state);
 					Change change = new Change(
-							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
+							new MksContentRevision(MksVcs.getInstance(myProject), filePath, state.memberRevision),
 							CurrentContentRevision.create(filePath),
 							FileStatus.DELETED);
 					if (changePackage == null) {
 						builder.processChange(change, key);
 					} else {
-						ChangeList changeList = getMksvcs().getChangeListAdapter().trackMksChangePackage(changePackage);
+						ChangeList changeList = MksVcs.getInstance(myProject).getChangeListAdapter().trackMksChangePackage(changePackage);
 						builder.processChangeInList(change, changeList, key);
 					}
 					break;
@@ -522,15 +327,15 @@ class MKSChangeProvider extends AbstractProjectComponent
 				}
 				case REMOTELY_DROPPED: {
 					builder.processChange(new Change(
-							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
-							new MksContentRevision(getMksvcs(), filePath, state.workingRevision),
+							new MksContentRevision(MksVcs.getInstance(myProject), filePath, state.memberRevision),
+							new MksContentRevision(MksVcs.getInstance(myProject), filePath, state.workingRevision),
 							FileStatus.OBSOLETE), key);
 					break;
 				}
 				case UNKNOWN: {
 					builder.processChange(new Change(
-							new MksContentRevision(getMksvcs(), filePath, state.memberRevision),
-							new MksContentRevision(getMksvcs(), filePath, state.workingRevision),
+							new MksContentRevision(MksVcs.getInstance(myProject), filePath, state.memberRevision),
+							new MksContentRevision(MksVcs.getInstance(myProject), filePath, state.workingRevision),
 							FileStatus.UNKNOWN), key);
 					break;
 				}
@@ -551,16 +356,16 @@ class MKSChangeProvider extends AbstractProjectComponent
 	private Map<String, MksMemberState> getSandboxState(@NotNull final MksSandboxInfo sandbox,
 														@NotNull final ArrayList<VcsException> errors,
 														@NotNull final MksServerInfo server,
-														final SandboxesToRefresh refreshSpec) {
+														final DirtySandboxCollector.SandboxesToRefresh refreshSpec) {
 		Map<String, MksMemberState> states = new HashMap<String, MksMemberState>();
 
 		ViewSandboxWithoutChangesCommand fullSandboxCommand =
-				new ViewSandboxWithoutChangesCommand(errors, getMksvcs(), sandbox.sandboxPath);
+				new ViewSandboxWithoutChangesCommand(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
 		fullSandboxCommand.execute();
 		addNonExcludedStates(states, fullSandboxCommand.getMemberStates());
 
 		ViewSandboxLocalChangesOrLockedCommand localChangesCommand =
-				new ViewSandboxLocalChangesOrLockedCommand(errors, getMksvcs(), server.user, sandbox.sandboxPath);
+				new ViewSandboxLocalChangesOrLockedCommand(errors, MksVcs.getInstance(myProject), server.user, sandbox.sandboxPath);
 		localChangesCommand.execute();
 		addNonExcludedStates(states, localChangesCommand.getMemberStates());
 
@@ -572,14 +377,14 @@ class MKSChangeProvider extends AbstractProjectComponent
 					convertToSandboxRelativePaths(sandbox, nonRecursivelyIncludedDirs);
 
 			// process recursive inclusions
-			ViewNonMembersCommand nonMembersCommandRecursive = new ViewNonMembersCommand(errors, getMksvcs(), sandbox,
+			ViewNonMembersCommand nonMembersCommandRecursive = new ViewNonMembersCommand(errors, MksVcs.getInstance(myProject), sandbox,
 					recursivelyIncludedDirsArray, true);
 			nonMembersCommandRecursive.execute();
 			addNonExcludedStates(states, nonMembersCommandRecursive.getMemberStates());
 
 			// process non recursive inclusions
 			ViewNonMembersCommand nonMembersCommandNonRecursive =
-					new ViewNonMembersCommand(errors, getMksvcs(), sandbox,
+					new ViewNonMembersCommand(errors, MksVcs.getInstance(myProject), sandbox,
 							nonRecursivelyIncludedDirsArray, false);
 			nonMembersCommandNonRecursive.execute();
 			addNonExcludedStates(states, nonMembersCommandNonRecursive.getMemberStates());
@@ -587,7 +392,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 
 // todo the below belong to incoming changes
 		ViewSandboxOutOfSyncCommand outOfSyncCommand =
-				new ViewSandboxOutOfSyncCommand(errors, getMksvcs(), sandbox.sandboxPath);
+				new ViewSandboxOutOfSyncCommand(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
 		outOfSyncCommand.execute();
 		states.putAll(outOfSyncCommand.getMemberStates());
 
@@ -634,10 +439,10 @@ class MKSChangeProvider extends AbstractProjectComponent
 		final MksConfiguration config = ApplicationManager.getApplication().getComponent(MksConfiguration.class);
 		for (MksServerInfo server : servers) {
 			if (!config.isServerSiServer(server)) {
-				getMksvcs().debug("ignoring " + server.host + ":" + server.port + " when querying changepackages");
+				MksVcs.getInstance(myProject).debug("ignoring " + server.host + ":" + server.port + " when querying changepackages");
 				continue;
 			}
-			final ListChangePackages listCpsAction = new ListChangePackages(errors, getMksvcs(), server);
+			final ListChangePackages listCpsAction = new ListChangePackages(errors, MksVcs.getInstance(myProject), server);
 			if (progress != null) {
 				progress.setIndeterminate(true);
 				progress.setText("Querying change packages for " + server + "...");
@@ -660,7 +465,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 	@NotNull
 	private ArrayList<MksServerInfo> getMksServers(final ProgressIndicator progress,
 												   final ArrayList<VcsException> errors) {
-		final ListServers listServersAction = new ListServers(errors, getMksvcs());
+		final ListServers listServersAction = new ListServers(errors, MksVcs.getInstance(myProject));
 		if (progress != null) {
 			progress.setIndeterminate(true);
 			progress.setText("Querying mks servers ...");
@@ -684,7 +489,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 
 	@NotNull
 	public MksChangeListAdapter getChangeListAdapter() {
-		return getMksvcs().getChangeListAdapter();
+		return MksVcs.getInstance(myProject).getChangeListAdapter();
 	}
 
 
@@ -698,11 +503,6 @@ class MKSChangeProvider extends AbstractProjectComponent
 		if (aPackage != null) {
 			cellRenderer.append(" - MKS #" + aPackage.getId(), SimpleTextAttributes.GRAY_ATTRIBUTES);
 		}
-	}
-
-	@NotNull
-	private MksVcs getMksvcs() {
-		return (MksVcs) ProjectLevelVcsManager.getInstance(myProject).findVcsByName(MksVcs.VCS_NAME);
 	}
 
 	/**

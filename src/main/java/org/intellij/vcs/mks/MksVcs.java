@@ -11,7 +11,6 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vcs.*;
 import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vcs.changes.ChangeProvider;
-import com.intellij.openapi.vcs.changes.VcsDirtyScopeManager;
 import com.intellij.openapi.vcs.checkin.CheckinEnvironment;
 import com.intellij.openapi.vcs.diff.DiffProvider;
 import com.intellij.openapi.vcs.history.VcsHistoryProvider;
@@ -20,7 +19,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.peer.PeerFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.messages.MessageBusConnection;
@@ -81,7 +79,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	private static final String ICONS_MKS_GIF = "/icons/mks.gif";
 	private Boolean isMks2007 = null;
 
-	public MksVcs(Project project) {
+	public MksVcs(final Project project) {
 		super(project, VCS_NAME);
 		sandboxCache = new SandboxCacheImpl(project);
 	}
@@ -100,9 +98,9 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		return changeListAdapter;
 	}
 
-	public void showErrors(java.util.List<VcsException> list, String action) {
+	public void showErrors(final java.util.List<VcsException> list, final String action) {
 		if (!list.isEmpty()) {
-			StringBuffer buffer = new StringBuffer(mksTextArea.getText());
+			final StringBuffer buffer = new StringBuffer(mksTextArea.getText());
 			buffer.append("\n");
 			buffer.append(action).append(" Error: ");
 			VcsException e;
@@ -116,24 +114,24 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	}
 
 	private void initToolWindow() {
-		ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
-		JToolBar toolbar = new JToolBar();
-		Action viewSandboxesAction = new AbstractAction("view sandboxes") {
+		final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
+		final JToolBar toolbar = new JToolBar();
+		final Action viewSandboxesAction = new AbstractAction("view sandboxes") {
 			public void actionPerformed(final ActionEvent event) {
-				StringWriter stringWriter = new StringWriter();
-				PrintWriter pw = new PrintWriter(stringWriter);
+				final StringWriter stringWriter = new StringWriter();
+				final PrintWriter pw = new PrintWriter(stringWriter);
 				pw.println(mksTextArea.getText());
 				sandboxCache.dumpStateOn(pw);
 				mksTextArea.setText(stringWriter.toString());
 			}
 		};
 		toolbar.add(viewSandboxesAction);
-		JPanel mksPanel = new JPanel(new BorderLayout());
+		final JPanel mksPanel = new JPanel(new BorderLayout());
 		mksPanel.add(toolbar, BorderLayout.NORTH);
-		JTabbedPane tabbedPane = new JTabbedPane();
+		final JTabbedPane tabbedPane = new JTabbedPane();
 
 		this.mksTextArea = createMksLogTextPane();
-		JPanel panelDebug = new JPanel(new BorderLayout());
+		final JPanel panelDebug = new JPanel(new BorderLayout());
 		panelDebug.add(new JScrollPane(mksTextArea), BorderLayout.CENTER);
 		tabbedPane.add(panelDebug, "Log", 0);
 
@@ -143,21 +141,21 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		mksPanel.add(tabbedPane, BorderLayout.CENTER);
 		registerToolWindow(toolWindowManager, mksPanel);
 		final JPopupMenu menu = new JPopupMenu();
-		JMenuItem item = new JMenuItem("Clear");
+		final JMenuItem item = new JMenuItem("Clear");
 		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {
 				mksTextArea.setText("");
 			}
 		});
 		menu.add(item);
 		mksTextArea.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mousePressed(MouseEvent e) {
+			public void mousePressed(final MouseEvent e) {
 				maybeShowPopup(e, menu);
 			}
 
 			@Override
-			public void mouseReleased(MouseEvent e) {
+			public void mouseReleased(final MouseEvent e) {
 				maybeShowPopup(e, menu);
 			}
 		});
@@ -179,7 +177,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		}
 
 		public Object getValueAt(final int row, final int column) {
-			LongRunningTask task = myProject.getComponent(LongRunningTaskRepository.class).get(row);
+			final LongRunningTask task = myProject.getComponent(LongRunningTaskRepository.class).get(row);
 			if (task == null) {
 				return null;
 			}
@@ -226,11 +224,11 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	}
 
 	private Component createTasksPanel() {
-		JTable tasksTable = new JTable();
+		final JTable tasksTable = new JTable();
 
-		JPanel jPanel = new JPanel();
+		final JPanel jPanel = new JPanel();
 		jPanel.setLayout(new BorderLayout());
-		JPanel buttonsPanel = new JPanel();
+		final JPanel buttonsPanel = new JPanel();
 		buttonsPanel.add(new JButton(new AbstractAction("Refresh") {
 			public void actionPerformed(final ActionEvent event) {
 				tasksModel.refresh();
@@ -245,7 +243,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 			public Component getTableCellRendererComponent(final JTable jTable, final Object o, final boolean b,
 														   final boolean b1, final int i, final int i1) {
 				return new JButton(new AbstractAction("restart") {
-					public void actionPerformed(ActionEvent e) {
+					public void actionPerformed(final ActionEvent e) {
 						final SandboxListSynchronizer synchronizer =
 								ApplicationManager.getApplication().getComponent(SandboxListSynchronizer.class);
 						synchronizer.restart();
@@ -258,12 +256,12 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 				return true;
 			}
 
-			public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, final int row,
-														 int column) {
-				JButton button = new JButton("restart");
+			public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int row,
+														 final int column) {
+				final JButton button = new JButton("restart");
 				button.addActionListener(new ActionListener() {
 					public void actionPerformed(final ActionEvent event) {
-						LongRunningTask task = myProject.getComponent(LongRunningTaskRepository.class).get(row);
+						final LongRunningTask task = myProject.getComponent(LongRunningTaskRepository.class).get(row);
 						LOGGER.debug("restarting task " + task);
 						task.restart();
 					}
@@ -290,14 +288,14 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 				this.isMks2007 = command.isMks2007();
 			}
 		}
-		return this.isMks2007.booleanValue();
+		return this.isMks2007;
 	}
 
 	private Component createCommandStatisticsPanel() {
-		JTable commandsTable = new JTable();
+		final JTable commandsTable = new JTable();
 
-		JPanel jPanel = new JPanel();
-		JPanel buttonsPanel = new JPanel();
+		final JPanel jPanel = new JPanel();
+		final JPanel buttonsPanel = new JPanel();
 		buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.X_AXIS));
 		buttonsPanel.add(new JButton(new AbstractAction("Clear statistics") {
 			public void actionPerformed(final ActionEvent event) {
@@ -313,10 +311,10 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	}
 
 	private JTextPane createMksLogTextPane() {
-		JTextPane mksTextArea = new JTextPane();
+		final JTextPane mksTextArea = new JTextPane();
 		mksTextArea.setEditable(false);
-		javax.swing.text.Style def = StyleContext.getDefaultStyleContext().getStyle("default");
-		javax.swing.text.Style regular = mksTextArea.addStyle("REGULAR", def);
+		final javax.swing.text.Style def = StyleContext.getDefaultStyleContext().getStyle("default");
+		final javax.swing.text.Style regular = mksTextArea.addStyle("REGULAR", def);
 		StyleConstants.setFontFamily(def, "SansSerif");
 		javax.swing.text.Style s = mksTextArea.addStyle(StyleConstants.Italic.toString(), regular);
 		StyleConstants.setItalic(s, true);
@@ -326,10 +324,9 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	}
 
 	private ToolWindow registerToolWindow(final ToolWindowManager toolWindowManager, final JPanel mksPanel) {
-		ToolWindow toolWindow = toolWindowManager.registerToolWindow(MKS_TOOLWINDOW, true, ToolWindowAnchor.BOTTOM);
-		PeerFactory pf = com.intellij.peer.PeerFactory.getInstance();
+		final ToolWindow toolWindow = toolWindowManager.registerToolWindow(MKS_TOOLWINDOW, true, ToolWindowAnchor.BOTTOM);
 		final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-		Content content = contentFactory.createContent(mksPanel, "", false); // first arg is a JPanel
+		final Content content = contentFactory.createContent(mksPanel, "", false); // first arg is a JPanel
 		content.setCloseable(false);
 		toolWindow.getContentManager().addContent(content);
 
@@ -337,7 +334,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		return toolWindow;
 	}
 
-	private void maybeShowPopup(MouseEvent e, JPopupMenu menu) {
+	private void maybeShowPopup(final MouseEvent e, final JPopupMenu menu) {
 		if (e.isPopupTrigger()) {
 			menu.show(mksTextArea, e.getX(), e.getY());
 		}
@@ -347,7 +344,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		ToolWindowManager.getInstance(myProject).unregisterToolWindow("MKS");
 	}
 
-	public static MksVcs getInstance(Project project) {
+	public static MksVcs getInstance(final Project project) {
 		return (MksVcs) ProjectLevelVcsManager.getInstance(project).findVcsByName(VCS_NAME);
 	}
 
@@ -355,7 +352,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		return MKSHelper.getMksErrorMessage();
 	}
 
-	public void debug(String s) {
+	public void debug(final String s) {
 		ProjectLevelVcsManager.getInstance(myProject).addMessageToConsoleWindow(s, null);
 		debug(s, null);
 	}
@@ -367,15 +364,15 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	 * @return true if the file is in a directory controlled by mks
 	 */
 	@Override
-	public synchronized boolean fileIsUnderVcs(FilePath filePath) {
+	public synchronized boolean fileIsUnderVcs(final FilePath filePath) {
 //		System.out.println("super.fileIsUnderVcs " + filePath + " = " + super.fileIsUnderVcs(filePath));
 		return super.fileIsUnderVcs(filePath)
 				&& !getSandboxCache().isSandboxProject(filePath.getVirtualFile());
 	}
 
-	private void debug(String s, Exception e) {
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
+	private void debug(final String s, final Exception e) {
+		final StringWriter sw = new StringWriter();
+		final PrintWriter pw = new PrintWriter(sw);
 		pw.println(s);
 		if (e != null) {
 			LOGGER.debug(s, e);
@@ -414,7 +411,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 
 	@Override
 	@NotNull
-	public String getMksSiEncoding(String command) {
+	public String getMksSiEncoding(final String command) {
 		return ApplicationManager.getApplication().getComponent(MksConfiguration.class).getMksSiEncoding(command);
 	}
 
@@ -427,24 +424,24 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	private class _EditFileProvider implements EditFileProvider {
 		private final MksVcs mksVcs;
 
-		public _EditFileProvider(MksVcs mksVcs) {
+		public _EditFileProvider(final MksVcs mksVcs) {
 			this.mksVcs = mksVcs;
 		}
 
 		@Override
-		public void editFiles(VirtualFile[] virtualFiles) throws VcsException {
-			DispatchBySandboxCommand dispatchCommand = new DispatchBySandboxCommand(mksVcs, virtualFiles);
+		public void editFiles(final VirtualFile[] virtualFiles) throws VcsException {
+			final DispatchBySandboxCommand dispatchCommand = new DispatchBySandboxCommand(mksVcs, virtualFiles);
 			dispatchCommand.execute();
 			if (!dispatchCommand.getNotInSandboxFiles().isEmpty()) {
 				Messages.showErrorDialog(MksBundle.message("unable.to.find.the.sandboxes.for.the.files.title"),
 						MksBundle.message("could.not.start.checkout"));
 				return;
 			}
-			for (Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : dispatchCommand.filesBySandbox.entrySet()) {
-				MksSandboxInfo sandbox = entry.getKey();
-				ArrayList<VirtualFile> files = entry.getValue();
-				List<VcsException> errors = new ArrayList<VcsException>();
-				CheckoutFilesCommand command = new CheckoutFilesCommand(errors, sandbox.getSiSandbox(), files,
+			for (final Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : dispatchCommand.filesBySandbox.entrySet()) {
+				final MksSandboxInfo sandbox = entry.getKey();
+				final ArrayList<VirtualFile> files = entry.getValue();
+				final List<VcsException> errors = new ArrayList<VcsException>();
+				final CheckoutFilesCommand command = new CheckoutFilesCommand(errors, sandbox.getSiSandbox(), files,
 						this.mksVcs);
 				synchronized (MksVcs.this) {
 					command.execute();
@@ -468,8 +465,8 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		private TriclopsSiSandbox sandbox;
 		private ArrayList<VirtualFile> files;
 
-		public CheckoutFilesCommand(List<VcsException> errors, TriclopsSiSandbox sandbox,
-									ArrayList<VirtualFile> files, MksCLIConfiguration mksCLIConfiguration) {
+		public CheckoutFilesCommand(final List<VcsException> errors, final TriclopsSiSandbox sandbox,
+									final ArrayList<VirtualFile> files, final MksCLIConfiguration mksCLIConfiguration) {
 			super(errors, "co", mksCLIConfiguration);
 			this.sandbox = sandbox;
 			this.files = files;
@@ -478,7 +475,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		@Override
 		public void execute() {
 			try {
-				TriclopsSiMembers members = queryMksMemberStatus(files, sandbox);
+				final TriclopsSiMembers members = queryMksMemberStatus(files, sandbox);
 				MKSHelper.checkoutMembers(members, 0);
 			} catch (TriclopsException e) {
 				//noinspection ThrowableInstanceNeverThrown
@@ -487,10 +484,10 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		}
 
 		@NotNull
-		private TriclopsSiMembers queryMksMemberStatus(@NotNull ArrayList<VirtualFile> files,
-													   @NotNull TriclopsSiSandbox sandbox) throws TriclopsException {
-			TriclopsSiMembers members = MKSHelper.createMembers(sandbox);
-			for (VirtualFile virtualFile : files) {
+		private TriclopsSiMembers queryMksMemberStatus(@NotNull final ArrayList<VirtualFile> files,
+													   @NotNull final TriclopsSiSandbox sandbox) throws TriclopsException {
+			final TriclopsSiMembers members = MKSHelper.createMembers(sandbox);
+			for (final VirtualFile virtualFile : files) {
 				members.addMember(new TriclopsSiMember(virtualFile.getPresentableUrl()));
 			}
 			MKSHelper.getMembersStatus(members);
@@ -505,14 +502,14 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		return editFileProvider;
 	}
 
-	public Map<MksSandboxInfo, ArrayList<VirtualFile>> dispatchBySandbox(VirtualFile[] files, boolean topSandboxOnly) {
-		DispatchBySandboxCommand dispatchCommand =
+	public Map<MksSandboxInfo, ArrayList<VirtualFile>> dispatchBySandbox(final VirtualFile[] files, final boolean topSandboxOnly) {
+		final DispatchBySandboxCommand dispatchCommand =
 				new DispatchBySandboxCommand(this, files, topSandboxOnly);
 		dispatchCommand.execute();
 		return dispatchCommand.filesBySandbox;
 	}
 
-	public Map<MksSandboxInfo, ArrayList<VirtualFile>> dispatchBySandbox(VirtualFile[] files) {
+	public Map<MksSandboxInfo, ArrayList<VirtualFile>> dispatchBySandbox(final VirtualFile[] files) {
 		return dispatchBySandbox(files, true);
 	}
 
@@ -550,7 +547,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	public void activate() {
 		LOGGER.debug("activate [" + myProject + "]");
 		super.activate();
-		ChangeListManager changeListManager = ChangeListManager.getInstance(getProject());
+		final ChangeListManager changeListManager = ChangeListManager.getInstance(getProject());
 		changeListManager.addChangeListListener(changeListAdapter);
 		// the 2 cases need to be handled, as postStartup is not run if the vcs with the project after project loading
 		// (eg when the user chooses a vcs for the project)
@@ -578,7 +575,6 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 			}
 			myProject.getComponent(LongRunningTaskRepository.class).add(synchronizer);
 			synchronizer.addListener(getSandboxCache());
-			VcsDirtyScopeManager.getInstance(myProject).markEverythingDirty();
 			initToolWindow();
 		}
 	}
@@ -586,7 +582,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 
 	@Override
 	public void deactivate() {
-		ChangeListManager changeListManager = ChangeListManager.getInstance(getProject());
+		final ChangeListManager changeListManager = ChangeListManager.getInstance(getProject());
 		changeListManager.removeChangeListListener(changeListAdapter);
 		sandboxCache.release();
 
@@ -626,7 +622,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 	}
 
 	@Override
-	public boolean isVersionedDirectory(VirtualFile virtualFile) {
+	public boolean isVersionedDirectory(final VirtualFile virtualFile) {
 		// does not work currently as the vcs is not initialized yet ...
 		final VirtualFile child = virtualFile.findChild(PROJECT_PJ_FILE);
 		return null != child && child.exists();
