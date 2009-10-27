@@ -4,18 +4,17 @@
 	<groupId>mks-idea</groupId>
 	<artifactId>mks-idea</artifactId>
 	<packaging>jar</packaging>
-	<version>0.7.4-Diana-SNAPSHOT</version>
+	<version>0.7.4-Maia-SNAPSHOT</version>
 	<name>IDEA MKS Plugin</name>
 	<description>Implementation of an IDEA MKS plugin.</description>
 	<properties>
-		<idea.version>9.0.10652</idea.version>
+		<idea.version>9.0.10781</idea.version>
 		<!--8.1.EAP-->
 	</properties>
 	<scm>
-		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/branches/IDEA 8.x/mks-idea-0.7</connection>
-		<developerConnection>scm:svn:https://ideamksplugin.googlecode.com/svn/branches/IDEA 8.x/mks-idea-0.7
-		</developerConnection>
-		<url>http://ideamksplugin.googlecode.com/svn/branches/IDEA 8.x/mks-idea-0.7</url>
+		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/trunk</connection>
+		<developerConnection>scm:svn:https://ideamksplugin.googlecode.com/svn/trunk</developerConnection>
+		<url>http://ideamksplugin.googlecode.com/svn/trunk</url>
 	</scm>
 	<dependencies>
 		<dependency>
