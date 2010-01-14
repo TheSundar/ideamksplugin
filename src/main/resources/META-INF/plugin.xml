@@ -2,23 +2,26 @@
   "http://plugins.intellij.net/plugin.dtd">
 <idea-plugin>
   <name>MKS</name>
+  <id>MKS</id>
   <description>
     <![CDATA[
-	Integrates MKS Source Integrity with IDEA <br/>
-	See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecode project
-	]]>
+Integrates MKS Source Integrity with IDEA <br/>
+See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecode project
+]]>
   </description>
   <version>${project.version}</version>
   <vendor logo="/icons/mks.png" url="http://code.google.com/p/ideamksplugin/">Eric Sheffer, Thibaut Fagart</vendor>
   <resource-bundle>org.intellij.vcs.mks.mksBundle</resource-bundle>
   <category>VCS Integration</category>
-  <idea-version since-build="9886" />
+  <idea-version since-build="${idea.version}" />
+  <depends>com.intellij.modules.vcs</depends>
 
   <change-notes><![CDATA[<ul>
-    <li>0.7.5 : This a bugfix release. See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7.5&can=1">googlecode issues resolved in 0.7.5</a><br/> 
+    <li>0.8 : See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.8&can=1">googlecode issues resolved in 0.8</a><br/>
 	Main changes<br/>
-	Support for MKS 2007.
-	Align on new IDEA VCS OpenAPI<br/>
+	Support for MKS 2007.<br/>
+	Align on new IDEA 9 VCS OpenAPI<br/>
+	Support for viewing the MKS change package associated to a IDEA changelist<br/>
     </li>
 	<li>0.7.4 This a bugfix release. See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7.4&can=1">googlecode issues resolved in 0.7.4</a><br/>
 	Main changes<br/>
