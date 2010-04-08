@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,39 +42,13 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 	@Nullable
 	@Override
 	public VcsHistorySession createSessionFor(final FilePath filePath) throws VcsException {
-		final boolean isDirectory = filePath.isDirectory();
 		final MksSandboxInfo sandbox = getSandbox(filePath);
 		if (sandbox == null) {
 			LOGGER.warn("can't find sandbox for " + filePath);
 			return null;
 		}
-		return new VcsHistorySession(null) {
-			private List<VcsFileRevision> revisions;
-
-			@Override
-			public synchronized List<VcsFileRevision> getRevisionList() {
-				if (revisions == null) {
-					revisions = getRevisions(filePath);
-				}
-				return revisions;
-			}
-
-			@Override
-			@Nullable
-			public VcsRevisionNumber calcCurrentRevisionNumber() {
-				try {
-					return getCurrentRevision(sandbox, filePath);
-				} catch (VcsException e) {
-					LOGGER.warn(e.getMessage(), e);
-					return null;
-				}
-			}
-
-			@Override
-			public boolean isContentAvailable(final VcsFileRevision revision) {
-				return !isDirectory;
-			}
-		};
+        final List<VcsFileRevision> revisions = getRevisions(filePath);
+        return new MyVcsAbstractHistorySession(revisions, filePath, sandbox);
 	}
 
 	/**
@@ -180,10 +155,14 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 		return getRevisionColumns();
 	}
 
-	@Override
-	public AnAction[] getAdditionalActions(FileHistoryPanel panel) {
-		return new AnAction[0];
-	}
+    /**
+     * todo : add possibility to view change package related to a revision
+     * @param runnable
+     * @return
+     */
+    @Override public AnAction[] getAdditionalActions(Runnable runnable) {
+        return new AnAction[0];
+    }
 
 	@Nullable
 	@NonNls
@@ -212,11 +191,6 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 		return array;
 	}//return null if your revisions cannot be tree
 
-	@Nullable
-	@Override
-	public HistoryAsTreeProvider getTreeHistoryProvider() {
-		return new MksMemberHistoryAsTreeProvider();
-	}
 
 	@Override
 	public boolean supportsHistoryForDirectories() {
@@ -233,4 +207,63 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 			VcsHistorySession session, JComponent forShortcutRegistration) {
 		return new VcsDependentHistoryComponents(getRevisionColumns(session), null, null);
 	}
+
+
+    @Override public void reportAppendableHistory(FilePath filePath,
+        VcsAppendableHistorySessionPartner partner) throws VcsException {
+        final MksSandboxInfo sandbox = getSandbox(filePath);
+        if (sandbox == null) {
+            LOGGER.warn("can't find sandbox for " + filePath);
+            return ;
+        }
+
+    final VcsAbstractHistorySession emptySession = new MyVcsAbstractHistorySession(Collections.<VcsFileRevision>emptyList(),filePath, sandbox) ;
+      partner.reportCreatedEmptySession(emptySession);
+        final List<VcsFileRevision> revisions = getRevisions(filePath);
+        for (VcsFileRevision revision : revisions) {
+            partner.acceptRevision(revision);
+        }
+
+    }
+
+    private class MyVcsAbstractHistorySession extends VcsAbstractHistorySession {
+        final boolean isDirectory;
+        @NotNull
+        private final FilePath filePath;
+        @NotNull
+        private final MksSandboxInfo sandbox;
+
+        public MyVcsAbstractHistorySession(List<VcsFileRevision> revisions, @NotNull FilePath filePath, @NotNull MksSandboxInfo sandbox) {
+            super(revisions);
+            this.filePath = filePath;
+            this.sandbox = sandbox;
+            isDirectory = filePath.isDirectory();
+            shouldBeRefreshed();
+        }
+
+        @Nullable
+        @Override
+        public HistoryAsTreeProvider getHistoryAsTreeProvider() {
+            return new MksMemberHistoryAsTreeProvider();
+        }
+
+        @Override
+        @Nullable
+        public VcsRevisionNumber calcCurrentRevisionNumber() {
+            if (filePath == null || sandbox == null) {
+                return null;
+            }
+            try {
+                return getCurrentRevision(sandbox, filePath);
+            } catch (VcsException e) {
+                LOGGER.warn(e.getMessage(), e);
+                return null;
+            }
+        }
+
+        @Override
+        public boolean isContentAvailable(final VcsFileRevision revision) {
+            return !isDirectory;
+        }
+    }
 }

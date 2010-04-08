@@ -17,6 +17,8 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
   <depends>com.intellij.modules.vcs</depends>
 
   <change-notes><![CDATA[<ul>
+    <li>0.8.1 : IDEA 9.x compatibility
+    </li>
     <li>0.8 : See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.8&can=1">googlecode issues resolved in 0.8</a><br/>
 	Main changes<br/>
 	Support for MKS 2007.<br/>
