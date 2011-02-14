@@ -2,6 +2,7 @@ package org.intellij.vcs.mks;
 
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.history.VcsRevisionNumber;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.StringTokenizer;
@@ -10,7 +11,9 @@ import java.util.StringTokenizer;
  * @author Thibaut Fagart
  */
 public class MksRevisionNumber implements VcsRevisionNumber {
+	@NotNull
 	private final String revision;
+	@NotNull
 	private final int[] parts;
 
 	public static VcsRevisionNumber createRevision(@Nullable String revAsString) throws VcsException {
@@ -20,9 +23,9 @@ public class MksRevisionNumber implements VcsRevisionNumber {
 
 	}
 
-	MksRevisionNumber(String revision) throws VcsException {
+	MksRevisionNumber(@NotNull String revision) throws VcsException {
 		this.revision = revision;
-		String[] stringParts = revision.split("\\.");
+		String[] stringParts = revision.trim().split("\\.");
 		parts = new int[stringParts.length];
 		try {
 			for (int i = 0, max = parts.length; i < max; i++) {
