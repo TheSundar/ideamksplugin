@@ -60,7 +60,7 @@ public class MksVcsFileRevision implements VcsFileRevision {
 	}
 
 	public byte[] getContent() throws IOException {
-		return myContent.getBytes();
+		return null == myContent ? null : (myContent.getBytes());
 	}
 
 	public FilePath getMyFile() {
