@@ -8,8 +8,8 @@
 	<name>IDEA MKS Plugin</name>
 	<description>Implementation of an IDEA MKS plugin.</description>
 	<properties>
-		<idea.version>103.72</idea.version>
-		<!--8.1.EAP-->
+        <!-- 10.5.4 -->
+		<idea.version>107.777</idea.version>
 	</properties>
 	<scm>
 		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/trunk</connection>
@@ -117,7 +117,7 @@
 							${basedir}/src/main/assembly/assembly-zip-descriptor.xml
 						</descriptor>
 					</descriptors>
-					<finalName>${pom.artifactId}</finalName>
+					<finalName>${project.artifactId}</finalName>
 				</configuration>
 				<executions>
 					<execution>

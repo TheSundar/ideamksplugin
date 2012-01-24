@@ -7,6 +7,7 @@ import com.intellij.vcsUtil.VcsUtil;
 import org.intellij.vcs.mks.MksBundle;
 import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.MksConfiguration;
+import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
 import org.jetbrains.annotations.NonNls;
 
@@ -123,34 +124,41 @@ public class ViewMemberHistoryCommand extends SiCLICommand {
         }
     }
 
-    private Date parseDate(String date, boolean updatePatternIfNeeded) throws VcsException {
-        try {
-            return format.parse(date);
-        } catch (ParseException e) {
+	private Date parseDate(final String date, boolean updatePatternIfNeeded) throws VcsException {
+		try {
+			return format.parse(date);
+		} catch (ParseException e) {
 
-            if (updatePatternIfNeeded) {
-                final String pattern = Messages.showInputDialog(
-                        MksBundle.message("configuration.datepattern.incorrect.message", date,
-                                mksCLIConfiguration.getDatePattern()),
-                        MksBundle.message("configuration.datepattern.incorrect.title"), Messages.getErrorIcon(),
-                        mksCLIConfiguration.getDatePattern(),
-                        new MksConfiguration.DatePatternValidator());
-                if (pattern != null) {
-                    ApplicationManager.getApplication().getComponent(MksConfiguration.class).setDatePattern(pattern);
-                    format = new SimpleDateFormat(mksCLIConfiguration.getDatePattern());
-                }
-                return parseDate(date, false);
+			if (updatePatternIfNeeded) {
+				final String[] patternHolder = new String[0];
+				Runnable runnable = new Runnable() {
+					public void run() {
+						patternHolder[0]=Messages.showInputDialog(
+								MksBundle.message("configuration.datepattern.incorrect.message", date,
+										mksCLIConfiguration.getDatePattern()),
+								MksBundle.message("configuration.datepattern.incorrect.title"), Messages.getErrorIcon(),
+								mksCLIConfiguration.getDatePattern(),
+								new MksConfiguration.DatePatternValidator());
+					}
+				};
+				MksVcs.invokeOnEventDispatchThreadAndWait(runnable);
+				String pattern = patternHolder[0];
+				if (pattern != null) {
+					ApplicationManager.getApplication().getComponent(MksConfiguration.class).setDatePattern(pattern);
+					format = new SimpleDateFormat(mksCLIConfiguration.getDatePattern());
+				}
+				return parseDate(date, false);
 
-            } else {
-                throw new VcsException(
-                        "unknown date format for " + date + " (expected [" + mksCLIConfiguration.getDatePattern() +
-                                "]). " +
-                                "This may be an encoding issue, encoding used was " +
-                                mksCLIConfiguration.getMksSiEncoding(COMMAND));
+			} else {
+				throw new VcsException(
+						"unknown date format for " + date + " (expected [" + mksCLIConfiguration.getDatePattern() +
+								"]). " +
+								"This may be an encoding issue, encoding used was " +
+								mksCLIConfiguration.getMksSiEncoding(COMMAND));
 
-            }
-        }
-    }
+			}
+		}
+	}
 
     public List<MksMemberRevisionInfo> getRevisionsInfo() {
         return revisionsInfo;

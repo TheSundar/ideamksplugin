@@ -13,6 +13,7 @@ import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.VcsKey;
 import com.intellij.openapi.vcs.changes.*;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.search.ProjectScope;
 import com.intellij.ui.ColoredTreeCellRenderer;
@@ -118,7 +119,19 @@ class MKSChangeProvider extends AbstractProjectComponent
             });
         } finally {
             adapter.setUpdating(false);
-            WindowManager.getInstance().getStatusBar(myProject).removeWidget(statusWidget.ID());
+
+            Runnable runnable = new Runnable() {
+                public void run() {
+
+                    if (!myProject.isDisposed()) {
+                        final StatusBar statusBar = WindowManager.getInstance().getStatusBar(myProject);
+                        if (null != statusBar) {
+                            statusBar.removeWidget(statusWidget.ID());
+                        }
+                    }
+                }
+            };
+            MksVcs.invokeLaterOnEventDispatchThread(runnable);
             logger.debug("end getChanges");
         }
         if (!errors.isEmpty()) {
@@ -179,19 +192,17 @@ class MKSChangeProvider extends AbstractProjectComponent
             }
             final UserAndPassword userAndPassword = new UserAndPassword();
             try {
-                SwingUtilities.invokeAndWait(new Runnable() {
+                Runnable runnable = new Runnable() {
                     public void run() {
                         final String message = MksBundle.message("mks.reconnect.to.server", hostAndPort);
                         userAndPassword.user =
                                 Messages.showInputDialog(MksVcs.getInstance(myProject).getProject(), "user", message, null);
                         userAndPassword.password =
                                 Messages.showInputDialog(MksVcs.getInstance(myProject).getProject(), "password", message, null);
-
                     }
-                });
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } catch (InvocationTargetException e) {
+                };
+                MksVcs.invokeOnEventDispatchThreadAndWait(runnable);
+            } catch (VcsException e) {
                 logger.error(e);
                 continue;
             }
@@ -210,7 +221,7 @@ class MKSChangeProvider extends AbstractProjectComponent
     }
 
     private void setStatusInfo(final MksStatusWidget statusWidget, final String message) {
-        SwingUtilities.invokeLater(new Runnable() {
+        MksVcs.invokeLaterOnEventDispatchThread(new Runnable() {
             public void run() {
                 statusWidget.setText(message);
                 WindowManager.getInstance().getStatusBar(myProject).updateWidget(statusWidget.ID());

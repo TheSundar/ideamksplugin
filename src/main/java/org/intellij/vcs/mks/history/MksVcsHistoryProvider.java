@@ -126,9 +126,14 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
         command.execute();
         if (command.foundError()) {
             for (VcsException error : command.errors) {
-                if (error.getMessage().equals(GetRevisionInfo.NOT_A_MEMBER)) {
+                if (GetRevisionInfo.NOT_A_MEMBER.equals(error.getMessage())) {
+                    Runnable runnable = new Runnable() {
+                        public void run() {
                     Messages.showMessageDialog("Not (or not any more) a member", "title",
                             Messages.getInformationIcon());
+                        }
+                    };
+                    MksVcs.invokeLaterOnEventDispatchThread(runnable);
                 } else {
                     LOGGER.warn(error);
                 }

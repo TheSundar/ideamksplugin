@@ -13,7 +13,8 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
     <vendor logo="/icons/mks.png" url="http://code.google.com/p/ideamksplugin/">Eric Sheffer, Thibaut Fagart</vendor>
     <resource-bundle>org.intellij.vcs.mks.mksBundle</resource-bundle>
     <category>VCS Integration</category>
-    <idea-version since-build="${idea.version}"/>
+    <!--<idea-version since-build="${idea.version}"/>-->
+    <idea-version since-build="107.777"/>
     <depends>com.intellij.modules.vcs</depends>
 
     <change-notes><![CDATA[<ul>

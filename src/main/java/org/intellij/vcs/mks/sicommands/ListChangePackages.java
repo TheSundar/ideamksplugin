@@ -3,6 +3,7 @@ package org.intellij.vcs.mks.sicommands;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vcs.VcsException;
 import org.intellij.vcs.mks.MksCLIConfiguration;
+import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksChangePackage;
 import org.intellij.vcs.mks.model.MksServerInfo;
 import org.jetbrains.annotations.NonNls;
@@ -67,29 +68,29 @@ public class ListChangePackages extends SiCLICommand {
         }
     }
 
-    @Override
-    protected void handleErrorOutput(String errorOutput) {
-        super.handleErrorOutput(errorOutput);
+	@Override
+	protected void handleErrorOutput(String errorOutput) {
+		super.handleErrorOutput(errorOutput);
 
-        if (exitValue == 128 && errorOutput.contains("(it may be down)")) {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        final IsServerSiServerDialog dialog = new IsServerSiServerDialog(serverInfo.host + ":" + serverInfo.port);
-                        dialog.show();
-                        serverInfo.isSIServer = dialog.isSiServer;
-                    }
-                });
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } catch (InvocationTargetException e) {
-                LOGGER.warn(e);
-                final Throwable o = e.getTargetException();
-                //noinspection ThrowableInstanceNeverThrown
-                errors.add(o instanceof VcsException ? (VcsException) o : new VcsException(o));
-            }
-        }
-    }
+		if (exitValue == 128 && errorOutput.contains("(it may be down)")) {
+			try {
+				final Runnable run = new Runnable() {
+					public void run() {
+						final IsServerSiServerDialog dialog = new IsServerSiServerDialog(serverInfo.host + ":" + serverInfo.port);
+						dialog.show();
+						serverInfo.isSIServer = dialog.isSiServer;
+					}
+				};
+				MksVcs.invokeOnEventDispatchThreadAndWait(run);
+
+			} catch (VcsException e) {
+				LOGGER.warn(e.getCause());
+				final Throwable o = e.getCause();
+				//noinspection ThrowableInstanceNeverThrown
+				errors.add(o instanceof VcsException ? (VcsException) o : e);
+			}
+		}
+	}
 
     @Override
     protected boolean shouldIgnore(String line) {

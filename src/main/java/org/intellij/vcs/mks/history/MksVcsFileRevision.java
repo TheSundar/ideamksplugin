@@ -7,6 +7,7 @@ import com.intellij.openapi.vcs.history.VcsRevisionNumber;
 import org.intellij.vcs.mks.MksContentRevision;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Date;
@@ -32,22 +33,27 @@ public class MksVcsFileRevision implements VcsFileRevision {
 		cpid = info.getCpid();
 	}
 
+	@Override
 	public String getAuthor() {
 		return author;
 	}
 
+	@Override
 	public String getBranchName() {
 		return null;
 	}
 
+	@Override
 	public String getCommitMessage() {
 		return commitMessage;
 	}
 
+	@Override
 	public Date getRevisionDate() {
 		return revisionDate;
 	}
 
+	@Override
 	public synchronized void loadContent() throws VcsException {
 
 		if (myContent == null) {
@@ -55,17 +61,26 @@ public class MksVcsFileRevision implements VcsFileRevision {
 		}
 	}
 
+	@Override
 	public VcsRevisionNumber getRevisionNumber() {
 		return revision;
 	}
 
+    @Nullable
+	@Override
 	public byte[] getContent() throws IOException {
-		return null == myContent ? null : (myContent.getBytes());
+        try {
+			loadContent();
+            return myContent.getBytes();
+        } catch (VcsException e) {
+            if (e.getCause() != null && e.getCause() instanceof IOException) {
+                throw ((IOException) e.getCause());
+            } else {
+                e.printStackTrace();
+                return null;
 	}
-
-	public FilePath getMyFile() {
-		return myFile;
-	}
+        }
+    }
 
 	@Override
 	public boolean equals(Object o) {
@@ -91,6 +106,7 @@ public class MksVcsFileRevision implements VcsFileRevision {
 		return result;
 	}
 
+	@Override
 	public String toString() {
 		return getClass().getSimpleName() + "[" + myFile + "," + revision.asString() + "]";
 	}

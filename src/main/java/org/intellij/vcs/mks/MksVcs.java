@@ -48,6 +48,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -83,6 +84,28 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
         super(project, VCS_NAME);
         sandboxCache = new SandboxCacheImpl(project);
     }
+
+	public static void invokeOnEventDispatchThreadAndWait(Runnable runnable) throws VcsException {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			try {
+				SwingUtilities.invokeAndWait(runnable);
+			} catch (InterruptedException e1) {
+				Thread.currentThread().interrupt();
+			} catch (InvocationTargetException e1) {
+				throw new VcsException(e1.getTargetException());
+			}
+		} else {
+			runnable.run();
+		}
+	}
+	public static void invokeLaterOnEventDispatchThread(Runnable runnable) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(runnable);
+		} else {
+			runnable.run();
+		}
+	}
+
 
     @Override
     public Configurable getConfigurable() {
@@ -428,32 +451,44 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
             this.mksVcs = mksVcs;
         }
 
-        @Override
-        public void editFiles(final VirtualFile[] virtualFiles) throws VcsException {
-            final DispatchBySandboxCommand dispatchCommand = new DispatchBySandboxCommand(mksVcs, virtualFiles);
-            dispatchCommand.execute();
-            if (!dispatchCommand.getNotInSandboxFiles().isEmpty()) {
-                Messages.showErrorDialog(MksBundle.message("unable.to.find.the.sandboxes.for.the.files.title"),
-                        MksBundle.message("could.not.start.checkout"));
-                return;
-            }
-            for (final Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : dispatchCommand.filesBySandbox.entrySet()) {
-                final MksSandboxInfo sandbox = entry.getKey();
-                final ArrayList<VirtualFile> files = entry.getValue();
-                final List<VcsException> errors = new ArrayList<VcsException>();
-                final CheckoutFilesCommand command = new CheckoutFilesCommand(errors, sandbox.getSiSandbox(), files,
-                        this.mksVcs);
-                synchronized (MksVcs.this) {
-                    command.execute();
-                }
-                if (!command.errors.isEmpty()) {
-                    //noinspection ThrowableResultOfMethodCallIgnored
-                    Messages.showErrorDialog(errors.get(0).getLocalizedMessage(),
-                            MksBundle.message("could.not.start.checkout"));
-                    return;
-                }
-            }
-        }
+		@Override
+		public void editFiles(final VirtualFile[] virtualFiles) throws VcsException {
+			final DispatchBySandboxCommand dispatchCommand = new DispatchBySandboxCommand(mksVcs, virtualFiles);
+			dispatchCommand.execute();
+			if (!dispatchCommand.getNotInSandboxFiles().isEmpty()) {
+				Runnable runnable = new Runnable() {
+					public void run() {
+						Messages.showErrorDialog(MksBundle.message("unable.to.find.the.sandboxes.for.the.files.title"),
+								MksBundle.message("could.not.start.checkout"));
+					}
+				};
+				MksVcs.invokeLaterOnEventDispatchThread(runnable);
+
+				return;
+			}
+			for (final Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : dispatchCommand.filesBySandbox.entrySet()) {
+				final MksSandboxInfo sandbox = entry.getKey();
+				final ArrayList<VirtualFile> files = entry.getValue();
+				final List<VcsException> errors = new ArrayList<VcsException>();
+				final CheckoutFilesCommand command = new CheckoutFilesCommand(errors, sandbox.getSiSandbox(), files,
+						this.mksVcs);
+				synchronized (MksVcs.this) {
+					command.execute();
+				}
+				if (!command.errors.isEmpty()) {
+					//noinspection ThrowableResultOfMethodCallIgnored
+					Runnable runnable = new Runnable() {
+						public void run() {
+							Messages.showErrorDialog(errors.get(0).getLocalizedMessage(),
+									MksBundle.message("could.not.start.checkout"));
+						}
+					};
+					MksVcs.invokeLaterOnEventDispatchThread(runnable);
+
+					return;
+				}
+			}
+		}
 
         @Override
         public String getRequestText() {

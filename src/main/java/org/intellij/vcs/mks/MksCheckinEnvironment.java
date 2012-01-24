@@ -11,12 +11,15 @@ import com.intellij.openapi.vcs.changes.ContentRevision;
 import com.intellij.openapi.vcs.checkin.CheckinEnvironment;
 import com.intellij.openapi.vcs.ui.RefreshableOnComponent;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.NullableFunction;
+import com.intellij.util.PairConsumer;
 import com.intellij.vcsUtil.VcsUtil;
 import mks.integrations.common.TriclopsException;
 import mks.integrations.common.TriclopsSiMember;
 import mks.integrations.common.TriclopsSiMembers;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -36,17 +39,13 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
 
 	/**
 	 * todo
-	 *
-	 * @param changes
-	 * @param preparedComment
-	 * @param parameters
-	 * @return
 	 */
-	public List<VcsException> commit(List<Change> changes,
-									 String preparedComment, Object parameters) {
+	@Override
+	public List<VcsException> commit(List<Change> changes, String preparedComment, @NotNull NullableFunction<Object, Object> objectObjectNullableFunction) {
 		return commit(changes, preparedComment);
 	}
 
+	@Override
 	public List<VcsException> commit(List<Change> changes, String preparedComment) {
 		// todo find the appropriate change package
 		// commit the changes using the change package
@@ -107,39 +106,37 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
 	}
 
 	@Nullable
-	public RefreshableOnComponent createAdditionalOptionsPanel(CheckinProjectPanel panel) {
+	@Override
+	public RefreshableOnComponent createAdditionalOptionsPanel(CheckinProjectPanel checkinProjectPanel, PairConsumer<Object, Object> objectObjectPairConsumer) {
 		return null;
 	}
 
+	@Override
 	public String getCheckinOperationName() {
 		return "Check in";
 	}
 
 	@Nullable
+	@Override
 	public String getDefaultMessageFor(FilePath[] filesToCheckin) {
 		return null;
 	}
 
 	@Nullable
 	@NonNls
+	@Override
 	public String getHelpId() {
 		return null;
 	}
 
-	public String prepareCheckinMessage(String text) {
-		return null;
-	}
-
+	@Override
 	public List<VcsException> scheduleMissingFileForDeletion(List<FilePath> files) {
 		return null;
 	}
 
+	@Override
 	public List<VcsException> scheduleUnversionedFilesForAddition(List<VirtualFile> files) {
 		return null;
-	}
-
-	public boolean showCheckinDialogInAnyCase() {
-		return false;
 	}
 
 	/**
@@ -147,7 +144,9 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
 	 * @param changeList
 	 * @return
 	 */
+	@Override
 	public boolean keepChangeListAfterCommit(ChangeList changeList) {
 		return false;
 	}
+
 }

@@ -1,5 +1,6 @@
 package org.intellij.vcs.mks;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.history.VcsRevisionNumber;
 import org.jetbrains.annotations.NotNull;
@@ -11,6 +12,7 @@ import java.util.StringTokenizer;
  * @author Thibaut Fagart
  */
 public class MksRevisionNumber implements VcsRevisionNumber {
+    static final Logger LOGGER = Logger.getInstance(MksRevisionNumber.class.getName());
 	@NotNull
 	private final String revision;
 	@NotNull
@@ -96,7 +98,8 @@ public class MksRevisionNumber implements VcsRevisionNumber {
 		if (other == VcsRevisionNumber.NULL) {
 			return 1;
 		} else if (!(other instanceof MksRevisionNumber)) {
-			throw new IllegalArgumentException();
+			LOGGER.warn("expected MksRevisionNumber, got "+((null == other) ? "null":other.getClass()));
+            return 0;
 		}
 		MksRevisionNumber mksOther = (MksRevisionNumber) other;
 		for (int i = 0, max = parts.length, maxOther = mksOther.parts.length; i < max; i++) {

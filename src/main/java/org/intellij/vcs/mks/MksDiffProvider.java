@@ -1,9 +1,6 @@
 package org.intellij.vcs.mks;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-
-import javax.swing.SwingUtilities;
 
 import org.intellij.vcs.mks.sicommands.GetRevisionInfo;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +49,12 @@ public class MksDiffProvider implements DiffProvider {
             return command;
         } else //noinspection ThrowableResultOfMethodCallIgnored
             if (errors.size() == 1 && errors.get(0).getMessage().equals(GetRevisionInfo.NOT_A_MEMBER)) {
-                Messages.showMessageDialog("Not (or not any more) a member", "title", Messages.getInformationIcon());
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        Messages.showMessageDialog("Not (or not any more) a member", "title", Messages.getInformationIcon());
+                    }
+                };
+                MksVcs.invokeLaterOnEventDispatchThread(runnable);
                 return command;
             } else {
                 LOGGER.warn("error occurred retrieving version info for " + virtualFile.getPresentableName());
@@ -75,29 +77,20 @@ public class MksDiffProvider implements DiffProvider {
     @Nullable
     public ContentRevision createFileContent(final VcsRevisionNumber vcsRevisionNumber, final VirtualFile virtualFile) {
         if (VcsRevisionNumber.NULL.equals(vcsRevisionNumber)) {
-            if (!SwingUtilities.isEventDispatchThread()) {
-                try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        public void run() {
-                            showRevisionNotControlledErrorDialog();
-                        }
-                    });
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (InvocationTargetException e) {
-                    LOGGER.error(e.getTargetException());
+            final Runnable runnable = new Runnable() {
+                public void run() {
+                    Messages.showWarningDialog("This revision is not mks controlled", "Error");
                 }
-            } else {
-                showRevisionNotControlledErrorDialog();
+            };
+            try {
+                MksVcs.invokeOnEventDispatchThreadAndWait(runnable);
+            } catch (VcsException e) {
+                LOGGER.error(e.getCause());
             }
             return null;
         }
         return new MksContentRevision(mksVcs,
             VcsContextFactory.SERVICE.getInstance().createFilePathOn(virtualFile), vcsRevisionNumber);
-    }
-
-    private void showRevisionNotControlledErrorDialog() {
-        Messages.showWarningDialog("This revision is not mks controlled", "Error");
     }
 
     @Override
