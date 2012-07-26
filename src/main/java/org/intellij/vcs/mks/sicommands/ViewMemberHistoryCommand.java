@@ -130,7 +130,7 @@ public class ViewMemberHistoryCommand extends SiCLICommand {
 		} catch (ParseException e) {
 
 			if (updatePatternIfNeeded) {
-				final String[] patternHolder = new String[0];
+				final String[] patternHolder = new String[1];
 				Runnable runnable = new Runnable() {
 					public void run() {
 						patternHolder[0]=Messages.showInputDialog(
@@ -144,8 +144,9 @@ public class ViewMemberHistoryCommand extends SiCLICommand {
 				MksVcs.invokeOnEventDispatchThreadAndWait(runnable);
 				String pattern = patternHolder[0];
 				if (pattern != null) {
-					ApplicationManager.getApplication().getComponent(MksConfiguration.class).setDatePattern(pattern);
-					format = new SimpleDateFormat(mksCLIConfiguration.getDatePattern());
+					final MksConfiguration configuration = ApplicationManager.getApplication().getComponent(MksConfiguration.class);
+					configuration.setDatePattern(pattern);
+					format = new SimpleDateFormat(configuration.getDatePattern());
 				}
 				return parseDate(date, false);
 
