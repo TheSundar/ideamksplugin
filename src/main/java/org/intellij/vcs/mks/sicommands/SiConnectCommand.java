@@ -30,7 +30,16 @@ public class SiConnectCommand extends SiCLICommand {
         this.user = user;
     }
 
-    public void execute() {
+	@Override
+	protected void logCommand(StringBuffer buf) {
+		final int startPwd = buf.indexOf("--password=");
+		final int endPwd = buf.indexOf(" ", startPwd);
+		for (int i = startPwd+"--password=".length(); i < endPwd; i++)
+		buf.setCharAt(i, '*');
+		super.logCommand(buf);
+	}
+
+	public void execute() {
         try {
             super.executeCommand();
         } catch (IOException e) {

@@ -84,7 +84,7 @@ public abstract class SiCLICommand extends AbstractMKSCommand implements Runnabl
 		}
 		long start = System.currentTimeMillis();
 		commandString = buf.toString();
-		LOGGER.warn("executing " + buf.toString());
+		logCommand(buf);
 		builder.redirectErrorStream(false);
 		Process process = builder.start();
 		try {
@@ -107,6 +107,10 @@ public abstract class SiCLICommand extends AbstractMKSCommand implements Runnabl
 			fireCommandCompleted(start);
 		}
 		return buf.toString();
+	}
+
+	protected void logCommand(StringBuffer buf) {
+		LOGGER.warn("executing " + buf.toString());
 	}
 
 
