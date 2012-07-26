@@ -131,8 +131,13 @@ class MKSChangeProvider extends AbstractProjectComponent
                     }
                 }
             };
-            MksVcs.invokeLaterOnEventDispatchThread(runnable);
-            logger.debug("end getChanges");
+			try {
+				MksVcs.invokeOnEventDispatchThreadAndWait(runnable);
+			} catch (VcsException e) {
+				// no exceptions out of finally !
+				logger.error(e);
+			}
+			logger.debug("end getChanges");
         }
         if (!errors.isEmpty()) {
             MksVcs.getInstance(myProject).showErrors(errors, "ChangeProvider");

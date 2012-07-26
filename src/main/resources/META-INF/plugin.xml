@@ -13,11 +13,13 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
     <vendor logo="/icons/mks.png" url="http://code.google.com/p/ideamksplugin/">Eric Sheffer, Thibaut Fagart</vendor>
     <resource-bundle>org.intellij.vcs.mks.mksBundle</resource-bundle>
     <category>VCS Integration</category>
-    <!--<idea-version since-build="${idea.version}"/>-->
-    <idea-version since-build="107.777"/>
+    <idea-version since-build="${idea.version}"/>
+    <!--<idea-version since-build="107.777"/>-->
     <depends>com.intellij.modules.vcs</depends>
 
     <change-notes><![CDATA[<ul>
+    <li>0.9 : IDEA 10.5.4 compatibility
+    </li>
     <li>0.8.1 : IDEA 9.x compatibility
     </li>
     <li>0.8 : See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.8&can=1">googlecode issues resolved in 0.8</a><br/>
