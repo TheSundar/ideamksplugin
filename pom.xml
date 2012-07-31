@@ -3,7 +3,7 @@
 	<groupId>mks-idea</groupId>
 	<artifactId>mks-idea</artifactId>
 	<packaging>jar</packaging>
-	<version>0.9-X</version>
+	<version>0.10-X-SNAPSHOT</version>
 	<name>IDEA MKS Plugin</name>
 	<description>Implementation of an IDEA MKS plugin.</description>
 	<properties>
@@ -11,9 +11,9 @@
 		<idea.version>107.777</idea.version>
 	</properties>
 	<scm>
-		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/tags/mks-idea-0.9-X</connection>
-		<developerConnection>scm:svn:https://ideamksplugin.googlecode.com/svn/tags/mks-idea-0.9-X</developerConnection>
-		<url>http://ideamksplugin.googlecode.com/svn/tags/mks-idea-0.9-X</url>
+		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/trunk</connection>
+		<developerConnection>scm:svn:https://ideamksplugin.googlecode.com/svn/trunk</developerConnection>
+		<url>http://ideamksplugin.googlecode.com/svn/trunk</url>
 	</scm>
 	<dependencies>
 		<!-- BEGIN classpath for ideauidesigner plugin, see IDEA generated  ant buildfiles javac2 taskdef -->
