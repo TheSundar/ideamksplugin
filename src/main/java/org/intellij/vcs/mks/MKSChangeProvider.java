@@ -197,7 +197,8 @@ class MKSChangeProvider extends AbstractProjectComponent
 			try {
 				Runnable runnable = new Runnable() {
 					public void run() {
-						LoginDialog dialog = new LoginDialog(hostAndPort);
+
+						LoginDialog dialog = new LoginDialog(WindowManager.getInstance().getFrame(myProject), hostAndPort);
 						dialog.pack();
 						dialog.setVisible(true);
 						if (dialog.isCanceled()) {

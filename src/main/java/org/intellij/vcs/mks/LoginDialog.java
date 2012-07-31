@@ -1,5 +1,6 @@
 package org.intellij.vcs.mks;
 
+import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
@@ -11,11 +12,17 @@ public class LoginDialog extends JDialog {
 	private JPasswordField password;
 	private boolean wasCanceled = true;
 
-	public LoginDialog(String hostAndPort) {
+	public LoginDialog(JFrame frame, String hostAndPort) {
+		super(frame, MksBundle.message("mks.reconnect.to.server", hostAndPort));
+		final Point parentLocation = frame.getLocation();
+		final Dimension parentDimension = frame.getSize();
+		final Point target = new Point(
+		parentLocation.x + parentDimension.width / 2,
+				parentLocation.y + parentDimension.height / 2);
+		setLocation(target);
 		setContentPane(contentPane);
 		setModal(true);
 		getRootPane().setDefaultButton(buttonOK);
-		setTitle(MksBundle.message("mks.reconnect.to.server", hostAndPort));
 
 		buttonOK.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -59,7 +66,7 @@ public class LoginDialog extends JDialog {
 		return wasCanceled;
 	}
 	public static void main(String[] args) {
-		LoginDialog dialog = new LoginDialog("toto:7001");
+		LoginDialog dialog = new LoginDialog(null, "toto:7001");
 		dialog.pack();
 		dialog.setVisible(true);
 		System.exit(0);
