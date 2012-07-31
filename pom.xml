@@ -16,6 +16,23 @@
 		<url>http://ideamksplugin.googlecode.com/svn/trunk</url>
 	</scm>
 	<dependencies>
+		<!-- BEGIN classpath for ideauidesigner plugin, see IDEA generated  ant buildfiles javac2 taskdef -->
+		<dependency>
+			<groupId>com.intellij</groupId>
+			<artifactId>javac2</artifactId>
+			<version>${idea.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>asm</groupId>
+			<artifactId>asm-commons</artifactId>
+			<version>3.3</version>
+		</dependency>
+		<dependency>
+			<groupId>asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>3.3</version>
+		</dependency>
+		<!-- END classpath for ideauidesigner plugin  -->
 		<dependency>
 			<groupId>org.easymock</groupId>
 			<artifactId>easymock</artifactId>
@@ -97,7 +114,16 @@
 					<fork>true</fork>
 					<debug>true</debug>
 					<failOnError>true</failOnError>
+					<verbose>true</verbose>
 				</configuration>
+				<dependencies>
+					<!-- override older (7.0.3) javac2 which was not java5 -->
+					<dependency>
+						<groupId>com.intellij</groupId>
+						<artifactId>javac2</artifactId>
+						<version>${idea.version}</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

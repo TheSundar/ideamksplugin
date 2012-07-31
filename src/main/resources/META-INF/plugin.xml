@@ -18,7 +18,13 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
     <depends>com.intellij.modules.vcs</depends>
 
     <change-notes><![CDATA[<ul>
-    <li>0.9 : IDEA 10.5.4 compatibility
+    <li>0.9 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.9&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
+      googlecode issues resolved in 0.9</a> for complete changes<br/>
+      Main changes <br/>
+       IDEA 10.5.4 compatibility<br/>
+       do not log mks password <br/>
+       use a JPassword field when requesting password
+       and bug corrections
     </li>
     <li>0.8.1 : IDEA 9.x compatibility
     </li>
