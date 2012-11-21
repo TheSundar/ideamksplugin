@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Thibaut Fagart
@@ -35,14 +36,6 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
 
 	public MksCheckinEnvironment(MksVcs mksVcs) {
 		this.mksVcs = mksVcs;
-	}
-
-	/**
-	 * todo
-	 */
-	@Override
-	public List<VcsException> commit(List<Change> changes, String preparedComment, @NotNull NullableFunction<Object, Object> objectObjectNullableFunction) {
-		return commit(changes, preparedComment);
 	}
 
 	@Override
@@ -149,4 +142,17 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
 		return false;
 	}
 
+	/**
+	 * todo
+	 */
+	@Override
+	@Nullable
+	public List<VcsException> commit(List<Change> changes, String preparedComment, @NotNull NullableFunction<Object, Object> parametersHolder, Set<String> feedback) {
+		return commit(changes, preparedComment);
+	}
+
+	@Override
+	public boolean isRefreshAfterCommitNeeded() {
+		return false;
+	}
 }

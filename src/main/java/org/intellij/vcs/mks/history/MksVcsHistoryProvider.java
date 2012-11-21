@@ -6,6 +6,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.history.*;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.vcsUtil.VcsUtil;
 import org.intellij.vcs.mks.MKSHelper;
@@ -148,10 +149,14 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
     }
 
     private MksSandboxInfo getSandbox(FilePath filePath) {
-        return vcs.getSandboxCache().getSubSandbox(filePath.getVirtualFile());
+		return getSandbox(filePath.getVirtualFile());
     }
 
-    /**
+	private MksSandboxInfo getSandbox(VirtualFile virtualFile) {
+		return vcs.getSandboxCache().getSubSandbox(virtualFile);
+	}
+
+	/**
      * @param vcsHistorySession
      * @return
      * @deprecated
@@ -234,7 +239,20 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 
     }
 
-    private class MyVcsAbstractHistorySession extends VcsAbstractHistorySession {
+	@Override
+	public boolean canShowHistoryFor(@NotNull VirtualFile virtualFile) {
+		return !virtualFile.isDirectory()
+				&& getSandbox(virtualFile) != null;
+
+	}
+
+	@Nullable
+	@Override
+	public DiffFromHistoryHandler getHistoryDiffHandler() {
+		return null;
+	}
+
+	private class MyVcsAbstractHistorySession extends VcsAbstractHistorySession {
         final boolean isDirectory;
         @NotNull
         private final FilePath filePath;

@@ -1,9 +1,12 @@
 package org.intellij.vcs.mks.history;
 
+import com.intellij.openapi.util.Throwable2Computable;
 import com.intellij.openapi.vcs.FilePath;
+import com.intellij.openapi.vcs.RepositoryLocation;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.history.VcsFileRevision;
 import com.intellij.openapi.vcs.history.VcsRevisionNumber;
+import com.intellij.openapi.vcs.impl.ContentRevisionCache;
 import org.intellij.vcs.mks.MksContentRevision;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
@@ -54,11 +57,12 @@ public class MksVcsFileRevision implements VcsFileRevision {
 	}
 
 	@Override
-	public synchronized void loadContent() throws VcsException {
+	public synchronized byte[] loadContent() throws VcsException {
 
 		if (myContent == null) {
 			myContent = new MksContentRevision(mksvcs, myFile, revision).getContent();
 		}
+		return myContent.getBytes();
 	}
 
 	@Override
@@ -66,21 +70,26 @@ public class MksVcsFileRevision implements VcsFileRevision {
 		return revision;
 	}
 
-    @Nullable
+	@Nullable
 	@Override
 	public byte[] getContent() throws IOException {
-        try {
-			loadContent();
-            return myContent.getBytes();
-        } catch (VcsException e) {
-            if (e.getCause() != null && e.getCause() instanceof IOException) {
-                throw ((IOException) e.getCause());
-            } else {
-                e.printStackTrace();
-                return null;
+		try {
+			return ContentRevisionCache.getOrLoadAsBytes(mksvcs.getProject(), myFile, revision, MksVcs.OUR_KEY, ContentRevisionCache.UniqueType.REPOSITORY_CONTENT,
+					new Throwable2Computable<byte[], VcsException, IOException>() {
+						@Override
+						public byte[] compute() throws VcsException, IOException {
+							return loadContent();
+						}
+					});
+		} catch (VcsException e) {
+			if (e.getCause() != null && e.getCause() instanceof IOException) {
+				throw ((IOException) e.getCause());
+			} else {
+				e.printStackTrace();
+				return null;
+			}
+		}
 	}
-        }
-    }
 
 	@Override
 	public boolean equals(Object o) {
@@ -114,4 +123,10 @@ public class MksVcsFileRevision implements VcsFileRevision {
 	public String getCpid() {
 		return cpid;
 	}
+
+	@Override
+	public RepositoryLocation getChangedRepositoryPath() {
+		return null;
+	}
+
 }

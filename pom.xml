@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>mks-idea</groupId>
 	<artifactId>mks-idea</artifactId>
@@ -7,8 +8,8 @@
 	<name>IDEA MKS Plugin</name>
 	<description>Implementation of an IDEA MKS plugin.</description>
 	<properties>
-        <!-- 10.5.4 -->
-		<idea.version>107.777</idea.version>
+		<!-- 10.5.4 -->
+		<idea.version>122.746</idea.version>
 	</properties>
 	<scm>
 		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/trunk</connection>
@@ -37,6 +38,12 @@
 			<groupId>org.easymock</groupId>
 			<artifactId>easymock</artifactId>
 			<version>2.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.trove4j</groupId>
+			<artifactId>trove4j</artifactId>
+			<version>2.0.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -100,31 +107,127 @@
 		</resources>
 
 		<plugins>
+<!--
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>ideauidesigner-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				        <artifactId>maven-antrun-plugin</artifactId>
+				        <version>1.7</version>
 				<executions>
 					<execution>
+						<id>javac2</id>
+						<phase>process-classes</phase>
 						<goals>
-							<goal>javac2</goal>
+							<goal>run</goal>
 						</goals>
+						<configuration>
+							<target>
+								<taskdef name="javac2" classname="com.intellij.ant.Javac2"
+										 classpathref="maven.plugin.classpath"/>
+								<path id="mks.module.sourcepath">
+						    <dirset dir="${project.basedir}">
+						      <include name="src/main/java"/>
+						      <include name="src/main/resources"/>
+						    </dirset>
+						  </path>
+								<taskdef name="instrumentIdeaExtensions"
+										 classname="com.intellij.ant.InstrumentIdeaExtensions"
+										 classpathref="maven.plugin.classpath"/>
+								<property name="compile_classpath" refid="maven.compile.classpath"/>
+        <property name="runtime_classpath" refid="maven.runtime.classpath"/>
+        <property name="test_classpath" refid="maven.test.classpath"/>
+        <property name="plugin_classpath" refid="maven.plugin.classpath"/>
+
+        <echo message="compile classpath: ${compile_classpath}"/>
+        <echo message="runtime classpath: ${runtime_classpath}"/>
+        <echo message="test classpath:    ${test_classpath}"/>
+        <echo message="plugin classpath:  ${plugin_classpath}"/>
+
+								<javac2 destdir="${project.build.outputDirectory}" debug="true" includeantruntime="true" fork="true">
+&lt;!&ndash;
+										nowarn="${compiler.generate.no.warnings}"
+										memorymaximumsize="${compiler.max.memory}"
+										executable="${module.jdk.bin.mks}/javac">
+&ndash;&gt;
+
+									<classpath refid="maven.compile.classpath"/>
+									<src refid="mks.module.sourcepath"/>
+									&lt;!&ndash;<patternset refid="excluded.from.compilation.mks"/>&ndash;&gt;
+								</javac2>
+							</target>
+						</configuration>
 					</execution>
 				</executions>
-				<configuration>
-					<fork>true</fork>
-					<debug>true</debug>
-					<failOnError>true</failOnError>
-					<verbose>true</verbose>
-				</configuration>
 				<dependencies>
-					<!-- override older (7.0.3) javac2 which was not java5 -->
+					<dependency>
+						<groupId>org.apache.ant</groupId>
+						<artifactId>ant</artifactId>
+						<version>1.8.2</version>
+					</dependency>
+					<dependency>
+						<groupId>com.intellij</groupId>
+						<artifactId>jgoodies-forms</artifactId>
+						<version>${idea.version}</version>
+					</dependency>
 					<dependency>
 						<groupId>com.intellij</groupId>
 						<artifactId>javac2</artifactId>
 						<version>${idea.version}</version>
 					</dependency>
+					<dependency>
+						<groupId>com.intellij</groupId>
+						<artifactId>asm4-all</artifactId>
+						<version>${idea.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>com.intellij</groupId>
+						<artifactId>javac2</artifactId>
+						<version>${idea.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>com.intellij</groupId>
+						<artifactId>jdom</artifactId>
+						<version>${idea.version}</version>
+					</dependency>
 				</dependencies>
 			</plugin>
+-->
+									<plugin>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>ideauidesigner-maven-plugin</artifactId>
+										<executions>
+											<execution>
+												<goals>
+													<goal>javac2</goal>
+												</goals>
+											</execution>
+										</executions>
+										<configuration>
+											<fork>true</fork>
+											<debug>true</debug>
+											<failOnError>true</failOnError>
+											<verbose>true</verbose>
+										</configuration>
+										<dependencies>
+											<!-- override older (7.0.3) javac2 which was not java5 -->
+											<dependency>
+												<groupId>com.intellij</groupId>
+												<artifactId>javac2</artifactId>
+												<version>107.777</version>
+											</dependency>
+						<!--
+											<dependency>
+												<groupId>org.apache.ant</groupId>
+												<artifactId>ant</artifactId>
+												<version>1.8.2</version>
+											</dependency>
+											<dependency>
+												<groupId>com.intellij</groupId>
+												<artifactId>asm4-all</artifactId>
+												<version>${idea.version}</version>
+											</dependency>
+						-->
+										</dependencies>
+									</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>

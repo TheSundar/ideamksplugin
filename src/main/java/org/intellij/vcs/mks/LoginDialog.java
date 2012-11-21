@@ -66,7 +66,7 @@ public class LoginDialog extends JDialog {
 		return wasCanceled;
 	}
 	public static void main(String[] args) {
-		LoginDialog dialog = new LoginDialog(null, "toto:7001");
+		LoginDialog dialog = new LoginDialog(new JFrame(), "toto:7001");
 		dialog.pack();
 		dialog.setVisible(true);
 		System.exit(0);
