@@ -4,7 +4,7 @@
 	<groupId>mks-idea</groupId>
 	<artifactId>mks-idea</artifactId>
 	<packaging>jar</packaging>
-	<version>0.10-X</version>
+	<version>0.10-SNAPSHOT</version>
 	<name>IDEA MKS Plugin</name>
 	<description>Implementation of an IDEA MKS plugin.</description>
 	<properties>
