@@ -7,9 +7,9 @@ import com.intellij.openapi.vcs.VcsException;
 import org.intellij.vcs.mks.MKSHelper;
 import org.intellij.vcs.mks.MksConfiguration;
 import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.sicommands.ListSandboxes;
+import org.intellij.vcs.mks.sicommands.cli.ListSandboxes;
 import org.intellij.vcs.mks.sicommands.SandboxInfo;
-import org.intellij.vcs.mks.sicommands.SandboxesCommand;
+import org.intellij.vcs.mks.sicommands.cli.SandboxesCommand;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 

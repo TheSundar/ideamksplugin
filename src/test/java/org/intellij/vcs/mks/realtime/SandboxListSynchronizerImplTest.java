@@ -2,7 +2,7 @@ package org.intellij.vcs.mks.realtime;
 
 import junit.framework.TestCase;
 import org.intellij.vcs.mks.sicommands.SandboxInfo;
-import org.intellij.vcs.mks.sicommands.SandboxesCommand;
+import org.intellij.vcs.mks.sicommands.cli.SandboxesCommand;
 import org.intellij.vcs.mks.sicommands.SandboxesCommandTest;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

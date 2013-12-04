@@ -19,7 +19,7 @@ import org.intellij.vcs.mks.MKSHelper;
 import org.intellij.vcs.mks.MksRevisionNumber;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksMemberState;
-import org.intellij.vcs.mks.sicommands.AbstractViewSandboxCommand;
+import org.intellij.vcs.mks.sicommands.cli.AbstractViewSandboxCommand;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

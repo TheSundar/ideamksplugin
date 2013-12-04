@@ -14,18 +14,14 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.NullableFunction;
 import com.intellij.util.PairConsumer;
 import com.intellij.vcsUtil.VcsUtil;
-import mks.integrations.common.TriclopsException;
-import mks.integrations.common.TriclopsSiMember;
-import mks.integrations.common.TriclopsSiMembers;
-import org.intellij.vcs.mks.realtime.MksNativeSandboxInfo;
-import org.intellij.vcs.mks.realtime.MksSandboxInfo;
+import org.intellij.vcs.mks.actions.api.AddMemberAPICommand;
+import org.intellij.vcs.mks.actions.api.CheckinAPICommand;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -46,6 +42,9 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
 		logger.debug("committing <" + preparedComment + ">");
 		debugChanges(changes);
 		ArrayList<VirtualFile> modifiedFiles = new ArrayList<VirtualFile>();
+		ArrayList<VirtualFile> addedFiles = new ArrayList<VirtualFile>();
+        List<VcsException> exceptions = new ArrayList<VcsException>();
+
 		for (Change change : changes) {
 			if (FileStatus.MODIFIED.equals(change.getFileStatus())) {
 				ContentRevision afterRevision = change.getAfterRevision();
@@ -54,13 +53,30 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
 					modifiedFiles.add(VcsUtil.getVirtualFile(filePath.getIOFile()));
 				}
 
-			}
-		}
-		DispatchBySandboxCommand dispatchAction = new DispatchBySandboxCommand(mksVcs,
+			} else if (FileStatus.ADDED.equals(change.getFileStatus())) {
+                addedFiles.add(change.getAfterRevision().getFile().getVirtualFile());
+            }else {
+                    exceptions.add(new VcsException("only MODIFIED/ADDED (!= "+change.getFileStatus()+"files are currently supported" ));
+            }
+        }
+        CheckinAPICommand checkinAPICommand = new CheckinAPICommand();
+        try {
+            checkinAPICommand.executeCommand(mksVcs, exceptions, modifiedFiles.toArray(new VirtualFile[modifiedFiles.size()]));
+        } catch (VcsException e) {
+            //noinspection ThrowableInstanceNeverThrown
+            exceptions.add(e);
+        }
+        AddMemberAPICommand addMemberAPICommand = new AddMemberAPICommand();
+        try {
+            addMemberAPICommand.executeCommand(mksVcs, exceptions, addedFiles.toArray(new VirtualFile[addedFiles.size()]));
+        } catch (VcsException e) {
+            //noinspection ThrowableInstanceNeverThrown
+            exceptions.add(e);
+        }
+/*        DispatchBySandboxCommand dispatchAction = new DispatchBySandboxCommand(mksVcs,
 				modifiedFiles.toArray(new VirtualFile[modifiedFiles.size()]));
 		dispatchAction.execute();
 
-		List<VcsException> exceptions = new ArrayList<VcsException>();
 		Map<MksSandboxInfo, ArrayList<VirtualFile>> filesBysandbox = dispatchAction.getFilesBySandbox();
 		for (Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : filesBysandbox.entrySet()) {
 
@@ -88,7 +104,7 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
             }               else {
                 throw new UnsupportedOperationException("not supported for non native");
             }
-        }
+        }*/
 
 		return exceptions;
 	}

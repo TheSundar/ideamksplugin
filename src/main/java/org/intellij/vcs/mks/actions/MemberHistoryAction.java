@@ -3,14 +3,14 @@ package org.intellij.vcs.mks.actions;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.actions.triclops.MemberHistoryTriclopsCommand;
+import org.intellij.vcs.mks.actions.api.MemberHistoryAPICommand;
 import org.jetbrains.annotations.NotNull;
 
 
 public class MemberHistoryAction extends SingleTargetAction {
 
 	public MemberHistoryAction() {
-		super(new MemberHistoryTriclopsCommand());
+		super(new MemberHistoryAPICommand());
 	}
 
 	@Override

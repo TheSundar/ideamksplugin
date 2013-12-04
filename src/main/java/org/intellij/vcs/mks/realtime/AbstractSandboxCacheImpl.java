@@ -1,7 +1,6 @@
 package org.intellij.vcs.mks.realtime;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
@@ -20,7 +19,7 @@ import org.intellij.vcs.mks.MKSHelper;
 import org.intellij.vcs.mks.MksRevisionNumber;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksMemberState;
-import org.intellij.vcs.mks.sicommands.AbstractViewSandboxCommand;
+import org.intellij.vcs.mks.sicommands.cli.AbstractViewSandboxCommand;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -210,7 +209,7 @@ public abstract class AbstractSandboxCacheImpl implements SandboxCache {
                 } else if (!virtualFile.isDirectory()) {
                     // ambiguous sandbox, check them all
                     for (Iterator<MksSandboxInfo> iterator = infoList.iterator(); iterator.hasNext(); ) {
-                        MksNativeSandboxInfo mksSandboxInfo = (MksNativeSandboxInfo) iterator.next();
+                        MksSandboxInfo mksSandboxInfo = iterator.next();
                         if (checkSandboxContains(mksSandboxInfo, virtualFile)) {
                             sandbox = mksSandboxInfo;
                             break;
@@ -404,7 +403,7 @@ public abstract class AbstractSandboxCacheImpl implements SandboxCache {
         synchronized (lock) {
             final List<MksSandboxInfo> newSandboxesInProject = new ArrayList<MksSandboxInfo>();
             for (Iterator<MksSandboxInfo> iterator = outOfScopeSandboxes.iterator(); iterator.hasNext(); ) {
-                MksNativeSandboxInfo sandbox = (MksNativeSandboxInfo) iterator.next();
+                MksSandboxInfo sandbox = iterator.next();
                 if (this.doesSandboxIntersectProject(new File(sandbox.sandboxPath))) {
                     newSandboxesInProject.add(sandbox);
                 }
@@ -426,7 +425,7 @@ public abstract class AbstractSandboxCacheImpl implements SandboxCache {
             }
             outOfScopeSandboxes.removeAll(newSandboxesInProject);
             for (Iterator<MksSandboxInfo> iterator = newSandboxesInProject.iterator(); iterator.hasNext(); ) {
-                MksNativeSandboxInfo sandboxInfo = (MksNativeSandboxInfo) iterator.next();
+                MksSandboxInfo sandboxInfo = iterator.next();
                 addSandboxBelongingToProject(sandboxInfo);
             }
             outOfScopeSandboxes.addAll(sandboxesRemovedFromProject);

@@ -2,7 +2,7 @@ package org.intellij.vcs.mks;
 
 import java.util.ArrayList;
 
-import org.intellij.vcs.mks.sicommands.GetRevisionInfo;
+import org.intellij.vcs.mks.sicommands.cli.GetRevisionInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

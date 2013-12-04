@@ -5,6 +5,7 @@ import junit.framework.TestCase;
 import org.intellij.vcs.mks.CommandExecutionListener;
 import org.intellij.vcs.mks.MKSAPIHelper;
 import org.intellij.vcs.mks.MksCLIConfiguration;
+import org.intellij.vcs.mks.sicommands.api.SandboxesCommandAPI;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

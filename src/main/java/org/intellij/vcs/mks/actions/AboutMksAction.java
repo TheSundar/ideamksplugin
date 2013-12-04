@@ -3,12 +3,12 @@ package org.intellij.vcs.mks.actions;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.actions.triclops.AboutMksTriclopsMksCommand;
+import org.intellij.vcs.mks.actions.api.AboutMksAPICommand;
 import org.jetbrains.annotations.NotNull;
 
 public class AboutMksAction extends BasicAction {
 	public AboutMksAction() {
-		super(new AboutMksTriclopsMksCommand());
+		super(new AboutMksAPICommand());
 	}
 
 	@Override

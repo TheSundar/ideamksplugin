@@ -2,6 +2,7 @@ package org.intellij.vcs.mks;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vcs.FilePath;
+import com.intellij.openapi.vcs.FileStatus;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.changes.Change;
 import com.intellij.openapi.vcs.changes.ContentRevision;
@@ -9,10 +10,15 @@ import com.intellij.openapi.vcs.rollback.DefaultRollbackEnvironment;
 import com.intellij.openapi.vcs.rollback.RollbackProgressListener;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.vcsUtil.VcsUtil;
+import org.intellij.vcs.mks.actions.api.CheckinAPICommand;
+import org.intellij.vcs.mks.actions.api.RevertAPICommand;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class MksRollbackEnvironment extends DefaultRollbackEnvironment {
     private final Logger logger = Logger.getInstance(MksRollbackEnvironment.class.getName());
@@ -37,6 +43,33 @@ public class MksRollbackEnvironment extends DefaultRollbackEnvironment {
         // project member revision
         // todo but it could be that the revision we should revert to is not the member revision ?
 
+        ArrayList<VirtualFile> modifiedFiles = new ArrayList<VirtualFile>();
+        ArrayList<VirtualFile> addedFiles = new ArrayList<VirtualFile>();
+        List<VcsException> exceptions = new ArrayList<VcsException>();
+        for (Change change : changes) {
+            if (FileStatus.MODIFIED.equals(change.getFileStatus())) {
+                ContentRevision afterRevision = change.getAfterRevision();
+                if (afterRevision != null) {
+                    FilePath filePath = afterRevision.getFile();
+                    modifiedFiles.add(VcsUtil.getVirtualFile(filePath.getIOFile()));
+                }
+
+            } else if (FileStatus.ADDED.equals(change.getFileStatus())) {
+                addedFiles.add(change.getAfterRevision().getFile().getVirtualFile());
+            }else {
+                exceptions.add(new VcsException("only MODIFIED/ADDED (!= "+change.getFileStatus()+"files are currently supported" ));
+            }
+        }
+        RevertAPICommand revertAPICommand = new RevertAPICommand();
+        try {
+            List<VirtualFile> filesToRevert = new ArrayList<VirtualFile>();
+            filesToRevert.addAll(modifiedFiles);
+            filesToRevert.addAll(addedFiles);
+            revertAPICommand.executeCommand(mksVcs, exceptions, filesToRevert.toArray(new VirtualFile[filesToRevert.size()]));
+        } catch (VcsException e) {
+            //noinspection ThrowableInstanceNeverThrown
+            exceptions.add(e);
+        }
         for (Change change : changes) {
             File beforePath = null;
             logger.debug("MksRollbackEnvironment.rollbackChanges " + change);

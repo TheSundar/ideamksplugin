@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 public class CheckoutTriclopsCommand extends AbstractMultipleTargetTriclopsCommand {
 	@NotNull
 	public String getActionName(@NotNull AbstractVcs vcs) {
-		return MksBundle.message("action.drop.members");
+		return MksBundle.message("action.checkout.members");
 	}
 
 	protected void perform(@NotNull TriclopsSiMembers siMembers) throws TriclopsException {

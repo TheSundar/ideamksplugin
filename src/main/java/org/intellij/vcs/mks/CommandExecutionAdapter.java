@@ -112,11 +112,19 @@ final class CommandExecutionAdapter extends AbstractTableModel
 		}
 		stat.totalExecutionTime += duration;
 		stat.executionCount++;
-		if (dataChanged) {
-			fireTableDataChanged();
-		} else {
-			final int row = rows.indexOf(stat);
-			fireTableRowsUpdated(row, row);
-		}
+
+        final boolean finalDataChanged = dataChanged;
+        final CommandStatistic finalStat = stat;
+        MksVcs.invokeLaterOnEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                if (finalDataChanged) {
+                    fireTableDataChanged();
+                } else {
+                    final int row = rows.indexOf(finalStat);
+                    fireTableRowsUpdated(row, row);
+                }
+            }
+        });
 	}
 }

@@ -11,9 +11,11 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vcs.*;
 import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vcs.changes.ChangeProvider;
+import com.intellij.openapi.vcs.changes.CommitExecutor;
 import com.intellij.openapi.vcs.checkin.CheckinEnvironment;
 import com.intellij.openapi.vcs.diff.DiffProvider;
 import com.intellij.openapi.vcs.history.VcsHistoryProvider;
+import com.intellij.openapi.vcs.rollback.RollbackEnvironment;
 import com.intellij.openapi.vcs.update.UpdateEnvironment;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
@@ -23,13 +25,11 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.AbstractTableCellEditor;
-import mks.integrations.common.TriclopsException;
-import mks.integrations.common.TriclopsSiMember;
-import mks.integrations.common.TriclopsSiMembers;
-import mks.integrations.common.TriclopsSiSandbox;
+import org.intellij.vcs.mks.actions.api.CheckoutAPICommand;
 import org.intellij.vcs.mks.history.MksVcsHistoryProvider;
 import org.intellij.vcs.mks.realtime.*;
-import org.intellij.vcs.mks.sicommands.*;
+import org.intellij.vcs.mks.sicommands.api.ListServersAPI;
+import org.intellij.vcs.mks.sicommands.cli.*;
 import org.intellij.vcs.mks.update.MksUpdateEnvironment;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -49,6 +49,7 @@ import java.awt.event.MouseEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -79,6 +80,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
     @NonNls
     private static final String ICONS_MKS_GIF = "/icons/mks.gif";
     private Boolean isMks2007 = null;
+    private MksRollbackEnvironment rollbackEnvironment = new MksRollbackEnvironment(this);
 
     public MksVcs(final Project project) {
         super(project, VCS_NAME);
@@ -474,13 +476,9 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 				final ArrayList<VirtualFile> files = entry.getValue();
 				final List<VcsException> errors = new ArrayList<VcsException>();
 
-                if (sandbox instanceof MksNativeSandboxInfo) {
-                    final CheckoutFilesCommand command = new CheckoutFilesCommand(errors, ((MksNativeSandboxInfo) sandbox).getSiSandbox(), files,
-                            this.mksVcs);
-                    synchronized (MksVcs.this) {
-                        command.execute();
-                    }
-                    if (!command.errors.isEmpty()) {
+                final CheckoutAPICommand command = new CheckoutAPICommand();
+                command.executeCommand(MksVcs.this, errors, files.toArray(new VirtualFile[files.size()]));
+                    if (!errors.isEmpty()) {
                         //noinspection ThrowableResultOfMethodCallIgnored
                         Runnable runnable = new Runnable() {
                             public void run() {
@@ -492,9 +490,6 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 
                         return;
                     }
-                }               else {
-                    throw new UnsupportedOperationException("not implemented for non native yet");
-                }
             }
 		}
 
@@ -502,41 +497,6 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
         public String getRequestText() {
             return MksBundle.message("edit.file.provider.request.text");
         }
-    }
-
-    private static class CheckoutFilesCommand extends AbstractMKSCommand {
-        private TriclopsSiSandbox sandbox;
-        private ArrayList<VirtualFile> files;
-
-        public CheckoutFilesCommand(final List<VcsException> errors, final TriclopsSiSandbox sandbox,
-                                    final ArrayList<VirtualFile> files, final MksCLIConfiguration mksCLIConfiguration) {
-            super(errors, "co", mksCLIConfiguration);
-            this.sandbox = sandbox;
-            this.files = files;
-        }
-
-        @Override
-        public void execute() {
-            try {
-                final TriclopsSiMembers members = queryMksMemberStatus(files, sandbox);
-                MKSHelper.checkoutMembers(members, 0);
-            } catch (TriclopsException e) {
-                //noinspection ThrowableInstanceNeverThrown
-                errors.add(new MksVcsException("unable to checkout" + "\n" + getMksErrorMessage(), e));
-            }
-        }
-
-        @NotNull
-        private TriclopsSiMembers queryMksMemberStatus(@NotNull final ArrayList<VirtualFile> files,
-                                                       @NotNull final TriclopsSiSandbox sandbox) throws TriclopsException {
-            final TriclopsSiMembers members = MKSHelper.createMembers(sandbox);
-            for (final VirtualFile virtualFile : files) {
-                members.addMember(new TriclopsSiMember(virtualFile.getPresentableUrl()));
-            }
-            MKSHelper.getMembersStatus(members);
-            return members;
-        }
-
     }
 
     @Override
@@ -566,12 +526,11 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
                 GetRevisionInfo.COMMAND,
                 ListChangePackages.COMMAND,
                 ListSandboxes.COMMAND,
-                ListServers.COMMAND,
+                ListServersAPI.COMMAND,
                 LockMemberCommand.COMMAND,
                 RenameChangePackage.COMMAND,
                 SiConnectCommand.COMMAND,
                 UnlockMemberCommand.COMMAND,
-                ViewMemberHistoryCommand.COMMAND,
                 ViewNonMembersCommand.COMMAND
         };
     }
@@ -589,6 +548,14 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
     @Override
     public void activate() {
         LOGGER.debug("activate [" + myProject + "]");
+        try {
+            URL resource = getClass().getResource("/" + "org.apache.commons.httpclient.MultiThreadedHttpConnectionManager".replace('.', '/') + ".class");
+            if (!resource.toExternalForm().contains("/mksapi-without-commons-log")) {
+                LOGGER.warn("not loading commons-http from mks jar : " + resource.toExternalForm());
+            }
+        } catch (Exception e) {
+            LOGGER.error("failed locating commons-httpclient", e);
+        }
         super.activate();
         final ChangeListManager changeListManager = ChangeListManager.getInstance(getProject());
         changeListManager.addChangeListListener(changeListAdapter);
@@ -627,17 +594,22 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 
     @Override
     public void deactivate() {
-        final ChangeListManager changeListManager = ChangeListManager.getInstance(getProject());
-        changeListManager.removeChangeListListener(changeListAdapter);
-        sandboxCache.release();
+        try {
+            final ChangeListManager changeListManager = ChangeListManager.getInstance(getProject());
+            changeListManager.removeChangeListListener(changeListAdapter);
+            sandboxCache.release();
 
-        ApplicationManager.getApplication().getComponent(SandboxListSynchronizer.class)
-                .removeListener(getSandboxCache());
-        if (myMessageBusConnection != null) {
-            myMessageBusConnection.disconnect();
+            SandboxListSynchronizer component = ApplicationManager.getApplication().getComponent(SandboxListSynchronizer.class);
+            if (component != null) {
+                component.removeListener(getSandboxCache());
+            }
+            if (myMessageBusConnection != null) {
+                myMessageBusConnection.disconnect();
+            }
+            unregisterToolWindow();
+        } finally {
+            super.deactivate();
         }
-        unregisterToolWindow();
-        super.deactivate();
     }
 
 
@@ -681,5 +653,11 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
     @Override
     public VcsType getType() {
         return VcsType.centralized;
+    }
+
+    @Nullable
+    @Override
+    public RollbackEnvironment getRollbackEnvironment() {
+        return rollbackEnvironment;
     }
 }

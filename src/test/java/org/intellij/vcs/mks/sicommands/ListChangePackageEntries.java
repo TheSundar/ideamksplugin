@@ -4,6 +4,7 @@ import com.intellij.openapi.vcs.VcsException;
 import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.model.MksChangePackage;
 import org.intellij.vcs.mks.model.MksChangePackageEntry;
+import org.intellij.vcs.mks.sicommands.cli.SiCLICommand;
 import org.jetbrains.annotations.NonNls;
 
 import java.io.IOException;

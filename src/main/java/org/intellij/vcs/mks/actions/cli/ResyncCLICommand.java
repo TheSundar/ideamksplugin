@@ -7,7 +7,7 @@ import org.intellij.vcs.mks.MksBundle;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.actions.MksCommand;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
-import org.intellij.vcs.mks.sicommands.ResyncCommand;
+import org.intellij.vcs.mks.sicommands.cli.ResyncCommand;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

@@ -1,15 +1,5 @@
 package org.intellij.vcs.mks.actions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.intellij.vcs.mks.MksChangeListAdapter;
-import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.model.MksChangePackage;
-import org.intellij.vcs.mks.sicommands.ViewChangePackageCommand;
-import org.jetbrains.annotations.NotNull;
-
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
@@ -18,6 +8,15 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsDataKeys;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.changes.ChangeList;
+import org.intellij.vcs.mks.MksChangeListAdapter;
+import org.intellij.vcs.mks.MksVcs;
+import org.intellij.vcs.mks.model.MksChangePackage;
+import org.intellij.vcs.mks.sicommands.api.ViewChangePackageAPICommand;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Opens any selected change package in the Native MKS client.
@@ -40,7 +39,7 @@ public class ViewChangePackageAction extends AnAction {
 
         final ArrayList<VcsException> errors = new ArrayList<VcsException>();
         for (final MksChangePackage aPackage : getSelectedChangePackages(dataContext, mksVcs)) {
-            new ViewChangePackageCommand(errors, mksVcs, aPackage).execute();
+            new ViewChangePackageAPICommand(errors, mksVcs, aPackage).execute();
         }
     }
 

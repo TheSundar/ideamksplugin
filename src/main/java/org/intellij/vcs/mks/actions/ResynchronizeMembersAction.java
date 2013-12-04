@@ -2,7 +2,7 @@ package org.intellij.vcs.mks.actions;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.intellij.vcs.mks.actions.cli.ResyncCLICommand;
+import org.intellij.vcs.mks.actions.api.ResyncAPICommand;
 import org.jetbrains.annotations.NotNull;
 
 // Referenced classes of package org.intellij.vcs.mks.actions:
@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 public class ResynchronizeMembersAction extends MultipleTargetAction {
 
 	public ResynchronizeMembersAction() {
-		super(new ResyncCLICommand());
+		super(new ResyncAPICommand());
 	}
 
 	/**

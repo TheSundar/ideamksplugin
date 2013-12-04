@@ -9,7 +9,7 @@ import java.util.Date;
 /**
  * Used to keep track of the current state of a sandbox. <br/> Is associated
  * with a sandbox member and keeps all the VCS related info. <br/> It is set by
- * the {@link org.intellij.vcs.mks.sicommands.AbstractViewSandboxCommand}
+ * the {@link org.intellij.vcs.mks.sicommands.cli.AbstractViewSandboxCommand}
  * subclasses
  *
  * @author Thibaut Fagart
@@ -18,7 +18,7 @@ public final class MksMemberState {
 	public static enum Status {
 		CHECKED_OUT("checked out"),
 		MODIFIED_WITHOUT_CHECKOUT("modified without checkout"),
-		MISSISNG("missing"),
+		MISSING("missing"),
 		NOT_CHANGED("not changed"),
 		SYNC("sync"),
 		DROPPED("dropped"),

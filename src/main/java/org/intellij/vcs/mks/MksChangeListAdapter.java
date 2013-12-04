@@ -7,9 +7,9 @@ import java.util.Map;
 
 import org.intellij.vcs.mks.model.MksChangePackage;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
-import org.intellij.vcs.mks.sicommands.LockMemberCommand;
-import org.intellij.vcs.mks.sicommands.RenameChangePackage;
-import org.intellij.vcs.mks.sicommands.UnlockMemberCommand;
+import org.intellij.vcs.mks.sicommands.cli.LockMemberCommand;
+import org.intellij.vcs.mks.sicommands.cli.RenameChangePackage;
+import org.intellij.vcs.mks.sicommands.cli.UnlockMemberCommand;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

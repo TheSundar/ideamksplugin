@@ -15,9 +15,9 @@ import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
 import org.intellij.vcs.mks.model.MksMemberState;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
-import org.intellij.vcs.mks.sicommands.AbstractViewSandboxCommand;
-import org.intellij.vcs.mks.sicommands.GetRevisionInfo;
-import org.intellij.vcs.mks.sicommands.ViewMemberHistoryCommand;
+import org.intellij.vcs.mks.sicommands.cli.AbstractViewSandboxCommand;
+import org.intellij.vcs.mks.sicommands.cli.GetRevisionInfo;
+import org.intellij.vcs.mks.sicommands.api.ViewMemberHistoryAPICommand;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -122,8 +122,8 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
     }
 
     private List<VcsFileRevision> getRevisions(FilePath filePath) {
-        final ViewMemberHistoryCommand command =
-                new ViewMemberHistoryCommand(new ArrayList<VcsException>(), vcs, filePath.getPath());
+        final ViewMemberHistoryAPICommand command =
+                new ViewMemberHistoryAPICommand(new ArrayList<VcsException>(), vcs, filePath.getPath());
         command.execute();
         if (command.foundError()) {
             for (VcsException error : command.errors) {

@@ -8,7 +8,7 @@ import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.MksConfiguration;
-import org.intellij.vcs.mks.sicommands.SandboxesCommandAPI;
+import org.intellij.vcs.mks.sicommands.api.SandboxesCommandAPI;
 import org.intellij.vcs.mks.sicommands.SandboxInfo;
 import org.jetbrains.annotations.NotNull;
 

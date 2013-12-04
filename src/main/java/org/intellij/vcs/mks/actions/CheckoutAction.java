@@ -5,14 +5,14 @@ import com.intellij.openapi.vcs.FileStatus;
 import com.intellij.openapi.vcs.FileStatusManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.actions.triclops.CheckoutTriclopsCommand;
+import org.intellij.vcs.mks.actions.api.CheckoutAPICommand;
 import org.jetbrains.annotations.NotNull;
 
 
 public class CheckoutAction extends MultipleTargetAction {
 
 	public CheckoutAction() {
-		super(new CheckoutTriclopsCommand());
+		super(new CheckoutAPICommand());
 	}
 
 	@Override

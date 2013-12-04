@@ -3,7 +3,7 @@ package org.intellij.vcs.mks.actions;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.actions.triclops.DropTriclopsCommand;
+import org.intellij.vcs.mks.actions.api.DropMemberAPICommand;
 import org.jetbrains.annotations.NotNull;
 
 // Referenced classes of package org.intellij.vcs.mks.actions:
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 public class DropMembersAction extends MultipleTargetAction {
 
 	public DropMembersAction() {
-		super(new DropTriclopsCommand());
+		super(new DropMemberAPICommand());
 	}
 
 	@Override

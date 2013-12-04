@@ -5,7 +5,7 @@ import com.intellij.openapi.vcs.FileStatus;
 import com.intellij.openapi.vcs.FileStatusManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.actions.triclops.MemberDifferencesTriclopsCommand;
+import org.intellij.vcs.mks.actions.api.MemberDifferencesAPICommand;
 import org.jetbrains.annotations.NotNull;
 
 // Referenced classes of package org.intellij.vcs.mks.actions:
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class MemberDifferencesAction extends SingleTargetAction {
 
 	public MemberDifferencesAction() {
-		super(new MemberDifferencesTriclopsCommand());
+		super(new MemberDifferencesAPICommand());
 	}
 
 	@Override

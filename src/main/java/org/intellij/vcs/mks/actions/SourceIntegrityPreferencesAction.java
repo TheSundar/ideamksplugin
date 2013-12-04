@@ -3,11 +3,12 @@ package org.intellij.vcs.mks.actions;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
-import mks.integrations.common.TriclopsException;
-import org.intellij.vcs.mks.MKSHelper;
+import com.mks.api.CmdRunner;
+import com.mks.api.Command;
+import com.mks.api.response.APIException;
+import org.intellij.vcs.mks.MKSAPIHelper;
 import org.intellij.vcs.mks.MksBundle;
 import org.intellij.vcs.mks.MksVcs;
 
@@ -20,19 +21,19 @@ public class SourceIntegrityPreferencesAction extends AnAction {
 
     @Override
     public void actionPerformed(final AnActionEvent anActionEvent) {
+        try {
+            final CmdRunner runner =  MKSAPIHelper.getInstance().getSession().createCmdRunner();
+            Command command = new Command(Command.SI);
+            command.setCommandName("viewprefs");
+            runner.execute(command);
+        } catch (APIException e) {
+            final Project project = anActionEvent.getData(DataKeys.PROJECT);
+            ArrayList<VcsException> errors = new ArrayList<VcsException>();
+            //noinspection ThrowableInstanceNeverThrown
+            errors.add(new VcsException(e));
+            MksVcs.getInstance(project).showErrors(errors, MksBundle.message("action.mks.preferences"));
+        }
 
-        ApplicationManager.getApplication().runReadAction(new Runnable() {
-            public void run() {
-                try {
-                    MKSHelper.openConfigurationView();
-                } catch (TriclopsException e) {
-                    final Project project = anActionEvent.getData(DataKeys.PROJECT);
-                    ArrayList<VcsException> errors = new ArrayList<VcsException>();
-                    //noinspection ThrowableInstanceNeverThrown
-                    errors.add(new VcsException(e));
-                    MksVcs.getInstance(project).showErrors(errors, MksBundle.message("action.mks.preferences"));
-                }
-            }
-        });
+
     }
 }

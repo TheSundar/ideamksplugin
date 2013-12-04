@@ -8,7 +8,7 @@ import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.actions.MksCommand;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
-import org.intellij.vcs.mks.sicommands.SiCLICommand;
+import org.intellij.vcs.mks.sicommands.cli.SiCLICommand;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;

@@ -8,9 +8,12 @@ import java.util.*;
 import org.intellij.vcs.mks.model.MksChangePackage;
 import org.intellij.vcs.mks.model.MksMemberState;
 import org.intellij.vcs.mks.model.MksServerInfo;
-import org.intellij.vcs.mks.realtime.MksNativeSandboxInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
-import org.intellij.vcs.mks.sicommands.*;
+import org.intellij.vcs.mks.sicommands.api.ListChangePackagesAPICommand;
+import org.intellij.vcs.mks.sicommands.api.ListServersAPI;
+import org.intellij.vcs.mks.sicommands.api.ViewNonMembersCommandAPI;
+import org.intellij.vcs.mks.sicommands.api.ViewSandboxCommandAPI;
+import org.intellij.vcs.mks.sicommands.cli.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,7 +44,8 @@ import com.intellij.vcsUtil.VcsUtil;
  */
 class MKSChangeProvider extends AbstractProjectComponent
 		implements ChangeProvider, ChangeListDecorator, ProjectComponent {
-	private final Logger logger = Logger.getInstance(getClass().getName());
+    private static final boolean USE_CLI = false;
+    private final Logger logger = Logger.getInstance(getClass().getName());
 	private final Logger BUILDER_PROXY_LOGGER = Logger.getInstance(getClass().getName() + ".ChangelistBuilder");
 
 	public MKSChangeProvider(@NotNull Project project) {
@@ -105,7 +109,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 					if (filePath.isDirectory()) {
 						return true;
 					} else if (filePath.getVirtualFile() == null) {
-						logger.warn("no VirtualFile for " + filePath.getPath() + ", ignoring");
+                        finalBuilder.processLocallyDeletedFile(filePath);
 						return true;
 					} else if (MksVcs.getInstance(myProject).getSandboxCache().isSandboxProject(filePath.getVirtualFile())) {
 						finalBuilder.processIgnoredFile(filePath.getVirtualFile());
@@ -326,7 +330,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 					builder.processModifiedWithoutCheckout(virtualFile);
 					break;
 				}
-				case MISSISNG: {
+				case MISSING: {
 					builder.processLocallyDeletedFile(filePath);
 					break;
 				}
@@ -393,53 +397,68 @@ class MKSChangeProvider extends AbstractProjectComponent
 					@NotNull final ArrayList<VcsException> errors,
 					@NotNull final MksServerInfo server,
 					final DirtySandboxCollector.SandboxesToRefresh refreshSpec) {
-		Map<String, MksMemberState> states = new HashMap<String, MksMemberState>();
+        if (USE_CLI) {
+            return getCLISandboxState(sandbox, errors, server, refreshSpec);
+        } else {
+            Map<String, MksMemberState> states = new HashMap<String, MksMemberState>();
+            ViewSandboxCommandAPI commandAPI = new ViewSandboxCommandAPI(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
+            commandAPI.execute();
+            addNonExcludedStates(states , commandAPI.getMemberStates());
+            ViewNonMembersCommandAPI nonMembersCommandRecursive = new ViewNonMembersCommandAPI(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
+            nonMembersCommandRecursive.execute();
+            addNonExcludedStates(states, nonMembersCommandRecursive.getMemberStates());
+            return states;
+        }
+    }
 
-		ViewSandboxWithoutChangesCommand fullSandboxCommand =
-				new ViewSandboxWithoutChangesCommand(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
-		fullSandboxCommand.execute();
-		addNonExcludedStates(states, fullSandboxCommand.getMemberStates());
+    private Map<String, MksMemberState> getCLISandboxState(MksSandboxInfo sandbox, ArrayList<VcsException> errors, MksServerInfo server, DirtySandboxCollector.SandboxesToRefresh refreshSpec) {
+        Map<String, MksMemberState> states = new HashMap<String, MksMemberState>();
 
-		ViewSandboxLocalChangesOrLockedCommand localChangesCommand =
-				new ViewSandboxLocalChangesOrLockedCommand(errors, MksVcs.getInstance(myProject), server.user, sandbox.sandboxPath);
-		localChangesCommand.execute();
-		addNonExcludedStates(states, localChangesCommand.getMemberStates());
+        ViewSandboxWithoutChangesCommand fullSandboxCommand =
+                new ViewSandboxWithoutChangesCommand(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
+        fullSandboxCommand.execute();
+        addNonExcludedStates(states, fullSandboxCommand.getMemberStates());
 
-		if (ApplicationManager.getApplication().getComponent(MksConfiguration.class).isSynchronizeNonMembers()) {
-			final HashSet<VirtualFile> recursivelyIncludedDirs = refreshSpec.getRecursivelyIncludedRoots(sandbox);
-			final HashSet<VirtualFile> nonRecursivelyIncludedDirs = refreshSpec.getNonRecursivelyIncludedRoots(sandbox);
-			String[] recursivelyIncludedDirsArray = convertToSandboxRelativePaths(sandbox, recursivelyIncludedDirs);
-			String[] nonRecursivelyIncludedDirsArray =
-					convertToSandboxRelativePaths(sandbox, nonRecursivelyIncludedDirs);
+        ViewSandboxLocalChangesOrLockedCommand localChangesCommand =
+                new ViewSandboxLocalChangesOrLockedCommand(errors, MksVcs.getInstance(myProject), server.user, sandbox.sandboxPath);
+        localChangesCommand.execute();
+        addNonExcludedStates(states, localChangesCommand.getMemberStates());
 
-			// process recursive inclusions
-			ViewNonMembersCommand nonMembersCommandRecursive = new ViewNonMembersCommand(errors, MksVcs.getInstance(myProject), sandbox,
-					recursivelyIncludedDirsArray, true);
-			nonMembersCommandRecursive.execute();
-			addNonExcludedStates(states, nonMembersCommandRecursive.getMemberStates());
+        if (ApplicationManager.getApplication().getComponent(MksConfiguration.class).isSynchronizeNonMembers()) {
+            final HashSet<VirtualFile> recursivelyIncludedDirs = refreshSpec.getRecursivelyIncludedRoots(sandbox);
+            final HashSet<VirtualFile> nonRecursivelyIncludedDirs = refreshSpec.getNonRecursivelyIncludedRoots(sandbox);
+            String[] recursivelyIncludedDirsArray = convertToSandboxRelativePaths(sandbox, recursivelyIncludedDirs);
+            String[] nonRecursivelyIncludedDirsArray =
+                    convertToSandboxRelativePaths(sandbox, nonRecursivelyIncludedDirs);
 
-			// process non recursive inclusions
-			ViewNonMembersCommand nonMembersCommandNonRecursive =
-					new ViewNonMembersCommand(errors, MksVcs.getInstance(myProject), sandbox,
-							nonRecursivelyIncludedDirsArray, false);
-			nonMembersCommandNonRecursive.execute();
-			addNonExcludedStates(states, nonMembersCommandNonRecursive.getMemberStates());
-		}
+            // process recursive inclusions
+            ViewNonMembersCommand nonMembersCommandRecursive = new ViewNonMembersCommand(errors, MksVcs.getInstance(myProject), sandbox,
+                    recursivelyIncludedDirsArray, true);
+            nonMembersCommandRecursive.execute();
+            addNonExcludedStates(states, nonMembersCommandRecursive.getMemberStates());
+
+            // process non recursive inclusions
+            ViewNonMembersCommand nonMembersCommandNonRecursive =
+                    new ViewNonMembersCommand(errors, MksVcs.getInstance(myProject), sandbox,
+                            nonRecursivelyIncludedDirsArray, false);
+            nonMembersCommandNonRecursive.execute();
+            addNonExcludedStates(states, nonMembersCommandNonRecursive.getMemberStates());
+        }
 
 // todo the below belong to incoming changes
-		ViewSandboxOutOfSyncCommand outOfSyncCommand =
-				new ViewSandboxOutOfSyncCommand(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
-		outOfSyncCommand.execute();
-		states.putAll(outOfSyncCommand.getMemberStates());
+        ViewSandboxOutOfSyncCommand outOfSyncCommand =
+                new ViewSandboxOutOfSyncCommand(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
+        outOfSyncCommand.execute();
+        states.putAll(outOfSyncCommand.getMemberStates());
 
 //		ViewSandboxRemoteChangesCommand missingCommand = new ViewSandboxRemoteChangesCommand(errors, getMksvcs(), sandbox.sandboxPath);
 //		missingCommand.execute();
 //		states.putAll(missingCommand.getMemberStates());
 
-		return states;
-	}
+        return states;
+    }
 
-	private String[] convertToSandboxRelativePaths
+    private String[] convertToSandboxRelativePaths
 			(MksSandboxInfo
 					 sandbox,
 			 HashSet<VirtualFile> recursivelyIncludedDirs) {
@@ -483,7 +502,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 				MksVcs.getInstance(myProject).debug("ignoring " + server.host + ":" + server.port + " when querying changepackages");
 				continue;
 			}
-			final ListChangePackages listCpsAction = new ListChangePackages(errors, MksVcs.getInstance(myProject), server);
+			final ListChangePackagesAPICommand listCpsAction = new ListChangePackagesAPICommand(errors, MksVcs.getInstance(myProject), server);
 			if (progress != null) {
 				progress.setIndeterminate(true);
 				progress.setText("Querying change packages for " + server + "...");
@@ -508,7 +527,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 			(
 					final ProgressIndicator progress,
 					final ArrayList<VcsException> errors) {
-		final ListServers listServersAction = new ListServers(errors, MksVcs.getInstance(myProject));
+		final ListServersAPI listServersAction = new ListServersAPI(errors, MksVcs.getInstance(myProject));
 		if (progress != null) {
 			progress.setIndeterminate(true);
 			progress.setText("Querying mks servers ...");

@@ -5,6 +5,7 @@ import junit.framework.TestCase;
 import org.intellij.vcs.mks.CommandExecutionListener;
 import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.model.MksMemberState;
+import org.intellij.vcs.mks.sicommands.cli.ViewSandboxLocalChangesOrLockedCommand;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 

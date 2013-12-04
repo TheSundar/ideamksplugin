@@ -17,6 +17,7 @@ import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.changes.VcsDirtyScope;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.vcsUtil.VcsUtil;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.intellij.vcs.mks.realtime.SandboxCache;
 import org.jetbrains.annotations.NotNull;
@@ -60,7 +61,9 @@ class DirtySandboxCollector {
 	private void processRecursively(@NotNull final VirtualFile vFile,
 									@NotNull final SandboxCache cache,
 									@NotNull final SandboxesToRefresh refresh) {
+        // todo collects parent of the project directory
 		final MksSandboxInfo owningSandbox = cache.getSandboxInfo(vFile);
+
 		if (owningSandbox != null) {
 			final Module module = ModuleUtil.findModuleForFile(vFile, myProject);
 			if (module == null) {

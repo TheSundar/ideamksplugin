@@ -17,8 +17,10 @@ import junit.framework.TestCase;
 import org.intellij.vcs.mks.CommandExecutionListener;
 import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
+import org.intellij.vcs.mks.sicommands.api.ViewMemberHistoryAPICommand;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -232,6 +234,132 @@ public class MksAPITest extends TestCase {
 		}
 
 	}
+    public void testListServers() throws APIException {
+        final CmdRunner runner = session.createCmdRunner();
+        Command command = new Command(Command.SI);
+        command.setCommandName("servers");
+//		command.addOption(new Option("user","e9310750"));
+//		command.addOption(new Option("password","e9310750"));
+        System.err.println(command.toString());
+        final Response response;
+        try {
+            response = runner.execute(command);
+            final SubRoutineIterator routineIterator = response.getSubRoutines();
+            while (routineIterator.hasNext()) {
+                final SubRoutine subRoutine = routineIterator.next();
+                System.err.println("routine " + subRoutine);
+            }
+            final WorkItemIterator workItems = response.getWorkItems();
+            while (workItems.hasNext()) {
+                final WorkItem workItem = workItems.next();
+                System.out.println("item");
+                for (Iterator it = workItem.getFields(); it.hasNext();) {
+                    Field field = (Field) it.next();
+                    System.out.println("\t" + field.getName() + " : " + field.getValue());
+                }
+
+            }
+            System.out.println("response " + response);
+        } catch (APIException e) {
+            System.err.println(e);
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+    }
+    public void testViewCps() throws APIException {
+        final CmdRunner runner = session.createCmdRunner();
+        Command command = new Command(Command.SI);
+        command.setCommandName("connect");
+		command.addOption(new Option("hostname", "source.systems.uk.hsbc"));
+		command.addOption(new Option("port","8001"));
+		command.addOption(new Option("user","43317205"));
+        Response response = null;
+        try {
+            response = runner.execute(command);
+            final SubRoutineIterator routineIterator = response.getSubRoutines();
+            while (routineIterator.hasNext()) {
+                final SubRoutine subRoutine = routineIterator.next();
+                System.err.println("routine " + subRoutine);
+            }
+            final WorkItemIterator workItems = response.getWorkItems();
+            while (workItems.hasNext()) {
+                final WorkItem workItem = workItems.next();
+                System.out.println("item");
+                for (Iterator it = workItem.getFields(); it.hasNext();) {
+                    Field field = (Field) it.next();
+                    System.out.println("\t" + field.getName() + " : " + field.getValue());
+                }
+
+            }
+            System.out.println("response " + response);
+        } catch (APIException e) {
+            System.err.println(e);
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        command = new Command(Command.SI);
+        command.setCommandName("viewcps");
+		command.addOption(new Option("hostname", "source.systems.uk.hsbc"));
+		command.addOption(new Option("port", "8001"));
+		command.addOption(new Option("user","43317205"));
+//		command.addOption(new Option("nobatch"));
+        System.err.println(command.toString());
+//        final Response response;
+        try {
+            response = runner.execute(command);
+            final SubRoutineIterator routineIterator = response.getSubRoutines();
+            while (routineIterator.hasNext()) {
+                final SubRoutine subRoutine = routineIterator.next();
+                System.err.println("routine " + subRoutine);
+            }
+            final WorkItemIterator workItems = response.getWorkItems();
+            while (workItems.hasNext()) {
+                final WorkItem workItem = workItems.next();
+                System.out.println("item");
+                for (Iterator it = workItem.getFields(); it.hasNext();) {
+                    Field field = (Field) it.next();
+                    System.out.println("\t" + field.getName() + " : " + field.getValue());
+                }
+
+            }
+            System.out.println("response " + response);
+        } catch (APIException e) {
+            System.err.println(e);
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+    }
+
+    public void testLock() {
+
+        String [] members = new String[]{"C:\\Users\\A6253567\\sandboxes\\GIVR\\mapper\\idv-ha-services\\src\\main\\java\\com\\hsbc\\hbfr\\gct\\messaging\\converter\\GctRequestPopulatorConverter.java"};
+        if (members.length <= 0) throw new IllegalArgumentException("empty member list to lock");
+        Command command = new Command(Command.SI);
+        command.setCommandName("lock");
+        command.addOption(new Option("sandbox", "C:\\Users\\A6253567\\sandboxes\\GIVR\\mapper\\idv-ha-services\\src\\main\\java\\com\\hsbc\\hbfr\\gct\\messaging\\converter\\project.pj"));
+//        command.addOption(new Option("nobranch"));
+//        command.addOption(new Option("nobranchvariant"));
+/*
+        if (changePackage != null) {
+            command.addOption(new Option("cpid", changePackage.getId()));
+        }
+*/
+
+        for (int i = 0; i < members.length; i++) {
+            String member = members[i];
+            command.addSelection(member);
+        }
+        Response response = null;
+        try {
+            final CmdRunner runner = session.createCmdRunner();
+
+            response = runner.execute(command);
+        } catch (APIException e) {
+            e.printStackTrace();
+        }
+
+
+    }
 
 	public void testIDEACommand() {
         ViewMemberHistoryAPICommand command =
@@ -253,6 +381,11 @@ public class MksAPITest extends TestCase {
 
 
 	}
+    public void testHttpLocation()           {
+        URL resource = getClass().getResource("/" + "org.apache.commons.httpclient.MultiThreadedHttpConnectionManager".replace('.', '/') + ".class");
+        System.out.println(resource.toExternalForm());
+
+    }
 
     private MksCLIConfiguration getMksCLIConfiguration() {
         return new MksCLIConfiguration() {
