@@ -82,7 +82,10 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 
     public MksVcs(final Project project) {
         super(project, VCS_NAME);
-        sandboxCache = new SandboxCacheImpl(project);
+        sandboxCache = project.getComponent(SandboxCache.class);
+
+
+//        sandboxCache = new NativeSandboxCacheImpl(project);
     }
 
 	public static void invokeOnEventDispatchThreadAndWait(Runnable runnable) throws VcsException {
@@ -470,24 +473,29 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 				final MksSandboxInfo sandbox = entry.getKey();
 				final ArrayList<VirtualFile> files = entry.getValue();
 				final List<VcsException> errors = new ArrayList<VcsException>();
-				final CheckoutFilesCommand command = new CheckoutFilesCommand(errors, sandbox.getSiSandbox(), files,
-						this.mksVcs);
-				synchronized (MksVcs.this) {
-					command.execute();
-				}
-				if (!command.errors.isEmpty()) {
-					//noinspection ThrowableResultOfMethodCallIgnored
-					Runnable runnable = new Runnable() {
-						public void run() {
-							Messages.showErrorDialog(errors.get(0).getLocalizedMessage(),
-									MksBundle.message("could.not.start.checkout"));
-						}
-					};
-					MksVcs.invokeLaterOnEventDispatchThread(runnable);
 
-					return;
-				}
-			}
+                if (sandbox instanceof MksNativeSandboxInfo) {
+                    final CheckoutFilesCommand command = new CheckoutFilesCommand(errors, ((MksNativeSandboxInfo) sandbox).getSiSandbox(), files,
+                            this.mksVcs);
+                    synchronized (MksVcs.this) {
+                        command.execute();
+                    }
+                    if (!command.errors.isEmpty()) {
+                        //noinspection ThrowableResultOfMethodCallIgnored
+                        Runnable runnable = new Runnable() {
+                            public void run() {
+                                Messages.showErrorDialog(errors.get(0).getLocalizedMessage(),
+                                        MksBundle.message("could.not.start.checkout"));
+                            }
+                        };
+                        MksVcs.invokeLaterOnEventDispatchThread(runnable);
+
+                        return;
+                    }
+                }               else {
+                    throw new UnsupportedOperationException("not implemented for non native yet");
+                }
+            }
 		}
 
         @Override
@@ -602,6 +610,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 
     private void postProjectLoadInit() {
         if (!myProject.isDisposed()) {
+/*
             final SandboxListSynchronizer synchronizer =
                     ApplicationManager.getApplication().getComponent(SandboxListSynchronizer.class);
             if (synchronizer == null) {
@@ -610,6 +619,7 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
             }
             myProject.getComponent(LongRunningTaskRepository.class).add(synchronizer);
             synchronizer.addListener(getSandboxCache());
+*/
             initToolWindow();
         }
     }

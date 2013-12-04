@@ -9,6 +9,7 @@ import org.intellij.vcs.mks.MKSHelper;
 import org.intellij.vcs.mks.MksBundle;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.actions.MksCommand;
+import org.intellij.vcs.mks.realtime.MksNativeSandboxInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,14 +26,18 @@ public class ViewSandboxTriclopsCommand implements MksCommand {
 							   @NotNull VirtualFile[] affectedFiles) throws VcsException {
 		Map<MksSandboxInfo, ArrayList<VirtualFile>> map = mksVcs.dispatchBySandbox(affectedFiles);
 		for (MksSandboxInfo sandbox : map.keySet()) {
-			try {
-				MKSHelper.viewSandbox(sandbox.getSiSandbox());
-			} catch (TriclopsException e) {
-				//noinspection ThrowableInstanceNeverThrown
-				LOGGER.error(MessageFormat.format(MksBundle.message("error.opening.sandbox.in.mks.client"),
-						sandbox.sandboxPath), e);
-			}
-		}
+            if (sandbox instanceof MksNativeSandboxInfo) {
+                try {
+                    MKSHelper.viewSandbox(((MksNativeSandboxInfo) sandbox).getSiSandbox());
+                } catch (TriclopsException e) {
+                    //noinspection ThrowableInstanceNeverThrown
+                    LOGGER.error(MessageFormat.format(MksBundle.message("error.opening.sandbox.in.mks.client"),
+                            sandbox.sandboxPath), e);
+                }
+            } else {
+                throw new UnsupportedOperationException("native");
+            }
+        }
 	}
 
 	@NotNull

@@ -8,6 +8,7 @@ import org.intellij.vcs.mks.MKSHelper;
 import org.intellij.vcs.mks.MksConfiguration;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.sicommands.ListSandboxes;
+import org.intellij.vcs.mks.sicommands.SandboxInfo;
 import org.intellij.vcs.mks.sicommands.SandboxesCommand;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +33,7 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
     private final ArrayList<SandboxListListener> listeners = new ArrayList<SandboxListListener>();
 
 
-    private ArrayList<SandboxesCommand.SandboxInfo> currentList = new ArrayList<SandboxesCommand.SandboxInfo>();
+    private ArrayList<SandboxInfo> currentList = new ArrayList<SandboxInfo>();
     private final ReentrantLock sandboxCacheLock = new ReentrantLock();
 
     /**
@@ -62,13 +63,13 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
         }
         sandboxCacheLock.lock();
         try {
-            final ArrayList<SandboxesCommand.SandboxInfo> newList =
-                    new ArrayList<SandboxesCommand.SandboxInfo>(currentList);
+            final ArrayList<SandboxInfo> newList =
+                    new ArrayList<SandboxInfo>(currentList);
             this.listeners.add(listener);
             final ArrayList<SandboxListListener> listeners = new ArrayList<SandboxListListener>();
             // only fire updates to the newly added listener
             listeners.add(listener);
-            compareAndFireUpdates(new ArrayList<SandboxesCommand.SandboxInfo>(), newList, listeners);
+            compareAndFireUpdates(new ArrayList<SandboxInfo>(), newList, listeners);
         } finally {
             sandboxCacheLock.unlock();
         }
@@ -161,9 +162,9 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
 
     private void updateSandboxList() {
         this.sandboxCacheLock.lock();
-        ArrayList<SandboxesCommand.SandboxInfo> oldList;
+        ArrayList<SandboxInfo> oldList;
         final ArrayList<SandboxListListener> listeners;
-        ArrayList<SandboxesCommand.SandboxInfo> newSandboxList;
+        ArrayList<SandboxInfo> newSandboxList;
         try {
             oldList = this.currentList;
             listeners = new ArrayList<SandboxListListener>(this.listeners);
@@ -183,15 +184,15 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
      * @param newList   supposed to be sorted
      * @param listeners
      */
-    protected void compareAndFireUpdates(ArrayList<SandboxesCommand.SandboxInfo> oldList,
-                                         ArrayList<SandboxesCommand.SandboxInfo> newList,
+    protected void compareAndFireUpdates(ArrayList<SandboxInfo> oldList,
+                                         ArrayList<SandboxInfo> newList,
                                          ArrayList<SandboxListListener> listeners) {
         int oldIndex = 0;
         int newIndex = 0;
 
         while (oldIndex < oldList.size() && newIndex < newList.size()) {
-            final SandboxesCommand.SandboxInfo oldSandbox = oldList.get(oldIndex);
-            final SandboxesCommand.SandboxInfo newSandbox = newList.get(newIndex);
+            final SandboxInfo oldSandbox = oldList.get(oldIndex);
+            final SandboxInfo newSandbox = newList.get(newIndex);
 
             final int compareCode = oldSandbox.sandboxPath.compareTo(newSandbox.sandboxPath);
             if (0 == compareCode) {
@@ -220,20 +221,20 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
     }
 
 
-    private void fireSandboxAdded(SandboxesCommand.SandboxInfo sandbox, ArrayList<SandboxListListener> listeners) {
+    private void fireSandboxAdded(SandboxInfo sandbox, ArrayList<SandboxListListener> listeners) {
         for (SandboxListListener listener : listeners) {
             listener.addSandboxPath(sandbox.sandboxPath, sandbox.serverHostAndPort, sandbox.projectPath,
                     sandbox.projectVersion, sandbox.subSandbox);
         }
     }
 
-    private void fireSandboxRemoved(SandboxesCommand.SandboxInfo sandbox, ArrayList<SandboxListListener> listeners) {
+    private void fireSandboxRemoved(SandboxInfo sandbox, ArrayList<SandboxListListener> listeners) {
         for (SandboxListListener listener : listeners) {
             listener.removeSandboxPath(sandbox.sandboxPath, sandbox.subSandbox);
         }
     }
 
-    private void fireSandboxUpdated(SandboxesCommand.SandboxInfo sandbox, ArrayList<SandboxListListener> listeners) {
+    private void fireSandboxUpdated(SandboxInfo sandbox, ArrayList<SandboxListListener> listeners) {
         for (SandboxListListener listener : listeners) {
             listener.updateSandboxPath(sandbox.sandboxPath, sandbox.serverHostAndPort, sandbox.projectPath,
                     sandbox.projectVersion, sandbox.subSandbox);
@@ -244,12 +245,12 @@ public class SandboxListSynchronizerImpl extends AbstractMKSSynchronizer
         return "sandbox list listener";
     }
 
-    protected ArrayList<SandboxesCommand.SandboxInfo> getNewSandboxList() {
+    protected ArrayList<SandboxInfo> getNewSandboxList() {
         final SandboxesCommand command = new SandboxesCommand(new ArrayList<VcsException>(),
                 ApplicationManager.getApplication().getComponent(MksConfiguration.class));
         command.execute();
 
-        Collections.sort(command.result, SandboxesCommand.SandboxInfo.COMPARATOR);
+        Collections.sort(command.result, SandboxInfo.COMPARATOR);
         return command.result;
     }
 }

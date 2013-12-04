@@ -9,7 +9,7 @@ import mks.integrations.common.TriclopsException;
 import mks.integrations.common.TriclopsSiClient;
 import mks.integrations.common.TriclopsSiMembers;
 import mks.integrations.common.TriclopsSiSandbox;
-import org.intellij.vcs.mks.realtime.MksSandboxInfo;
+import org.intellij.vcs.mks.realtime.MksNativeSandboxInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -239,7 +239,7 @@ public class MKSHelper {
 		}
 	}
 
-	public static TriclopsSiMembers createMembers(MksSandboxInfo key) {
+	public static TriclopsSiMembers createMembers(MksNativeSandboxInfo key) {
 		return createMembers(key.getSiSandbox());
 	}
 

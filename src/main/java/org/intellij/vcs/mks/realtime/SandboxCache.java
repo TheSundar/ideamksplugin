@@ -23,7 +23,7 @@ public interface SandboxCache extends ModuleRootListener, SandboxListListener, V
 	 *         file system
 	 */
 	@Nullable
-	MksSandboxInfo getSandboxInfo(@NotNull VirtualFile virtualFile);
+    MksSandboxInfo getSandboxInfo(@NotNull VirtualFile virtualFile);
 
 	/**
 	 * @param virtualFile the file
@@ -50,7 +50,7 @@ public interface SandboxCache extends ModuleRootListener, SandboxListListener, V
 	 * @return true if the given file belongs to a sandbox (which would be the one returned by findsandbox).
 	 *         This is false if file has only been locally created (eg not added to mks)
 	 */
-	boolean isPartOfSandbox(@NotNull VirtualFile file);
+//	boolean isPartOfSandbox(@NotNull VirtualFile file);
 
 	/**
 	 * called when the project is unloaded, should clean up the cache
@@ -62,5 +62,5 @@ public interface SandboxCache extends ModuleRootListener, SandboxListListener, V
 	 * @return the closest existing subsandbox containing the supplied virtualFile
 	 */
 	@Nullable
-	MksSandboxInfo getSubSandbox(@NotNull VirtualFile virtualFile);
+    MksSandboxInfo getSubSandbox(@NotNull VirtualFile virtualFile);
 }

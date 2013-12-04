@@ -10,6 +10,7 @@ import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.update.*;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksMemberState;
+import org.intellij.vcs.mks.realtime.MksNativeSandboxInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.intellij.vcs.mks.sicommands.AbstractViewSandboxCommand;
 import org.intellij.vcs.mks.sicommands.ViewSandboxRemoteChangesCommand;
@@ -101,7 +102,7 @@ public class MksUpdateEnvironment implements UpdateEnvironment {
 		}
 
 /*
-		for (MksSandboxInfo sandbox : sandboxes) {
+		for (MksNativeSandboxInfo sandbox : sandboxes) {
 			AbstractViewSandboxCommand command =
 					new ViewSandboxLocalChangesCommand(exceptions, mksVcs, sandbox.sandboxPath);
 			command.execute();

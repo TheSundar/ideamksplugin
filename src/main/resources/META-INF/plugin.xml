@@ -13,8 +13,8 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
     <vendor logo="/icons/mks.png" url="http://code.google.com/p/ideamksplugin/">Eric Sheffer, Thibaut Fagart</vendor>
     <resource-bundle>org.intellij.vcs.mks.mksBundle</resource-bundle>
     <category>VCS Integration</category>
-    <idea-version since-build="${idea.version}"/>
-    <!--<idea-version since-build="122.746"/>-->
+    <!--<idea-version since-build="${idea.version}"/>-->
+    <idea-version since-build="122.746"/>
     <depends>com.intellij.modules.vcs</depends>
 
     <change-notes><![CDATA[<ul>
@@ -95,6 +95,11 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
             <interface-class>org.intellij.vcs.mks.MKSChangeProvider</interface-class>
             <implementation-class>org.intellij.vcs.mks.MKSChangeProvider</implementation-class>
         </component>
+        <component>
+            <interface-class>org.intellij.vcs.mks.realtime.SandboxCache</interface-class>
+            <implementation-class>org.intellij.vcs.mks.realtime.APISandboxCache</implementation-class>
+        </component>
+
     </project-components>
     <application-components>
         <component>
@@ -102,9 +107,15 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
             <implementation-class>org.intellij.vcs.mks.MksConfiguration</implementation-class>
         </component>
         <component>
+            <interface-class>org.intellij.vcs.mks.MKSAPIHelper</interface-class>
+            <implementation-class>org.intellij.vcs.mks.MKSAPIHelper</implementation-class>
+        </component>
+<!-- not for non-native
+        <component>
             <interface-class>org.intellij.vcs.mks.realtime.SandboxListSynchronizer</interface-class>
             <implementation-class>org.intellij.vcs.mks.realtime.SandboxListSynchronizerImpl</implementation-class>
         </component>
+-->
     </application-components>
     <actions>
         <action id="MKS.MemberDiffsAction"

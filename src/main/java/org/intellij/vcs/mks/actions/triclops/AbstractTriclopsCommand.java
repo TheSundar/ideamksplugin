@@ -7,6 +7,7 @@ import mks.integrations.common.TriclopsSiMember;
 import mks.integrations.common.TriclopsSiMembers;
 import org.intellij.vcs.mks.*;
 import org.intellij.vcs.mks.actions.MksCommand;
+import org.intellij.vcs.mks.realtime.MksNativeSandboxInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,13 +38,17 @@ public abstract class AbstractTriclopsCommand implements MksCommand {
 			TriclopsSiMembers[] result = new TriclopsSiMembers[filesBysandbox.size()];
 			int i = 0;
 			for (Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : filesBysandbox.entrySet()) {
-				TriclopsSiMembers members = MKSHelper.createMembers(entry.getKey());
-				result[i++] = members;
-				for (VirtualFile virtualFile : entry.getValue()) {
-					members.addMember(new TriclopsSiMember(virtualFile.getPresentableUrl()));
-				}
-				MKSHelper.getMembersStatus(members);
-			}
+                if (entry.getKey() instanceof MksNativeSandboxInfo) {
+                    TriclopsSiMembers members = MKSHelper.createMembers(((MksNativeSandboxInfo) entry.getKey()));
+                    result[i++] = members;
+                    for (VirtualFile virtualFile : entry.getValue()) {
+                        members.addMember(new TriclopsSiMember(virtualFile.getPresentableUrl()));
+                    }
+                    MKSHelper.getMembersStatus(members);
+                }                     else {
+                    throw new UnsupportedOperationException("native");
+                }
+            }
 			return result;
 		} catch (TriclopsException e) {
 			throw new MksVcsException(MksBundle.message("unable.to.obtain.file.status"), e);

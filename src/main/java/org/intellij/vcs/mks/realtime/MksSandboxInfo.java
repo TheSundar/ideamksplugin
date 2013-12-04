@@ -3,122 +3,93 @@ package org.intellij.vcs.mks.realtime;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import mks.integrations.common.TriclopsException;
-import mks.integrations.common.TriclopsSiSandbox;
-import org.intellij.vcs.mks.MKSHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 
-/**
- * @author Thibaut Fagart
- */
-public final class MksSandboxInfo implements Comparable<MksSandboxInfo> {
-	private final Logger LOGGER = Logger.getInstance(getClass().getName());
-	public final String sandboxPath;
-	public final String hostAndPort;
-	public final String mksProject;
-	public final String devPath;
-	public final boolean isSubSandbox;
-	final VirtualFile sandboxPjFile;
-	int retries = 0;
-	private TriclopsSiSandbox siSandbox;
+public class MksSandboxInfo implements Comparable<MksSandboxInfo> {
+    public final String sandboxPath;
+    public final String hostAndPort;
+    public final String mksProject;
+    public final String devPath;
+    public final boolean isSubSandbox;
+    protected final Logger LOGGER = Logger.getInstance(getClass().getName());
+    final VirtualFile sandboxPjFile;
+    int retries = 0;
 
-	@Deprecated
-	public synchronized TriclopsSiSandbox getSiSandbox() {
-		if (siSandbox == null) {
-			try {
-				siSandbox = MKSHelper.createSandbox(sandboxPath);
-			} catch (TriclopsException e) {
-				LOGGER.error("error fetching MKS native sandbox for " + sandboxPath);
-			}
-		}
-		return siSandbox;
-	}
+    public MksSandboxInfo(@Nullable final VirtualFile sandboxPjFile, String hostAndPort,  boolean isSubSandbox, @NotNull String mksProject, @NotNull final String sandboxPath, @Nullable String devPath) {
+        this.sandboxPjFile = sandboxPjFile;
+        this.isSubSandbox = isSubSandbox;
+        this.mksProject = mksProject;
+        this.sandboxPath = sandboxPath;
+        this.devPath = devPath;
+        this.hostAndPort = hostAndPort.toLowerCase();
+    }
 
-	/**
-	 * @param sandboxPath
-	 * @param hostAndPort
-	 * @param mksProject
-	 * @param devPath	   null if the sandbox is on the trunk
-	 * @param sandboxPjFile null if IDEA has no VirtualFile for the sandbox file
-	 * @param isSubSandbox
-	 */
-	public MksSandboxInfo(@NotNull final String sandboxPath, @NotNull final String hostAndPort,
-						  @NotNull String mksProject, @Nullable String devPath,
-						  @Nullable final VirtualFile sandboxPjFile, boolean isSubSandbox) {
-		this.mksProject = mksProject;
-		this.devPath = devPath;
-		this.sandboxPjFile = sandboxPjFile;
-		this.isSubSandbox = isSubSandbox;
-		this.hostAndPort = hostAndPort.toLowerCase();
-		this.sandboxPath = sandboxPath;
-	}
+    @Override
+    public String toString() {
+        return "MksSandbox[" + sandboxPath + "," + hostAndPort + (isSubSandbox ? ",subsandbox" : "") + "]";
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
+    /**
+     * returns true if file belongs to this sandbox
+     *
+     * @param file
+     * @return
+     */
+    public boolean contains(@NotNull VirtualFile file) {
+        if (sandboxPjFile == null) {
+            LOGGER.warn("contains : sandboxPjFile == null, " + toString());
+            return false;
+        }
+        return VfsUtil.isAncestor(sandboxPjFile.getParent(), file, false);
+    }
 
-		MksSandboxInfo that = (MksSandboxInfo) o;
+    @NotNull
+    public String getRelativePath(@NotNull VirtualFile member) {
+        final char separator = File.separatorChar;
+        return getRelativePath(member, separator);
+    }
 
-		return !(devPath != null ? !devPath.equals(that.devPath) : that.devPath != null)
-				&& hostAndPort.equals(that.hostAndPort)
-				&& mksProject.equals(that.mksProject)
-				&& sandboxPath.equals(that.sandboxPath);
-	}
+    public String getRelativePath(VirtualFile member, char separator) {
+        return VfsUtil.getRelativePath(member, sandboxPjFile.getParent(), separator);
+    }
 
-	@Override
-	public int hashCode() {
-		int result;
-		result = sandboxPath.hashCode();
-		result = 31 * result + hostAndPort.hashCode();
-		result = 31 * result + mksProject.hashCode();
-		result = 31 * result + (devPath != null ? devPath.hashCode() : 0);
-		return result;
-	}
+    @NotNull
+    public VirtualFile getSandboxDir() {
+        assert sandboxPjFile != null : "sandbox not initialized";
+        return sandboxPjFile.getParent();
+    }
 
-	public int compareTo(final MksSandboxInfo sandboxInfo) {
-		return sandboxPath.compareTo((sandboxInfo == null) ? null : sandboxInfo.sandboxPath);
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
-	@Override
-	public String toString() {
-		return "MksSandbox[" + sandboxPath + "," + hostAndPort + (isSubSandbox ? ",subsandbox" : "") + "]";
-	}
+        MksSandboxInfo that = (MksSandboxInfo) o;
 
-	/**
-	 * returns true if file belongs to this sandbox
-	 *
-	 * @param file
-	 * @return
-	 */
-	public boolean contains(@NotNull VirtualFile file) {
-		if (sandboxPjFile == null) {
-			LOGGER.warn("contains : sandboxPjFile == null, " + toString());
-			return false;
-		}
-		return VfsUtil.isAncestor(sandboxPjFile.getParent(), file, false);
-	}
+        return !(devPath != null ? !devPath.equals(that.devPath) : that.devPath != null)
+                && hostAndPort.equals(that.hostAndPort)
+                && mksProject.equals(that.mksProject)
+                && sandboxPath.equals(that.sandboxPath);
+    }
 
-	@NotNull
-	public String getRelativePath(@NotNull VirtualFile member) {
-		final char separator = File.separatorChar;
-		return getRelativePath(member, separator);
-	}
+    @Override
+    public int hashCode() {
+        int result;
+        result = sandboxPath.hashCode();
+        result = 31 * result + hostAndPort.hashCode();
+        result = 31 * result + mksProject.hashCode();
+        result = 31 * result + (devPath != null ? devPath.hashCode() : 0);
+        return result;
+    }
 
-	public String getRelativePath(VirtualFile member, char separator) {
-		return VfsUtil.getRelativePath(member, sandboxPjFile.getParent(), separator);
-	}
-
-	@NotNull
-	public VirtualFile getSandboxDir() {
-		assert sandboxPjFile != null : "sandbox not initialized";
-		return sandboxPjFile.getParent();
-	}
+    public int compareTo(final MksSandboxInfo sandboxInfo) {
+        return sandboxPath.compareTo((sandboxInfo == null) ? null : sandboxInfo.sandboxPath);
+    }
 }

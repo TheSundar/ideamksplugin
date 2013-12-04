@@ -17,6 +17,7 @@ import com.intellij.vcsUtil.VcsUtil;
 import mks.integrations.common.TriclopsException;
 import mks.integrations.common.TriclopsSiMember;
 import mks.integrations.common.TriclopsSiMembers;
+import org.intellij.vcs.mks.realtime.MksNativeSandboxInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -62,27 +63,32 @@ public class MksCheckinEnvironment implements CheckinEnvironment {
 		List<VcsException> exceptions = new ArrayList<VcsException>();
 		Map<MksSandboxInfo, ArrayList<VirtualFile>> filesBysandbox = dispatchAction.getFilesBySandbox();
 		for (Map.Entry<MksSandboxInfo, ArrayList<VirtualFile>> entry : filesBysandbox.entrySet()) {
-			TriclopsSiMembers members = MKSHelper.createMembers(entry.getKey());
-			for (VirtualFile virtualFile : entry.getValue()) {
-				members.addMember(new TriclopsSiMember(virtualFile.getPresentableUrl()));
-			}
-			try {
-				MKSHelper.getMembersStatus(members);
-			} catch (TriclopsException e) {
-				//noinspection ThrowableInstanceNeverThrown
-				exceptions.add(new MksVcsException(getCheckinOperationName() +
-						" Error obtaining mks status: " + MksVcs.getMksErrorMessage(), e));
-			}
-			try {
-				MKSHelper.checkinMembers(members, 0);
-			} catch (TriclopsException e) {
-				if (!MksVcs.isLastCommandCancelled()) {
-					//noinspection ThrowableInstanceNeverThrown
-					exceptions.add(new MksVcsException(getCheckinOperationName() +
-							" Error checking in: " + MksVcs.getMksErrorMessage(), e));
-				}
-			}
-		}
+
+            if (entry.getKey() instanceof MksNativeSandboxInfo) {
+                TriclopsSiMembers members = MKSHelper.createMembers(((MksNativeSandboxInfo) entry.getKey()));
+                for (VirtualFile virtualFile : entry.getValue()) {
+                    members.addMember(new TriclopsSiMember(virtualFile.getPresentableUrl()));
+                }
+                try {
+                    MKSHelper.getMembersStatus(members);
+                } catch (TriclopsException e) {
+                    //noinspection ThrowableInstanceNeverThrown
+                    exceptions.add(new MksVcsException(getCheckinOperationName() +
+                            " Error obtaining mks status: " + MksVcs.getMksErrorMessage(), e));
+                }
+                try {
+                    MKSHelper.checkinMembers(members, 0);
+                } catch (TriclopsException e) {
+                    if (!MksVcs.isLastCommandCancelled()) {
+                        //noinspection ThrowableInstanceNeverThrown
+                        exceptions.add(new MksVcsException(getCheckinOperationName() +
+                                " Error checking in: " + MksVcs.getMksErrorMessage(), e));
+                    }
+                }
+            }               else {
+                throw new UnsupportedOperationException("not supported for non native");
+            }
+        }
 
 		return exceptions;
 	}

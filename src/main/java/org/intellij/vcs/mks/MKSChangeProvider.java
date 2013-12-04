@@ -8,6 +8,7 @@ import java.util.*;
 import org.intellij.vcs.mks.model.MksChangePackage;
 import org.intellij.vcs.mks.model.MksMemberState;
 import org.intellij.vcs.mks.model.MksServerInfo;
+import org.intellij.vcs.mks.realtime.MksNativeSandboxInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.intellij.vcs.mks.sicommands.*;
 import org.jetbrains.annotations.NotNull;

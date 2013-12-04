@@ -1,6 +1,7 @@
 package org.intellij.vcs.mks.realtime;
 
 import junit.framework.TestCase;
+import org.intellij.vcs.mks.sicommands.SandboxInfo;
 import org.intellij.vcs.mks.sicommands.SandboxesCommand;
 import org.intellij.vcs.mks.sicommands.SandboxesCommandTest;
 import org.jetbrains.annotations.NotNull;
@@ -17,9 +18,9 @@ public class SandboxListSynchronizerImplTest extends TestCase {
     public void testCompareRemoved() {
 
         final SandboxesCommand command = new SandboxesCommandTest().executeCommand(SandboxesCommandTest.FILE_1);
-        final ArrayList<SandboxesCommand.SandboxInfo> oldList = command.result;
+        final ArrayList<SandboxInfo> oldList = command.result;
 
-        final ArrayList<SandboxesCommand.SandboxInfo> newList = new ArrayList<SandboxesCommand.SandboxInfo>(oldList);
+        final ArrayList<SandboxInfo> newList = new ArrayList<SandboxInfo>(oldList);
 
         newList.remove(0);
         newList.remove(2);
@@ -54,11 +55,11 @@ public class SandboxListSynchronizerImplTest extends TestCase {
     public void testCompareUpdated() {
 
         final SandboxesCommand command = new SandboxesCommandTest().executeCommand(SandboxesCommandTest.FILE_1);
-        final ArrayList<SandboxesCommand.SandboxInfo> oldList = command.result;
+        final ArrayList<SandboxInfo> oldList = command.result;
 
-        final ArrayList<SandboxesCommand.SandboxInfo> newList = new ArrayList<SandboxesCommand.SandboxInfo>(oldList);
-        final SandboxesCommand.SandboxInfo sandboxInfo = oldList.get(2);
-        final SandboxesCommand.SandboxInfo newSandboxInfo = new SandboxesCommand.SandboxInfo(sandboxInfo.sandboxPath, sandboxInfo.serverHostAndPort, sandboxInfo.projectPath, "newDevpath");
+        final ArrayList<SandboxInfo> newList = new ArrayList<SandboxInfo>(oldList);
+        final SandboxInfo sandboxInfo = oldList.get(2);
+        final SandboxInfo newSandboxInfo = new SandboxInfo(sandboxInfo.sandboxPath, sandboxInfo.serverHostAndPort, sandboxInfo.projectPath, "newDevpath");
         newList.set(2, newSandboxInfo);
         final SandboxListSynchronizerImpl synchronizer = new SandboxListSynchronizerImpl(null);
 
@@ -90,12 +91,12 @@ public class SandboxListSynchronizerImplTest extends TestCase {
     public void testCompareAdded() {
 
         final SandboxesCommand command = new SandboxesCommandTest().executeCommand(SandboxesCommandTest.FILE_1);
-        final ArrayList<SandboxesCommand.SandboxInfo> oldList = command.result;
+        final ArrayList<SandboxInfo> oldList = command.result;
 
-        final ArrayList<SandboxesCommand.SandboxInfo> newList = new ArrayList<SandboxesCommand.SandboxInfo>(oldList);
-        final SandboxesCommand.SandboxInfo sandboxInfo = oldList.get(oldList.size() - 1);
+        final ArrayList<SandboxInfo> newList = new ArrayList<SandboxInfo>(oldList);
+        final SandboxInfo sandboxInfo = oldList.get(oldList.size() - 1);
 
-        final SandboxesCommand.SandboxInfo newSandboxInfo = new SandboxesCommand.SandboxInfo(sandboxInfo.sandboxPath.replace("c:", "d:"), sandboxInfo.serverHostAndPort, sandboxInfo.projectPath, sandboxInfo.projectVersion);
+        final SandboxInfo newSandboxInfo = new SandboxInfo(sandboxInfo.sandboxPath.replace("c:", "d:"), sandboxInfo.serverHostAndPort, sandboxInfo.projectPath, sandboxInfo.projectVersion);
         newList.add(newSandboxInfo);
         final SandboxListSynchronizerImpl synchronizer = new SandboxListSynchronizerImpl(null);
 
