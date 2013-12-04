@@ -9,7 +9,6 @@ import com.intellij.openapi.vcs.history.*;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.vcsUtil.VcsUtil;
-import org.intellij.vcs.mks.MKSHelper;
 import org.intellij.vcs.mks.MksRevisionNumber;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
@@ -68,7 +67,7 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
                 "" + filePath.getPath() + " should start with " + sandboxFolder.getPath();
         final AbstractViewSandboxCommand command =
                 new AbstractViewSandboxCommand(new ArrayList<VcsException>(), vcs, sandbox.sandboxPath
-                        , "--filter=file:" + MKSHelper.getRelativePath(filePath, sandboxFolder)
+                        , "--filter=file:" + MksVcs.getRelativePath(filePath, sandboxFolder)
 //				"--fields=workingrev",
 //				"--recurse"
                 ) {

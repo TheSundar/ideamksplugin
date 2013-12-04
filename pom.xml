@@ -9,7 +9,7 @@
 	<description>Implementation of an IDEA MKS plugin.</description>
 	<properties>
 		<!-- 10.5.4 -->
-		<idea.version>122.746</idea.version>
+		<idea.version>129.1328</idea.version>
 	</properties>
 	<scm>
 		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/trunk</connection>
@@ -17,35 +17,18 @@
 		<url>http://ideamksplugin.googlecode.com/svn/trunk</url>
 	</scm>
 	<dependencies>
-		<!-- BEGIN classpath for ideauidesigner plugin, see IDEA generated  ant buildfiles javac2 taskdef -->
-		<dependency>
-			<groupId>com.intellij</groupId>
-			<artifactId>javac2</artifactId>
-			<version>${idea.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>asm</groupId>
-			<artifactId>asm-commons</artifactId>
-			<version>3.3</version>
-		</dependency>
-		<dependency>
-			<groupId>asm</groupId>
-			<artifactId>asm</artifactId>
-			<version>3.3</version>
-		</dependency>
-		<!-- END classpath for ideauidesigner plugin  -->
-		<dependency>
-			<groupId>org.easymock</groupId>
-			<artifactId>easymock</artifactId>
-			<version>2.2</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.trove4j</groupId>
-			<artifactId>trove4j</artifactId>
-			<version>2.0.2</version>
-			<scope>test</scope>
-		</dependency>
+
+        <dependency>
+            <groupId>com.mks</groupId>
+            <artifactId>mksapi-without-commons</artifactId>
+            <version>8.3.2392</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>javac2</artifactId>
+            <version>${idea.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>jdom</groupId>
 			<artifactId>jdom</artifactId>
@@ -57,11 +40,6 @@
 			<artifactId>junit</artifactId>
 			<version>3.8.1</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.mks</groupId>
-			<artifactId>mkscmapi</artifactId>
-			<version>8.3.2392</version>
 		</dependency>
 		<dependency>
 			<groupId>com.intellij</groupId>
@@ -87,6 +65,37 @@
 			<version>${idea.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.intellij</groupId>
+			<artifactId>jgoodies-forms</artifactId>
+			<version>${idea.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+        <dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.0.1</version>
+			<scope>test</scope>
+		</dependency>
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <version>2.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.trove4j</groupId>
+            <artifactId>trove4j</artifactId>
+            <version>2.0.2</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 	<build>
 		<resources>
@@ -107,127 +116,6 @@
 		</resources>
 
 		<plugins>
-<!--
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				        <artifactId>maven-antrun-plugin</artifactId>
-				        <version>1.7</version>
-				<executions>
-					<execution>
-						<id>javac2</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target>
-								<taskdef name="javac2" classname="com.intellij.ant.Javac2"
-										 classpathref="maven.plugin.classpath"/>
-								<path id="mks.module.sourcepath">
-						    <dirset dir="${project.basedir}">
-						      <include name="src/main/java"/>
-						      <include name="src/main/resources"/>
-						    </dirset>
-						  </path>
-								<taskdef name="instrumentIdeaExtensions"
-										 classname="com.intellij.ant.InstrumentIdeaExtensions"
-										 classpathref="maven.plugin.classpath"/>
-								<property name="compile_classpath" refid="maven.compile.classpath"/>
-        <property name="runtime_classpath" refid="maven.runtime.classpath"/>
-        <property name="test_classpath" refid="maven.test.classpath"/>
-        <property name="plugin_classpath" refid="maven.plugin.classpath"/>
-
-        <echo message="compile classpath: ${compile_classpath}"/>
-        <echo message="runtime classpath: ${runtime_classpath}"/>
-        <echo message="test classpath:    ${test_classpath}"/>
-        <echo message="plugin classpath:  ${plugin_classpath}"/>
-
-								<javac2 destdir="${project.build.outputDirectory}" debug="true" includeantruntime="true" fork="true">
-&lt;!&ndash;
-										nowarn="${compiler.generate.no.warnings}"
-										memorymaximumsize="${compiler.max.memory}"
-										executable="${module.jdk.bin.mks}/javac">
-&ndash;&gt;
-
-									<classpath refid="maven.compile.classpath"/>
-									<src refid="mks.module.sourcepath"/>
-									&lt;!&ndash;<patternset refid="excluded.from.compilation.mks"/>&ndash;&gt;
-								</javac2>
-							</target>
-						</configuration>
-					</execution>
-				</executions>
-				<dependencies>
-					<dependency>
-						<groupId>org.apache.ant</groupId>
-						<artifactId>ant</artifactId>
-						<version>1.8.2</version>
-					</dependency>
-					<dependency>
-						<groupId>com.intellij</groupId>
-						<artifactId>jgoodies-forms</artifactId>
-						<version>${idea.version}</version>
-					</dependency>
-					<dependency>
-						<groupId>com.intellij</groupId>
-						<artifactId>javac2</artifactId>
-						<version>${idea.version}</version>
-					</dependency>
-					<dependency>
-						<groupId>com.intellij</groupId>
-						<artifactId>asm4-all</artifactId>
-						<version>${idea.version}</version>
-					</dependency>
-					<dependency>
-						<groupId>com.intellij</groupId>
-						<artifactId>javac2</artifactId>
-						<version>${idea.version}</version>
-					</dependency>
-					<dependency>
-						<groupId>com.intellij</groupId>
-						<artifactId>jdom</artifactId>
-						<version>${idea.version}</version>
-					</dependency>
-				</dependencies>
-			</plugin>
--->
-									<plugin>
-										<groupId>org.codehaus.mojo</groupId>
-										<artifactId>ideauidesigner-maven-plugin</artifactId>
-										<executions>
-											<execution>
-												<goals>
-													<goal>javac2</goal>
-												</goals>
-											</execution>
-										</executions>
-										<configuration>
-											<fork>true</fork>
-											<debug>true</debug>
-											<failOnError>true</failOnError>
-											<verbose>true</verbose>
-										</configuration>
-										<dependencies>
-											<!-- override older (7.0.3) javac2 which was not java5 -->
-											<dependency>
-												<groupId>com.intellij</groupId>
-												<artifactId>javac2</artifactId>
-												<version>107.777</version>
-											</dependency>
-						<!--
-											<dependency>
-												<groupId>org.apache.ant</groupId>
-												<artifactId>ant</artifactId>
-												<version>1.8.2</version>
-											</dependency>
-											<dependency>
-												<groupId>com.intellij</groupId>
-												<artifactId>asm4-all</artifactId>
-												<version>${idea.version}</version>
-											</dependency>
-						-->
-										</dependencies>
-									</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>

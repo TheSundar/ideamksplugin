@@ -17,6 +17,7 @@ import com.intellij.openapi.vcs.diff.DiffProvider;
 import com.intellij.openapi.vcs.history.VcsHistoryProvider;
 import com.intellij.openapi.vcs.rollback.RollbackEnvironment;
 import com.intellij.openapi.vcs.update.UpdateEnvironment;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
@@ -109,6 +110,14 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
 		} else {
 			runnable.run();
 		}
+	}
+
+    public static String getRelativePath(@NotNull FilePath filePath, @NotNull FilePath parentPath) {
+        return VfsUtil.getRelativePath(filePath.getVirtualFile(), parentPath.getVirtualFile(), '/');
+    }
+
+    public static String getRelativePath(@NotNull VirtualFile virtualFile, @NotNull VirtualFile parentVirtualFile) {
+		return VfsUtil.getRelativePath(virtualFile, parentVirtualFile, '/');
 	}
 
 
@@ -382,9 +391,6 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
         return (MksVcs) ProjectLevelVcsManager.getInstance(project).findVcsByName(VCS_NAME);
     }
 
-    public static synchronized String getMksErrorMessage() {
-        return MKSHelper.getMksErrorMessage();
-    }
 
     public void debug(final String s) {
         ProjectLevelVcsManager.getInstance(myProject).addMessageToConsoleWindow(s, null);
@@ -427,10 +433,6 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
     @Override
     public DiffProvider getDiffProvider() {
         return diffProvider;
-    }
-
-    public static boolean isLastCommandCancelled() {
-        return MKSHelper.isLastCommandCancelled();
     }
 
     public Project getProject() {

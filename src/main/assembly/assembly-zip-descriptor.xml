@@ -27,7 +27,7 @@
             <scope>runtime</scope>
             <includes>
                 <include>mks-idea:mks-idea</include>
-                <include>com.mks:mkscmapi</include>
+                <include>com.mks:mksapi-without-commons</include>
             </includes>
         </dependencySet>
     </dependencySets>

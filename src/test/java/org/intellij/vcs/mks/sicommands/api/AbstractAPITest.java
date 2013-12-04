@@ -9,14 +9,37 @@ import org.intellij.vcs.mks.MKSAPIHelper;
 import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.InputStream;
 import java.util.Iterator;
+import java.util.MissingResourceException;
+import java.util.Properties;
 
-public class AbstractAPITest extends TestCase {
+public abstract class AbstractAPITest extends TestCase {
+    protected String viewMemberHistoryMember;
     protected MKSAPIHelper apiHelper;
+    protected String mksuser;
+    protected String mkshost ;
+    protected String  mksport;
+    protected String sandbox ;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();    //To change body of overridden methods use File | Settings | File Templates.
+        Properties mksProperties = new Properties();
+        InputStream stream = getClass().getResourceAsStream("/mks.properties");
+        if(null == stream) {
+            throw new Exception("/mks.properties not found");
+        }
+        try {
+            mksProperties.load(stream);
+        } finally {
+            stream.close();
+        }
+        mksuser = mksProperties.getProperty("user");
+        mkshost = mksProperties.getProperty("host");
+        mksport = mksProperties.getProperty("port");
+        viewMemberHistoryMember = mksProperties.getProperty("viewMemberHistoryMember");
+        sandbox = mksProperties.getProperty("sandbox");
         apiHelper = new MKSAPIHelper();
         apiHelper.initComponent();
     }

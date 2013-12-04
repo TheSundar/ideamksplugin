@@ -1,7 +1,5 @@
 package org.intellij.vcs.mks.sicommands;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 import java.util.Comparator;
 
 public final class SandboxInfo {
@@ -88,8 +86,10 @@ public final class SandboxInfo {
         return result;
     }
 
+/*
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
+*/
 }

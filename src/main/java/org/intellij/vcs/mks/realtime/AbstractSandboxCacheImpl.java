@@ -15,7 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.ProjectScope;
 import com.intellij.vcsUtil.VcsUtil;
-import org.intellij.vcs.mks.MKSHelper;
+//import org.intellij.vcs.mks.MKSHelper;
 import org.intellij.vcs.mks.MksRevisionNumber;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksMemberState;
@@ -245,8 +245,7 @@ public abstract class AbstractSandboxCacheImpl implements SandboxCache {
         }
         final FilePath sandboxFolderFilePath =
                 VcsContextFactory.SERVICE.getInstance().createFilePathOn(sandbox.sandboxPjFile.getParent());
-
-        final String relativePath = MKSHelper.getRelativePath(filePath, sandboxFolderFilePath);
+        final String relativePath = MksVcs.getInstance(project).getRelativePath(filePath, sandboxFolderFilePath);
         if ("".equals(relativePath.trim())) {
             LOGGER.warn("no relative path for " + virtualFile + " from " + sandboxFolderFilePath +
                     ", assuming different sandboxes");

@@ -10,7 +10,6 @@ import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.update.*;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksMemberState;
-import org.intellij.vcs.mks.realtime.MksNativeSandboxInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.intellij.vcs.mks.sicommands.cli.AbstractViewSandboxCommand;
 import org.intellij.vcs.mks.sicommands.cli.ViewSandboxRemoteChangesCommand;

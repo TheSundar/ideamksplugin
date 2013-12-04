@@ -17,7 +17,7 @@ public class EncodingTest extends TestCase {
 
 	public void testEncoding() throws IOException {
 		for (String encoding : Charset.availableCharsets().keySet()) {
-			if (testFileUsing("viewsandbox/viewhistory.txt", encoding, "août")) {
+			if (testFileUsing("viewsandbox_local/viewhistory.txt", encoding, "août")) {
 				System.out.println("encoding " + encoding + " OK");
 			}
 		}

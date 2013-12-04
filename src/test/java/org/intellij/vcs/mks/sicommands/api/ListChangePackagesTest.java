@@ -16,7 +16,7 @@ import java.util.Set;
 public class ListChangePackagesTest extends AbstractAPITest {
 
     public void testCommand() {
-        ListChangePackagesAPICommand command = new ListChangePackagesAPICommand(new ArrayList<VcsException>(), getMksCLIConfiguration(), new MksServerInfo("79310750", "vhvhcl50.us.hsbc", "7001"))
+        ListChangePackagesAPICommand command = new ListChangePackagesAPICommand(new ArrayList<VcsException>(), getMksCLIConfiguration(), new MksServerInfo(mksuser, mkshost, mksport))
         {
             @Override
             protected MKSAPIHelper getAPIHelper() {

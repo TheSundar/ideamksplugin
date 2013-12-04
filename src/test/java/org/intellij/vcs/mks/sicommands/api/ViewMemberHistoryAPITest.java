@@ -4,15 +4,19 @@ import com.intellij.openapi.vcs.VcsException;
 import com.mks.api.CmdRunner;
 import com.mks.api.Command;
 import com.mks.api.response.*;
+import org.intellij.vcs.mks.MKSAPIHelper;
 
 import java.util.ArrayList;
 
 public class ViewMemberHistoryAPITest extends  AbstractAPITest {
 
-    private static final String MEMBER = "C:\\Users\\A6253567\\sandboxes\\GIVR\\mapper\\idv-ha-services\\src\\main\\resources\\idv-ha-services\\gct\\deliverPRC-outbound.xml";
-
     public void testCommand() {
-        ViewMemberHistoryAPICommand cmd = new ViewMemberHistoryAPICommand(new ArrayList<VcsException>(), getMksCLIConfiguration(), MEMBER);
+        ViewMemberHistoryAPICommand cmd = new ViewMemberHistoryAPICommand(new ArrayList<VcsException>(), getMksCLIConfiguration(), viewMemberHistoryMember) {
+            @Override
+            protected MKSAPIHelper getAPIHelper() {
+                return apiHelper;
+            }
+        };
         cmd.execute();
         System.out.println(cmd.getRevisionsInfo());
 
@@ -21,7 +25,7 @@ public class ViewMemberHistoryAPITest extends  AbstractAPITest {
         final CmdRunner runner = apiHelper.getSession().createCmdRunner();
         Command command = new Command(Command.SI);
         command.setCommandName("viewhistory");
-        command.addSelection(MEMBER);
+        command.addSelection(viewMemberHistoryMember);
         runner.execute(command);
         try {
             Response response = runner.execute(command);

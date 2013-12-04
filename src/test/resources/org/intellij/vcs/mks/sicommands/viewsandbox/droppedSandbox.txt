@@ -1,5 +1,0 @@
-    dropped-subproject  c:\Documents and Settings\A6253567.HBEU\sandboxes\DS2\Core\core-dev\src\main\java\com\hsbc\esf\logging\appenders\project.pj
-    dropped-subproject  c:\Documents and Settings\A6253567.HBEU\sandboxes\DS2\Core\core-dev\src\test\java\com\hsbc\esf\requestprocessing\integration\project.pj
-    dropped-subproject  c:\Documents and Settings\A6253567.HBEU\sandboxes\DS2\Core\core-dev\src\test\java\com\hsbc\esf\requestprocessing\integration\error\project.pj
-    dropped-subproject  c:\Documents and Settings\A6253567.HBEU\sandboxes\DS2\Core\core-dev\src\test\java\com\hsbc\esf\requestprocessing\integration\success\project.pj
-    dropped-subproject  c:\Documents and Settings\A6253567.HBEU\sandboxes\DS2\Core\core-dev\src\test\java\com\hsbc\esf\requestprocessing\integration\project.pj

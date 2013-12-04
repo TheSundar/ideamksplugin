@@ -15,8 +15,6 @@ import java.util.*;
 public class ViewSandboxAPITest  extends AbstractAPITest{
     static final Set<String> SIMPLE_TYPES = new HashSet<String>(Arrays.asList(Field.BOOLEAN_TYPE, Field.DATE_TYPE, Field.DOUBLE_TYPE,
             Field.FLOAT_TYPE, Field.INTEGER_TYPE, Field.LONG_TYPE, Field.STRING_TYPE));
-    private static final String sandbox = "c:\\Users\\A6253567\\sandboxes\\GIVR\\mapper\\idv-ha-services\\project.pj";
-//    private static final String sandbox = "C:\\Users\\A6253567\\sandboxes\\P2G_HBFR_7.0\\HBFR_IDV\\idv-ha-services\\project.pj";
 
 
     public void testCommand() {
@@ -57,7 +55,7 @@ public class ViewSandboxAPITest  extends AbstractAPITest{
 */
         Command command = new Command(Command.SI);
         command.setCommandName("viewsandbox");
-        command.addOption(new Option("sandbox", "C:\\Users\\A6253567\\sandboxes\\P2G_HBFR_7.0\\HBFR_IDV\\HbfrIdv\\src\\main\\java\\com\\hsbc\\hbfr\\idv\\processing\\authentication\\project.pj"));
+        command.addOption(new Option("sandbox", sandbox));
         MultiValue mv = new MultiValue( "," );
         mv.add( "name" );
         mv.add( "context" );
@@ -70,12 +68,6 @@ public class ViewSandboxAPITest  extends AbstractAPITest{
         mv.add("workingcpid");
         command.addOption(new Option("fields", mv));
         command.addOption(new Option("recurse"));
-//		command.addOption(new Option("user","e9310750"));
-//		command.addOption(new Option("password","e9310750"));
-/*
-        command.addOption(
-                new Option("fields", "locker,workingrev,workingcpid,deferred,type,name,memberrev,locksandbox"));
-*/
         System.err.println(command.toString());
         final Response response;
         final Set<String> types = new HashSet<String>();
@@ -139,8 +131,6 @@ public class ViewSandboxAPITest  extends AbstractAPITest{
         command.addOption(new Option("cwd", sandbox.substring(0, sandbox.lastIndexOf('\\'))));
         command.addOption(new Option("recurse"));
         command.addOption(new Option( "noincludeFormers" ));
-//		command.addOption(new Option("user","e9310750"));
-//		command.addOption(new Option("password","e9310750"));
 /*
         command.addOption(
                 new Option("fields", "locker,workingrev,workingcpid,deferred,type,name,memberrev,locksandbox"));
