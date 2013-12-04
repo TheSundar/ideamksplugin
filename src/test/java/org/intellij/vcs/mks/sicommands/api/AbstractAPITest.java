@@ -58,7 +58,11 @@ public class AbstractAPITest extends TestCase {
             String dataType = field.getDataType();
             if (Field.ITEM_TYPE.equals(dataType)) {
                 System.out.print(newTab + field.getName() + " ");
-                debug(newTab, (Item) field.getValue());
+                if ("si.Revision".equals(((Item) field.getValue()).getModelType())) {
+                    System.out.println(field.getValueAsString());
+                } else {
+                    debug(newTab, (Item) field.getValue());
+                }
             } else if (null == dataType || ViewSandboxAPITest.SIMPLE_TYPES.contains(dataType)) {
                 System.out.println(newTab + field.getName() + " : " + field.getValue());
             } else if (Field.ITEM_LIST_TYPE.equals(dataType)) {

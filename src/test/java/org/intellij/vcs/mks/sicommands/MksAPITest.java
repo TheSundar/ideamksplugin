@@ -12,6 +12,7 @@ package org.intellij.vcs.mks.sicommands;
 import com.intellij.openapi.vcs.VcsException;
 import com.mks.api.*;
 import com.mks.api.response.*;
+import com.mks.api.response.InterruptedException;
 import com.mks.connect.CmdRunnerImpl;
 import junit.framework.TestCase;
 import org.intellij.vcs.mks.CommandExecutionListener;
@@ -32,7 +33,7 @@ public class MksAPITest extends TestCase {
     private static final int port = 7001;
     private static final String sandbox = "c:\\Users\\A6253567\\sandboxes\\GIVR\\mapper\\idv-ha-services\\project.pj";
     private Session session;
-    private static final String MEMBER_FOR_HISTORY = "C:\\Documents and Settings\\A6253567\\sandboxes\\P2G_HBFR_7.0\\HBFR_IDV\\HbfrIdv\\src\\main\\resources\\com\\hsbc\\hbfr\\idv\\resources\\HBFRRegistrationForm\\interceptor-chain.xml";
+    private static final String MEMBER_FOR_HISTORY = "C:\\Users\\A6253567\\sandboxes\\P2G_HBFR_7.0\\HBFR_IDV\\HbfrIdv\\src\\main\\resources\\com\\hsbc\\hbfr\\idv\\resources\\HBFRRegistrationForm\\interceptor-chain.xml";
 
     protected void setUp() throws Exception {
 		super.setUp();
@@ -330,7 +331,7 @@ public class MksAPITest extends TestCase {
 
     }
 
-    public void testLock() {
+    public void testLock() throws InterruptedException {
 
         String [] members = new String[]{"C:\\Users\\A6253567\\sandboxes\\GIVR\\mapper\\idv-ha-services\\src\\main\\java\\com\\hsbc\\hbfr\\gct\\messaging\\converter\\GctRequestPopulatorConverter.java"};
         if (members.length <= 0) throw new IllegalArgumentException("empty member list to lock");
@@ -338,7 +339,7 @@ public class MksAPITest extends TestCase {
         command.setCommandName("lock");
         command.addOption(new Option("sandbox", "C:\\Users\\A6253567\\sandboxes\\GIVR\\mapper\\idv-ha-services\\src\\main\\java\\com\\hsbc\\hbfr\\gct\\messaging\\converter\\project.pj"));
 //        command.addOption(new Option("nobranch"));
-//        command.addOption(new Option("nobranchvariant"));
+        command.addOption(new Option("nobranchvariant"));
 /*
         if (changePackage != null) {
             command.addOption(new Option("cpid", changePackage.getId()));
@@ -356,6 +357,9 @@ public class MksAPITest extends TestCase {
             response = runner.execute(command);
         } catch (APIException e) {
             e.printStackTrace();
+            String executedCommand = e.getResponse().getCommandString();
+            int exitCode = e.getResponse().getExitCode();
+            String errorMessage = e.getMessage();
         }
 
 
@@ -385,6 +389,10 @@ public class MksAPITest extends TestCase {
         URL resource = getClass().getResource("/" + "org.apache.commons.httpclient.MultiThreadedHttpConnectionManager".replace('.', '/') + ".class");
         System.out.println(resource.toExternalForm());
 
+    }
+
+    public void testLaunchGui() throws APIException {
+        new com.mks.api.commands.SICommands(session, false).launchMKSGUI();
     }
 
     private MksCLIConfiguration getMksCLIConfiguration() {

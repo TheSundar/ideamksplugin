@@ -57,11 +57,14 @@ public class ViewSandboxAPITest  extends AbstractAPITest{
 */
         Command command = new Command(Command.SI);
         command.setCommandName("viewsandbox");
-        command.addOption(new Option("sandbox", sandbox));
+        command.addOption(new Option("sandbox", "C:\\Users\\A6253567\\sandboxes\\P2G_HBFR_7.0\\HBFR_IDV\\HbfrIdv\\src\\main\\java\\com\\hsbc\\hbfr\\idv\\processing\\authentication\\project.pj"));
         MultiValue mv = new MultiValue( "," );
         mv.add( "name" );
         mv.add( "context" );
         mv.add( "wfdelta" );
+        mv.add( "memberrev" );
+        mv.add( "workingrev" );
+        mv.add( "revsyncdelta" );
         mv.add( "memberarchive" );
         mv.add( "cpid" );
         mv.add("workingcpid");

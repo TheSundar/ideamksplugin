@@ -108,11 +108,17 @@ public class ViewSandboxCommandAPI extends SiAPICommand {
         boolean isWorkingFileChanged = false;
         boolean isLocalFileMissing = false;
         boolean isNewWorkingFile = false;
+        boolean isRevSyncDelta = false;
         try {
             Item wfdelta = (Item) item.getField("wfdelta").getValue();
             isWorkingFileChanged = wfdelta.getField("isDelta").getBoolean();
             isLocalFileMissing = wfdelta.getField("noWorkingFile").getBoolean();
             isNewWorkingFile = wfdelta.getField("newWorkingFile").getBoolean();
+        } catch (Exception e) {
+        }
+        try {
+            Item revsyncdelta = (Item) item.getField("revsyncdelta").getValue();
+            isRevSyncDelta = revsyncdelta.getField("isDelta").getBoolean();
         } catch (Exception e) {
         }
 
@@ -142,6 +148,8 @@ public class ViewSandboxCommandAPI extends SiAPICommand {
                 status = MksMemberState.Status.MODIFIED_WITHOUT_CHECKOUT;
             }
             return new MksMemberState((createRevision(workingrev)), (createRevision(memberRev)), workingCpid,status);
+        } else if (isRevSyncDelta && !memberRev.equals(workingrev)) {
+            return new MksMemberState((createRevision(workingrev)), (createRevision(memberRev)), workingCpid,MksMemberState.Status.SYNC);
         } else {
             MksMemberState.Status status;
             if (isLocalFileMissing) {
