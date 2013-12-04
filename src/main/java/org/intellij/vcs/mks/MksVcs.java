@@ -167,7 +167,13 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
         tabbedPane.add(createCommandStatisticsPanel(), "Command statistics");
         tabbedPane.add(createTasksPanel(), "Daemon processes");
         mksPanel.add(tabbedPane, BorderLayout.CENTER);
-        registerToolWindow(toolWindowManager, mksPanel);
+        invokeLaterOnEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                registerToolWindow(toolWindowManager, mksPanel);
+            }
+        });
+
         final JPopupMenu menu = new JPopupMenu();
         final JMenuItem item = new JMenuItem("Clear");
         item.addActionListener(new ActionListener() {
