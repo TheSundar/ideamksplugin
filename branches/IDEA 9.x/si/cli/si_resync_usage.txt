@@ -1,0 +1,57 @@
+C:\Documents and Settings\A6253567.HBEU\sandboxes\IDEA plugins\mks\branches\feature_mks_listener>si resync --usage
+Usage: si resync options... current or former member/subproject...; options are:
+        --[no]byCP  Operate in change package mode
+        --[no]confirm  In change package mode, proceed without a question
+        --[no]confirmPopulateSparse  Confirm populate of a sparse sandbox
+        --[no]includeDropped  Include former members
+        --[no|confirm]merge  Perform merges if required
+        --mergeType=[confirm|cancel|automatic|manual]  Try to automatically perform the merge or launch the conflict resolution tool
+        --onMergeConflict=[confirm|cancel|mark|launchtool|highlight|error]  What to do when conflicts occurred during the merge
+        --[no|confirm]overwriteIfPending  Force overwrite of working files which correspond to pending revisions or pending members.
+        --[no]populate  Populate the sandbox with working files
+        --[no|un]expand  Whether keywords should be expanded in working files
+        -f  Force overwrite of changed working files
+        --[no|confirm]overwriteChanged  Force overwrite of changed working files
+        --[no|confirm]overwriteDeferred  Force overwrite of working files with deferred operations pending
+        --[no]overwriteUnchanged  Force overwrite of unchanged working files
+        --[no]restoreTimestamp  Set the timestamp on the working file to the revision's timestamp
+        -R  Select recursively
+        --filter=attribute:name[=value]
+                 changed[:working|:sync|:newer|:size|:missing|:newmem|:all]
+                 file:<expression>
+                 frozen
+                 label[:name]
+                 anylabel[:name]
+                 locked[:name]
+                 state[:name]
+                 format[:text|:binary]
+                 workingbranch
+                 deferred[:add|:addfromarchive|:checkin|:drop|:import|:rename|:updaterevision|:all]
+                 unresolvedmerges
+                 memberonbranch
+                 pending[:add|:addfromarchive|:drop|:import|:renamefrom|:renameto|:update|:updaterevision|:all]
+                 workinprogress
+        --[no|confirm]recurse  Select recursively
+        -S value  The name of the sandbox
+        --sandbox=value  The name of the sandbox
+        -?  Shows the usage for a command
+        -F value  Read the selection from a specified file
+        -N  Responds to all confirmations with "no"
+        -Y  Responds to all confirmations with "yes"
+        --[no]batch  Control batch mode (no user interaction in batch mode)
+        --cwd=value  Act as if command executed in specified directory
+        --forceConfirm=[yes|no]  Specify an answer to all confirmation questions
+        -g  User interaction should happen via the GUI
+        --gui  User interaction should happen via the GUI
+        --hostname=value  Hostname of server
+        --no  Responds to all confirmations with "no"
+        --password=value  Credentials (e.g., password) to login with
+        --port=value  TCP/IP port number of server
+        --quiet  Control status display
+        --selectionFile=value  Read the selection from a specified file
+        --settingsUI=[gui|default]  Control UI for command options
+        --status=[none|gui|default]  Control status display
+        --usage  Shows the usage for a command
+        --user=value  Username to login to server with
+        --yes  Responds to all confirmations with "yes"
+

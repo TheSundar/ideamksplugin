@@ -1,0 +1,67 @@
+C:\Documents and Settings\A6253567.HBEU\sandboxes\IDEA plugins\mks\branches\feature_mks_listener>si ci --usage
+Usage: si ci options... member...; options are:
+        --[no]defer  Defer the check in from occurring until submitted
+        --[no|confirm]ignoreUnresolvedMerge  Ignore unresolved merges
+        --[no]retainWorkingFile  Should the working file be retained
+        -L value  The label of the target revision
+        --author=value  The author of the target revision
+        --[no]branch  Force the creation of a branch revision
+        --[no|confirm]branchUpdate  Update member revision even if on a branch
+        --changePackageId=value  The associated change package ID (see documentation)
+        --[no|confirm]checkinUnchanged  Check in even if nothing changed
+        --[no|confirm]closeCP  Close the associated change package(s)
+        --cpid=value  The associated change package ID (see documentation)
+        -d value  The target revision description
+        --description=value  The target revision description
+        --descriptionFile=value  The file containing the target rev description
+        --issueId=value  The issue ID to find the change package (see documentation)
+        -l  To keep the target revision locked
+        --label=value  The label of the target revision
+        --[no]lock  To keep the target revision locked
+        --[no|confirm]moveLabel  Move the label if it is in another revision
+        -r value  The target revision
+        --revision=value  The target revision
+        --[no]saveTimestamp  Save the timestamp
+        -u  Leave the new revision unlocked
+        --[no]unexpand  Keyword expansion policy
+        --unlock  Leave the new revision unlocked
+        --[no]update  Should the target revision become the member revision
+        -R  Select recursively
+        --filter=attribute:name[=value]
+                 changed[:working|:sync|:newer|:size|:missing|:newmem|:all]
+                 file:<expression>
+                 frozen
+                 label[:name]
+                 anylabel[:name]
+                 locked[:name]
+                 state[:name]
+                 format[:text|:binary]
+                 workingbranch
+                 deferred[:add|:addfromarchive|:checkin|:drop|:import|:rename|:updaterevision|:all]
+                 unresolvedmerges
+                 memberonbranch
+                 pending[:add|:addfromarchive|:drop|:import|:renamefrom|:renameto|:update|:updaterevision|:all]
+                 workinprogress
+        --[no|confirm]recurse  Select recursively
+        -S value  The name of the sandbox
+        --sandbox=value  The name of the sandbox
+        -?  Shows the usage for a command
+        -F value  Read the selection from a specified file
+        -N  Responds to all confirmations with "no"
+        -Y  Responds to all confirmations with "yes"
+        --[no]batch  Control batch mode (no user interaction in batch mode)
+        --cwd=value  Act as if command executed in specified directory
+        --forceConfirm=[yes|no]  Specify an answer to all confirmation questions
+        -g  User interaction should happen via the GUI
+        --gui  User interaction should happen via the GUI
+        --hostname=value  Hostname of server
+        --no  Responds to all confirmations with "no"
+        --password=value  Credentials (e.g., password) to login with
+        --port=value  TCP/IP port number of server
+        --quiet  Control status display
+        --selectionFile=value  Read the selection from a specified file
+        --settingsUI=[gui|default]  Control UI for command options
+        --status=[none|gui|default]  Control status display
+        --usage  Shows the usage for a command
+        --user=value  Username to login to server with
+        --yes  Responds to all confirmations with "yes"

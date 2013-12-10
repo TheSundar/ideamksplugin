@@ -1,0 +1,50 @@
+C:\Documents and Settings\A6253567.HBEU\sandboxes\IDEA plugins\mks\branches\feature_mks_listener>si add --usage >> si_add_usage.txt
+Usage: si add options... nonmember...; options are:
+        --[no]retainWorkingFile  Retain the non-member file (as-is) in the sandbox
+        -l  Lock member revision
+        --lock  Lock member revision
+        --onExistingArchive=[confirm|cancel|sharearchive|newarchive]  The behaviour to follow if an existing archive is found
+        --[no]saveTimestamp  Save the timestamp of the working file
+        --archive=value  Associated archive (must exist) for the new member.
+        --author=value  The author of the newly added member revision
+        --binaryFormat  Format of the member's revision data/files
+        --changePackageId=value  The associated change package ID (see documentation)
+        --[no|confirm]closeCP  Close the associated change package(s)
+        --cpid=value  The associated change package ID (see documentation)
+        --[no]createSubprojects  Create one subproject per directory, as required.
+        -d value  Description for newly created archives
+        --[no]defer  Defer the add from taking place in the project until submitted
+        --description=value  Description for newly created archives
+        --descriptionFile=value  The file containing the Description for newly created archives
+        --issueId=value  The issue ID to use to find the associated change package ID (see documentation)
+        -r value  Revision at which the non-member is to be added
+        --revision=value  Revision at which the non-member is to be added
+        --textFormat  Format of the member's revision data/files
+        --[no]unexpand  Remove keywords from newly created revision
+        -R  Select the non-members recursively
+        --exclude=file:pattern,dir:pattern... where "pattern" is a glob pattern
+        --include=file:pattern,dir:pattern... where "pattern" is a glob pattern
+        --[no|confirm]includeFormers  Include former members
+        --[no|confirm]recurse  Select the non-members recursively
+        -S value  The name of the sandbox
+        --sandbox=value  The name of the sandbox
+        -?  Shows the usage for a command
+        -F value  Read the selection from a specified file
+        -N  Responds to all confirmations with "no"
+        -Y  Responds to all confirmations with "yes"
+        --[no]batch  Control batch mode (no user interaction in batch mode)
+        --cwd=value  Act as if command executed in specified directory
+        --forceConfirm=[yes|no]  Specify an answer to all confirmation questions
+        -g  User interaction should happen via the GUI
+        --gui  User interaction should happen via the GUI
+        --hostname=value  Hostname of server
+        --no  Responds to all confirmations with "no"
+        --password=value  Credentials (e.g., password) to login with
+        --port=value  TCP/IP port number of server
+        --quiet  Control status display
+        --selectionFile=value  Read the selection from a specified file
+        --settingsUI=[gui|default]  Control UI for command options
+        --status=[none|gui|default]  Control status display
+        --usage  Shows the usage for a command
+        --user=value  Username to login to server with
+        --yes  Responds to all confirmations with "yes"

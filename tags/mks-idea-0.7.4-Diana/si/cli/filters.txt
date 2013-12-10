@@ -1,0 +1,62 @@
+--filter=filteroptions
+allows you to select members for all commands that take a list of members, using filteroptions, which can be one or more of the following:
+
+Note: All filters (except deferred[:rename|:checkin|:add|:drop|:all]) incorrectly show former members.
+
+attribute:name[=value]
+selects members based on an attribute name and, optionally, value.
+
+changed [:working|:sync|:newer|:size|:missing|:newmem|:all]
+selects changed members based on: changes to working files, those that are out of sync with the project, those where a newer revison exists in the project, or based on all changes.
+
+file:expression
+selects members with a specific file name. This allows you to specify wild cards for file naming, such as the asterisk (*) to match any number of characters, and the question mark (?) to match a single character. For example, *.java or *RB.properties would be valid expressions.
+
+frozen
+selects frozen members.
+
+label[:name]
+selects any member whose member revision has the specified label.
+
+anylabel[:name]
+selects any member that contains a revision that has the specified label.
+
+locked[:name]
+selects all locked members or those locked by a particular user.
+
+state[:name]
+selects members based on state.
+
+format[:text|:binary]
+selects members based on storage format.
+
+workingbranch
+selects members where the working file is on a branch from a given development path that is not the trunk development path.
+
+Note: This filter applies only to sandboxes.
+
+deferred[:add|:addfromarchive|:checkin|:drop|:import|:rename|:updaterevision|:all]
+selects deferred members based on: add, addfromarchive, checkin, drop, import, rename, updaterevision, or all operations.
+
+memberonbranch
+shows only members that are off the main development trunk.
+
+unresolvedmerges
+selects members affected by unresolved merges.
+
+pending[:add|:addfromarchive|:drop|:import|:renamefrom|:renameto|:update|:updaterevision|:all]
+selects pending members based on add, addfromarchive, drop, import, renamefrom, renameto, update, updaterevision, or all operations.
+
+workinprogress
+combines the deferred (all), locked (all), and changed (all) filters to select members that are considered work in progress.
+
+Using commas between the filteroptions serves to build logical "OR" statements between them, allowing you to create powerful filters. You may also specify multiple --filter=filteroptions on the command line, which effectively creates logical "AND" statements between them.
+
+For example, you can resynchronize all modified JAVA files through:
+
+si resync --filter=changed --filter=file:*.java
+
+or you can resynchronize all files with label a or b through:
+
+si resync --filter=label:a,label:b
+

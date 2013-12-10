@@ -1,0 +1,176 @@
+<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD"
+		"http://plugins.intellij.net/plugin.dtd">
+<idea-plugin>
+	<name>MKS</name>
+	<description>
+		<![CDATA[
+	Integrates MKS Source Integrity with IDEA <br/>
+	See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecode project
+	]]>
+	</description>
+	<version>${project.version}</version>
+	<vendor logo="/icons/mks.png" url="http://code.google.com/p/ideamksplugin/">Eric Sheffer, Thibaut Fagart</vendor>
+	<resource-bundle>org.intellij.vcs.mks.mksBundle</resource-bundle>
+	<category>VCS Integration</category>
+	<idea-version since-build="8890" until-build="9000"/>
+
+	<change-notes><![CDATA[<ul>
+	<li>0.7.3 This a bugfix release. See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7.3&can=1">googlecode issues resolved in 0.7.3</a> <br><br/>
+	Main changes<br/>
+	Support for IDEA 8.x EAP<br/>
+	Auto detect MKS controlled directories<br/>
+	Performance Improvements<br/>
+	Exception when accessing some members' history .<br/>
+	</li>
+	<li>0.7.2 This a bugfix release. See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7.2&can=1">googlecode issues resolved in 0.7.2</a> <br><br/>
+	Main changes<br/>
+	Performance improvements related to non members and projects roots or registered sandboxes being updated.<br/>
+	Date pattern is not persisted<br/>
+	</li>
+	<li>0.7.1 This a bugfix release. See  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7.1&can=1">googlecode issues resolved in 0.7.1</a> <br><br/>
+	Main changes<br/>
+	Mks server deployed on windows support.<br/>
+	Better support for non english locales : ability to customize mks date formats<br/>
+	</li>
+	<li>0.7  <a href="http://code.google.com/p/ideamksplugin/issues/list?q=label%3AMilestone%20label%3ARelease0.7&can=1">googlecode issues resolved in 0.7</a> <br><br/>
+	Vcs Directory Status support<br/>
+	Vcs Member History support, together with Compare With ... actions.<br/>
+	Change package renaming support<br/>
+	Display members with deferred operations pending in the changes view <br/>
+	 Improve support for multiple pj files per folder<br/>
+	</li>
+	<li>0.6 <a href="http://code.google.com/p/ideamksplugin/issues/list?q=Milestone%20Release0.6&can=1">googlecode issues resolved in 0.6</a> <br>
+	 View Changes ignores IDEA ignored files <br>
+	 Most MKS actions now applicable on multiple targets (Actions will only be available if applicable on the current selection)<br>
+	 MKS Packages viewed as IDEA ChangeLists in the changes view. Depending on the MKS server, this may be slow to refresh<br>
+	 Suppressed GlobalChanges action as it is now handled by the IDEA Changes view<br>
+	 MKS project files are properly ignored<br>
+	 MKS Changes integration : encoding support per si CLI MKS commands (different commands seem to use different encodings) see the configuration.
+	 On windows (france) encoding seems to be IBM437<br>
+	 Files locally modified (without checkout) are distinguished from properly checked out ones. Files need to be moddified (and not just locked)<br>
+	 IDEA 7002+ compatible, tested with 7.0M2 (7123)
+	 bugfixes
+	</li>
+	<li>0.5.0 IDEA 7.x compatible</li>
+	<li>0.4.0 IDEA 6.x compatible, and added a "MKS changes" tool window, displaying (recursively) all differences between a local sandbox and the MKS project</li>
+    <li>0.3.4 Added logo for IDEA start screen</li>
+    </ul>]]>
+	</change-notes>
+
+	<extensions defaultExtensionNs="com.intellij">
+		<vcs name="MKS" vcsClass="org.intellij.vcs.mks.MksVcs"/>
+	</extensions>
+
+	<project-components>
+		<component>
+			<interface-class>org.intellij.vcs.mks.realtime.LongRunningTaskRepository</interface-class>
+			<implementation-class>org.intellij.vcs.mks.realtime.LongRunningTaskRepositoryImpl</implementation-class>
+		</component>
+		<component>
+			<interface-class>org.intellij.vcs.mks.MKSChangeProvider</interface-class>
+			<implementation-class>org.intellij.vcs.mks.MKSChangeProvider</implementation-class>
+		</component>
+	</project-components>
+	<application-components>
+		<component>
+			<interface-class>org.intellij.vcs.mks.MksConfiguration</interface-class>
+			<implementation-class>org.intellij.vcs.mks.MksConfiguration</implementation-class>
+		</component>
+		<component>
+			<interface-class>org.intellij.vcs.mks.realtime.SandboxListSynchronizer</interface-class>
+			<implementation-class>org.intellij.vcs.mks.realtime.SandboxListSynchronizerImpl</implementation-class>
+		</component>
+	</application-components>
+	<actions>
+		<action id="MKS.MemberDiffsAction"
+				class="org.intellij.vcs.mks.actions.MemberDifferencesAction"
+				text="Member Differences" description="Show differences"
+				icon="/icons/differences.gif"/>
+
+		<group id="MKS.Menu" text="_MKS"
+			   class="org.intellij.vcs.mks.actions.MksGroup" popup="true">
+			<separator/>
+
+			<action id="MKS.CheckoutAction"
+					class="org.intellij.vcs.mks.actions.CheckoutAction"
+					text="Check Out"
+					description="Check out" icon="/icons/checkout.gif"/>
+			<action id="Mks.CheckinAction"
+					class="org.intellij.vcs.mks.actions.CheckinAction"
+					text="Check In"
+					description="Check In" icon="/icons/checkin.gif"/>
+			<action id="MKS.AddMemberAction"
+					class="org.intellij.vcs.mks.actions.AddMembersAction"
+					text="Add"
+					description="Add Members" icon="/icons/add.gif"/>
+			<action id="MKS.DropMemberAction"
+					class="org.intellij.vcs.mks.actions.DropMembersAction"
+					text="Drop"
+					description="Drop Members" icon="/icons/drop.gif"/>
+			<separator/>
+			<action id="MKS.ResyncAction"
+					class="org.intellij.vcs.mks.actions.ResynchronizeMembersAction"
+					text="Resynchronize Members"
+					description="Resynchronize Sandbox"
+					icon="/icons/resynchronize.gif"/>
+			<action id="MKS.RevertAction"
+					class="org.intellij.vcs.mks.actions.RevertMembersAction"
+					text="Revert Members"
+					description="Revert Members" icon="/icons/revert.gif"/>
+			<reference id="MKS.MemberDiffsAction"/>
+			<action id="MKS.MemberHistoryAction"
+					class="org.intellij.vcs.mks.actions.MemberHistoryAction"
+					text="Member History" description="Member History"
+					icon="/icons/viewhistory.gif"/>
+			<action id="MKS.MemberInfoAction"
+					class="org.intellij.vcs.mks.actions.MemberInformationAction"
+					text="Member Information" description="Member Information"
+					icon="/icons/viewinformation.gif"/>
+			<separator/>
+			<action id="MKS.ViewSandboxAction"
+					class="org.intellij.vcs.mks.actions.ViewSandboxAction"
+					text="View Sandbox" description="View Sandbox"
+					icon="/icons/viewsandbox.gif"/>
+			<separator/>
+			<action id="MKS.PreferencesAction"
+					class="org.intellij.vcs.mks.actions.SourceIntegrityPreferencesAction"
+					text="Source Integrity Preferences"
+					description="Source Integrity Preferences"
+					icon="/icons/preferences.gif"/>
+			<action id="MKS.LaunchAction"
+					class="org.intellij.vcs.mks.actions.LaunchSourceIntegrityAction"
+					text="Launch Source Integrity"
+					description="Launch Source Integrity"
+					icon="/icons/mks.gif"/>
+			<action id="MKS.AboutAction"
+					class="org.intellij.vcs.mks.actions.AboutMksAction"
+					text="About MKS..."
+					description="Information about MKS Source Integrity"/>
+			<!--
+			   <action id="MKS.DiffAction"
+			   class="org.intellij.vcs.mks.actions.RevertNotModifiedAction"
+			   text="Revert Not modified"
+			   description="Revert Not modified"/>
+   -->
+			<separator/>
+			<reference id="UpdateFiles"/>
+			<reference id="CheckStatusForFiles"/>
+
+			<reference id="Compare.SameVersion"/>
+			<reference id="Compare.LastVersion"/>
+			<reference id="Compare.Selected"/>
+			<reference id="Vcs.ShowTabbedFileHistory"/>
+			<reference id="Vcs.ShowHistoryForBlock"/>
+
+			<add-to-group group-id="VcsGroup" anchor="last"/>
+			<add-to-group group-id="VcsGroups" anchor="last"/>
+			<add-to-group group-id="UpdateActionGroup" anchor="last"/>
+		</group>
+
+		<group id="MKS.Vcs.CheckinProjectPopup" text="_MKS" popup="true"
+			   class="org.intellij.vcs.mks.actions.MksGroup">
+			<reference id="MKS.MemberDiffsAction"/>
+			<add-to-group group-id="Vcs.CheckinProjectPopup" anchor="last"/>
+		</group>
+	</actions>
+</idea-plugin>

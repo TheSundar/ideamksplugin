@@ -1,0 +1,12 @@
+    shared-build-subsandbox  c:\TEMP\ideamks\sandbox\BucomNG\project.pj (1.3)  
+    shared-subsandbox  c:\TEMP\ideamks\sandbox\ExternalResources\project.pj  
+    shared-build-subsandbox  c:\TEMP\ideamks\sandbox\ExternalResources\antclasspath\project.pj (1.6)  
+    subsandbox  c:\TEMP\ideamks\sandbox\HJE-Castor\project.pj  
+    subsandbox  c:\TEMP\ideamks\sandbox\HJE-JSTL\project.pj  
+    subsandbox  c:\TEMP\ideamks\sandbox\HJE-Struts\project.pj  
+    subsandbox  c:\TEMP\ideamks\sandbox\HJF-Core\project.pj  
+    subsandbox  c:\TEMP\ideamks\sandbox\HJF-MPCobol\project.pj  
+    subsandbox  c:\TEMP\ideamks\sandbox\HJF-MPCore\project.pj  
+    subsandbox  c:\TEMP\ideamks\sandbox\HJF-MPEJB\project.pj  
+    subsandbox  c:\TEMP\ideamks\sandbox\HJF-MPJ2J\project.pj  
+    subsandbox  c:\TEMP\ideamks\sandbox\HJF-MPTXT\project.pj  

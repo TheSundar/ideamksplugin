@@ -1,0 +1,82 @@
+<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">
+<idea-plugin>
+	<name>MKS</name>
+	<description>Integrates MKS Source Integrity with IDEA</description>
+	<version>0.3.4</version>
+	<vendor logo="/icons/mks.png">Eric Sheffer, Thibaut Fagart</vendor>
+	<idea-version since-build="4000" until-build="6600"/>
+
+	<change-notes><![CDATA[<ul>
+		<li>0.4.0 IDEA 6.x compatible, and added a "MKS changes" tool window, displaying (recursively) all differences between a local sandbox and the MKS project</li>
+    	<li>0.3.4 Added logo for IDEA start screen</li>
+    </ul>]]>
+	</change-notes>
+
+	<project-components>
+		<component>
+			<interface-class>org.intellij.vcs.mks.MksVcs</interface-class>
+			<implementation-class>org.intellij.vcs.mks.MksVcs</implementation-class>
+		</component>
+		<component>
+			<interface-class>org.intellij.vcs.mks.MksConfiguration</interface-class>
+			<implementation-class>org.intellij.vcs.mks.MksConfiguration</implementation-class>
+			<option name="workspace" value="true"/>
+		</component>
+	</project-components>
+
+	<actions>
+		<action id="MKS.MemberDiffsAction" class="org.intellij.vcs.mks.actions.MemberDifferencesAction"
+				text="Member Differences" description="Show differences" icon="/icons/differences.gif"/>
+
+		<group id="MKS.Menu" text="_MKS" class="org.intellij.vcs.mks.actions.MksGroup" popup="true">
+			<separator/>
+
+			<action id="MKS.ViewGlobalChangesAction" class="org.intellij.vcs.mks.actions.ViewGlobalChangesAction"
+					text="View Changes"
+					description="View Changes"/>
+			<action id="MKS.CheckoutAction" class="org.intellij.vcs.mks.actions.CheckoutAction" text="Check Out"
+					description="Check out" icon="/icons/checkout.gif"/>
+			<action id="Mks.CheckinAction" class="org.intellij.vcs.mks.actions.CheckinAction" text="Check In"
+					description="Check In" icon="/icons/checkin.gif"/>
+			<action id="MKS.AddMemberAction" class="org.intellij.vcs.mks.actions.AddMembersAction" text="Add"
+					description="Add Members" icon="/icons/add.gif"/>
+			<action id="MKS.DropMemberAction" class="org.intellij.vcs.mks.actions.DropMembersAction" text="Drop"
+					description="Drop Members" icon="/icons/drop.gif"/>
+			<separator/>
+			<action id="MKS.ResyncAction" class="org.intellij.vcs.mks.actions.ResynchronizeMembersAction"
+					text="Resynchronize Members" description="Resynchronize Sandbox" icon="/icons/resynchronize.gif"/>
+			<action id="MKS.RevertAction" class="org.intellij.vcs.mks.actions.RevertMembersAction" text="Revert Members"
+					description="Revert Members" icon="/icons/revert.gif"/>
+			<reference id="MKS.MemberDiffsAction"/>
+			<action id="MKS.MemberHistoryAction" class="org.intellij.vcs.mks.actions.MemberHistoryAction"
+					text="Member History" description="Member History" icon="/icons/viewhistory.gif"/>
+			<action id="MKS.MemberInfoAction" class="org.intellij.vcs.mks.actions.MemberInformationAction"
+					text="Member Information" description="Member Information" icon="/icons/viewinformation.gif"/>
+			<separator/>
+			<action id="MKS.ViewSandboxAction" class="org.intellij.vcs.mks.actions.ViewSandboxAction"
+					text="View Sandbox" description="View Sandbox" icon="/icons/viewsandbox.gif"/>
+			<separator/>
+			<action id="MKS.PreferencesAction" class="org.intellij.vcs.mks.actions.SourceIntegrityPreferencesAction"
+					text="Source Integrity Preferences" description="Source Integrity Preferences"
+					icon="/icons/preferences.gif"/>
+			<action id="MKS.LaunchAction" class="org.intellij.vcs.mks.actions.LaunchSourceIntegrityAction"
+					text="Launch Source Integrity" description="Launch Source Integrity" icon="/icons/mks.gif"/>
+			<action id="MKS.AboutAction" class="org.intellij.vcs.mks.actions.AboutMksAction" text="About MKS..."
+					description="Information about MKS Source Integrity"/>
+			<separator/>
+			<add-to-group group-id="VcsGroup" anchor="last"/>
+			<add-to-group group-id="VcsGroups" anchor="last"/>
+		</group>
+
+		<group id="MKS.Lvcs.DirectoryHistoryPopup" text="_MKS" popup="true"
+			   class="org.intellij.vcs.mks.actions.MksGroup">
+			<reference id="MKS.MemberDiffsAction"/>
+			<add-to-group group-id="Lvcs.DirectoryHistoryPopup" anchor="last"/>
+		</group>
+
+		<group id="MKS.Vcs.CheckinProjectPopup" text="_MKS" popup="true" class="org.intellij.vcs.mks.actions.MksGroup">
+			<reference id="MKS.MemberDiffsAction"/>
+			<add-to-group group-id="Vcs.CheckinProjectPopup" anchor="last"/>
+		</group>
+	</actions>
+</idea-plugin>

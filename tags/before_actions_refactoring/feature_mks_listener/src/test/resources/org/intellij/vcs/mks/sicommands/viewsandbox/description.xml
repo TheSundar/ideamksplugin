@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<samples>
+    <sample name="sample1.txt" encoding="IBM437">
+        <command>si viewsandbox --batch --recurse --fields=workingrev,workingcpid,deferred,pendingcpid,type,locker,name,memberrev,locksandbox --sandbox="c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\project.pj"</command>
+        <description>
+            sandbox path : c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\project.pj
+            locally modified without checkout : c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\src\com\hsbc\hbfr\ccf\at\persistence\PoolConnectionMgr.java
+            locked with cpid=2875:1
+                c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\unittestsrc\com\hsbc\hbfr\ccf\at\util\PerfLogUtilsTestCase.java
+                c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\unittestsrc\config\persistence.properties
+        </description>
+    </sample>
+
+    <sample name="changedOrLocked.txt" encoding="IBM437">
+        <command>si viewsandbox --batch --recurse --filter=changed:working,locked:e9310750 --fields=workingrev,workingcpid,deferred,pendingcpid,type,locker,name,memberrev,locksandbox --sandbox="c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\project.pj"</command>
+        <description>
+            sandbox path : c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\project.pj
+            locally modified without checkout : c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\src\com\hsbc\hbfr\ccf\at\persistence\PoolConnectionMgr.java
+            locked with cpid=2875:1
+                c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\unittestsrc\com\hsbc\hbfr\ccf\at\util\PerfLogUtilsTestCase.java
+                c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\unittestsrc\config\persistence.properties
+        </description>
+    </sample>
+	<sample name="missing.txt" encoding="IBM437">
+		<command>si viewsandbox --batch --recurse --filter=changed:missing --fields workingrev,memberrev,workingcpid,deferred,pendingcpid,type,locker,name</command>
+		<description>a sandbox with a single missing file : c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\.project</description>
+	</sample>
+	<sample name="lockedfiles.txt" encoding="IBM437">
+		<command>si viewsandbox --recurse --filter=changed --filter=locked:e9310750 --fields=workingrev,workingcpid,deferred,pendingcpid,type,locker,name,memberrev,locksandbox --sandbox="C:\TEMP\ideamks\sandbox\project.pj"
+			"([\\d\\.]+)? ([\\d:]+)? ([^\\s]+)? ([^\\s]+)? ((?:sandbox)|(?:subsandbox)|(?:shared-subsandbox)|(?:shared-variant-subsandbox)|(?:shared-build-subsandbox)|(?:member)|(?:archived)|(?:variant-subsandbox)) ([^\\s]+) (.*) ([\\d\\.]+)? (.*)$"
+			seems to be parsing this ok		
+		</command>
+		<description>a sandbox (C:\TEMP\ideamks\sandbox\project.pj) containing files both locked in the current sandbox (c:\TEMP\ideamks\sandbox\HJF-Core\pom.xml)
+			and some locked in another sandbox (c:\TEMP\ideamks\sandbox\HJF-Core\unittestsrc\config\persistence.properties).
+			To know if the file is checked out in the current sandbox it is necessary to use the locksandbox field</description>
+	</sample>
+	<sample name="outofsync.txt" encoding="IBM437">
+		<command>si viewsandbox --recurse --batch --fields=workingrev,workingcpid,deferred,pendingcpid,type,locker,name,memberrev,locksandbox --filter=changed --filter=changed,locked:79310750--sandbox="C:\Documents and Settings\A6253567.HBEU\sandboxes\DS2\Core\core-dev\project.pj"</command>
+		<description>a sandbox (C:\Documents and Settings\A6253567.HBEU\sandboxes\DS2\Core\core-dev\project.pj) with out of sync members
+c:\Documents and Settings\A6253567.HBEU\sandboxes\DS2\Core\core-dev\src\main\java\com\hsbc\esf\requestprocessing\flow\eventmapping\EndFlowEventMappingAction.java
+c:\Documents and Settings\A6253567.HBEU\sandboxes\DS2\Core\core-dev\src\main\java\com\hsbc\esf\requestprocessing\flow\eventmapping\FlowEventMappingHandler.java
+c:\Documents and Settings\A6253567.HBEU\sandboxes\DS2\Core\core-dev\src\main\java\com\hsbc\esf\requestprocessing\flow\eventmapping\FlowEventMappingUtil.java
+c:\Documents and Settings\A6253567.HBEU\sandboxes\DS2\Core\core-dev\src\main\java\com\hsbc\esf\requestprocessing\flow\FlowWorkContextScope.java
+c:\Documents and Settings\A6253567.HBEU\sandboxes\DS2\Core\core-dev\src\main\java\com\hsbc\esf\requestprocessing\flow\PersistentWorkContextScope.java
+		</description>
+		"([\\d\\.]+)? ([\\d:]+)? ([^\\s]+)? ([^\\s]+)? ((?:sandbox)|(?:subsandbox)|(?:shared-subsandbox)|(?:shared-variant-subsandbox)|(?:shared-build-subsandbox)|(?:member)|(?:archived)|(?:variant-subsandbox)) ([^\\s]+) (.*) ([\\d\\.]+)? (.*)$"
+		seems to be parsing this ok
+		
+	</sample>
+</samples>
+

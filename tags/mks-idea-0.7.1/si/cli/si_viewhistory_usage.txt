@@ -1,0 +1,55 @@
+C:\Documents and Settings\A6253567.HBEU\sandboxes\IDEA plugins\mks\branches\feature_mks_listener>si viewhistory --usage
+Usage: si viewhistory options... member...; options are:
+        --fields=field1[:width1],field2[:width2]... where fieldn can be any of: author,cpid,date,description,labels,lockcpid,lockdevpath,locked,locker,lockhost,lockproject,locksandbox,locktimestamp,re
+vision,state
+        --height=value  The height in pixels of the windows
+        --width=value  The width in pixels of the windows
+        -x value  The x location in pixels of the window
+        -y value  The y location in pixels of the window
+        --filter=attribute:name[=value]
+                 changed[:working|:sync|:newer|:size|:missing|:newmem|:all]
+                 file:<expression>
+                 frozen
+                 label[:name]
+                 anylabel[:name]
+                 locked[:name]
+                 state[:name]
+                 format[:text|:binary]
+                 workingbranch
+                 deferred[:add|:addfromarchive|:checkin|:drop|:import|:rename|:updaterevision|:all]
+                 unresolvedmerges
+                 memberonbranch
+                 pending[:add|:addfromarchive|:drop|:import|:renamefrom|:renameto|:update|:updaterevision|:all]
+                 workinprogress
+        --height=value  The height in pixels of the windows
+        --width=value  The width in pixels of the windows
+        -x value  The x location in pixels of the window
+        -y value  The y location in pixels of the window
+        -P value  The name of the target project
+        -S value  The name of the sandbox (can be used as project redirector)
+        --devpath=value  The development path (to refer variant projects)
+        --project=value  The name of the target project
+        --projectRevision=value  The project revision (to refer build projects)
+        --sandbox=value  The name of the sandbox (can be used as project redirector)
+        -?  Shows the usage for a command
+        -F value  Read the selection from a specified file
+        -N  Responds to all confirmations with "no"
+        -Y  Responds to all confirmations with "yes"
+        --[no]batch  Control batch mode (no user interaction in batch mode)
+        --cwd=value  Act as if command executed in specified directory
+        --forceConfirm=[yes|no]  Specify an answer to all confirmation questions
+        -g  User interaction should happen via the GUI
+        --gui  User interaction should happen via the GUI
+        --hostname=value  Hostname of server
+        --no  Responds to all confirmations with "no"
+        --password=value  Credentials (e.g., password) to login with
+        --[no]persist  Control persistence of CLI views
+        --port=value  TCP/IP port number of server
+        --quiet  Control status display
+        --selectionFile=value  Read the selection from a specified file
+        --settingsUI=[gui|default]  Control UI for command options
+        --status=[none|gui|default]  Control status display
+        --usage  Shows the usage for a command
+        --user=value  Username to login to server with
+        --yes  Responds to all confirmations with "yes"
+

@@ -1,0 +1,30 @@
+C:\Documents and Settings\A6253567.HBEU\sandboxes\IDEA plugins\mks\branches\feature_mks_listener>si memberinfo --usage
+Usage: si memberinfo options... member; options are:
+        --[no]acl  Show ACL and related information
+        --[no]attributes  Show member attributes
+        --[no]changePackage  Show change packages (see documentation)
+        --[no]labels  Show member labels
+        -P value  The name of the target project
+        -S value  The name of the sandbox (can be used as project redirector)
+        --devpath=value  The development path (to refer variant projects)
+        --project=value  The name of the target project
+        --projectRevision=value  The project revision (to refer build projects)
+        --sandbox=value  The name of the sandbox (can be used as project redirector)
+        -?  Shows the usage for a command
+        -N  Responds to all confirmations with "no"
+        -Y  Responds to all confirmations with "yes"
+        --[no]batch  Control batch mode (no user interaction in batch mode)
+        --cwd=value  Act as if command executed in specified directory
+        --forceConfirm=[yes|no]  Specify an answer to all confirmation questions
+        -g  User interaction should happen via the GUI
+        --gui  User interaction should happen via the GUI
+        --hostname=value  Hostname of server
+        --no  Responds to all confirmations with "no"
+        --password=value  Credentials (e.g., password) to login with
+        --port=value  TCP/IP port number of server
+        --quiet  Control status display
+        --settingsUI=[gui|default]  Control UI for command options
+        --status=[none|gui|default]  Control status display
+        --usage  Shows the usage for a command
+        --user=value  Username to login to server with
+        --yes  Responds to all confirmations with "yes"

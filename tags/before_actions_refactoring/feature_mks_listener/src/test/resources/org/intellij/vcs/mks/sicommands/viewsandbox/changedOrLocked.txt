@@ -1,0 +1,20 @@
+    shared-build-subsandbox  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\BucomNG\project.pj (1.3)  
+    shared-subsandbox  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\ExternalResources\project.pj  
+    shared-build-subsandbox  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\ExternalResources\antclasspath\project.pj (1.6)  
+    subsandbox  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJE-Castor\project.pj  
+    subsandbox  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJE-JSTL\project.pj  
+    subsandbox  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJE-Struts\project.pj  
+    subsandbox  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\project.pj  
+1.22    archived  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\build\HJF-Core-debug.jar 1.22 
+1.4.1.1    archived e9310750 c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\pom.xml 1.4.1.1 c:/TEMP/ideamks/sandbox/HJF-Core/project.pj
+1.2    archived  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\src\com\hsbc\hbfr\ccf\at\persistence\PoolConnectionMgr.java 1.2 
+1.2 2875:1   archived e9310750 c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\unittestsrc\com\hsbc\hbfr\ccf\at\util\PerfLogUtilsTestCase.java 1.2 c:/Documents and Settings/A6253567.HBEU/sandboxes/J2EE/HJF-Core/project.pj
+1.1.2.3    archived  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-Core\unittestsrc\log4j.properties 1.1.2.3 
+    subsandbox  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-MPCobol\project.pj  
+    subsandbox  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-MPCore\project.pj  
+1.3.1.1    archived  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-MPCore\pom.xml 1.3.1.1 
+    subsandbox  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-MPEJB\project.pj  
+    subsandbox  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-MPJ2J\project.pj  
+    subsandbox  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-MPTXT\project.pj  
+1.2    archived  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJF-MPTXT\unittestsrc\com\hsbc\hbfr\ccf\at\buscom\txt\MessageRootTestCase.java 1.2 
+1.2    archived  c:\Documents and Settings\A6253567.HBEU\sandboxes\J2EE\HJE-Batch\test\log4j.properties 1.2 
