@@ -64,7 +64,7 @@ public class ViewSandboxCommandAPI extends SiAPICommand {
                 if (shoulSkip(item)) {
                     continue;
                 }
-                String memberName = item.getField("name").getString();
+                String memberName = item.getField("name").getValueAsString();
 
                 MksMemberState memberState = createState(item);
                 setState(memberName, memberState);
@@ -87,7 +87,7 @@ public class ViewSandboxCommandAPI extends SiAPICommand {
 
     protected MksMemberState createState(WorkItem item) throws VcsException {
         // we confuse missing files and locally modified without checkout here
-        String memberType = item.getField("type").getString();
+        String memberType = item.getField("type").getValueAsString();
         String type = item.getField("type").getValueAsString();
         String memberRev = item.getField("memberrev").getValueAsString();
         String workingrev= item.getField("workingrev").getValueAsString();

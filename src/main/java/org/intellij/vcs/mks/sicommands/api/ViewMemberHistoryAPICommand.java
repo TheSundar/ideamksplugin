@@ -69,7 +69,7 @@ public class ViewMemberHistoryAPICommand extends SiAPICommand {
 				final Date date = revisionItem.getField(DATE).getDateTime();
 				final String author = revisionItem.getField(AUTHOR).getValueAsString();
 				final String cpid = revisionItem.getField(CPID).getValueAsString();
-				final String description = revisionItem.getField(DESCRIPTION).getString();
+				final String description = revisionItem.getField(DESCRIPTION).getValueAsString();
 				MksMemberRevisionInfo info = new MksMemberRevisionInfo();
 				info.setRevision(MksRevisionNumber.createRevision(revision));
 				info.setDate(date);

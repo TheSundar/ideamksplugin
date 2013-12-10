@@ -16,6 +16,7 @@ import java.util.List;
 public abstract class SiAPICommand extends AbstractMKSCommand {
 
 
+
 	protected SiAPICommand(@NotNull List<VcsException> errors, @NotNull String command, @NotNull MksCLIConfiguration mksCLIConfiguration) {
 		super(errors, command, mksCLIConfiguration);
 	}

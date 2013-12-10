@@ -36,7 +36,7 @@ public class ListSandboxesAPI extends SiAPICommand {
             final WorkItemIterator workItems = response.getWorkItems();
             while (workItems.hasNext()) {
                 final WorkItem sandboxWorkItem = workItems.next();
-                String sandboxName = sandboxWorkItem.getField("sandboxName").getString();
+                String sandboxName = sandboxWorkItem.getField("sandboxName").getValueAsString();
                 tempSandboxes.add(sandboxName);
                 debug(sandboxWorkItem, sandboxName);
 

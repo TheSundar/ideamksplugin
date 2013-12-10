@@ -6,6 +6,7 @@ import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.sicommands.SandboxInfo;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.StringWriter;
 import java.util.*;
 
 /**
@@ -34,21 +35,21 @@ public class SandboxesCommandAPI extends SiAPICommand {
             final WorkItemIterator workItems = response.getWorkItems();
             while (workItems.hasNext()) {
                 final WorkItem sandboxWorkItem = workItems.next();
-//                if (LOGGER.isDebugEnabled()) {
-                debug(sandboxWorkItem);
-//                }
-                String sandboxName = sandboxWorkItem.getField("sandboxName").getString();
+                if (LOGGER.isDebugEnabled()) {
+                    debug(sandboxWorkItem);
+                }
+                String sandboxName = sandboxWorkItem.getField("sandboxName").getValueAsString();
                 String server = sandboxWorkItem.getField("server").getValueAsString();
 
-                String projectName = sandboxWorkItem.getField("projectName").getString();
-                String buildRevision = sandboxWorkItem.getField("buildRevision").getString();
-                String devPath = sandboxWorkItem.getField("developmentPath").getString();
+                String projectName = sandboxWorkItem.getField("projectName").getValueAsString();
+                String buildRevision = sandboxWorkItem.getField("buildRevision").getValueAsString();
+                String devPath = sandboxWorkItem.getField("developmentPath").getValueAsString();
                 boolean isSubsandbox = sandboxWorkItem.getField("isSubsandbox").getBoolean();
                 SandboxInfo sandbox;
                 if (!isSubsandbox) {
                     sandbox = new SandboxInfo(sandboxName,server,projectName,buildRevision, devPath);
                 } else {
-                    String parentSandbox = sandboxWorkItem.getField("parentSandbox").getString();
+                    String parentSandbox = sandboxWorkItem.getField("parentSandbox").getValueAsString();
                     sandbox = new SandboxInfo(sandboxesByPath.get(parentSandbox), sandboxName, projectName, buildRevision, devPath);
                 }
                 sandboxesByPath.put(sandboxName, sandbox);
@@ -62,10 +63,12 @@ public class SandboxesCommandAPI extends SiAPICommand {
     }
 
     private void debug(WorkItem workItem) {
+        StringWriter writer = new StringWriter();
         for (Iterator it = workItem.getFields(); it.hasNext(); ) {
             Field field = (Field) it.next();
-            LOGGER.debug("\t" + field.getName() + " : " + field.getValue());
+            writer.append("\t").append(field.getName()).append("[").append(field.getDataType()).append("]").append(" : ").append(field.getValueAsString());
 //            System.out.println("\t" + field.getName() + " : " + field.getValue());
         }
+        LOGGER.debug(writer.toString());
     }
 }

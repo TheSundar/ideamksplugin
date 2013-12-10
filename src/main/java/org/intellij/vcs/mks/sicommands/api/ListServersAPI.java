@@ -34,8 +34,8 @@ public class ListServersAPI extends SiAPICommand {
             while (workItems.hasNext()) {
                 final WorkItem workItem = workItems.next();
 
-                String username = workItem.getField("username").getString();
-                String hostname = workItem.getField("hostname").getString();
+                String username = workItem.getField("username").getValueAsString();
+                String hostname = workItem.getField("hostname").getValueAsString();
                 String port = workItem.getField("portnumber").getValueAsString();
                 MksServerInfo server = new MksServerInfo(username, hostname, port);
                 tempServers.add(server);
