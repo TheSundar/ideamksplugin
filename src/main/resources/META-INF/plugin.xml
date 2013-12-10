@@ -18,6 +18,12 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
     <depends>com.intellij.modules.vcs</depends>
 
     <change-notes><![CDATA[<ul>
+     <li>0.10 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.10&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
+      googlecode issues resolved in 0.10</a> for complete changes<br/>
+      Main changes <br/>
+       Windows 64 bits compatibility<br/>
+       Bug fixes<br/>
+    </li>
     <li>0.9 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.9&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
       googlecode issues resolved in 0.9</a> for complete changes<br/>
       Main changes <br/>
