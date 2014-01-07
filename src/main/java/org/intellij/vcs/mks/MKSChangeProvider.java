@@ -9,10 +9,7 @@ import org.intellij.vcs.mks.model.MksChangePackage;
 import org.intellij.vcs.mks.model.MksMemberState;
 import org.intellij.vcs.mks.model.MksServerInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
-import org.intellij.vcs.mks.sicommands.api.ListChangePackagesAPICommand;
-import org.intellij.vcs.mks.sicommands.api.ListServersAPI;
-import org.intellij.vcs.mks.sicommands.api.ViewNonMembersCommandAPI;
-import org.intellij.vcs.mks.sicommands.api.ViewSandboxCommandAPI;
+import org.intellij.vcs.mks.sicommands.api.*;
 import org.intellij.vcs.mks.sicommands.cli.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -285,6 +282,10 @@ class MKSChangeProvider extends AbstractProjectComponent
 			MksMemberState state = entry.getValue();
 			FilePath filePath = VcsUtil.getFilePath(entry.getKey());
 			VirtualFile virtualFile = VcsUtil.getVirtualFile(entry.getKey());
+            if (MksMemberState.Status.MISSING  == state.status ) {
+                builder.processLocallyDeletedFile(filePath);
+                return;
+            }
 			if (null == virtualFile || MksVcs.getInstance(myProject).getSandboxCache().isSandboxProject(virtualFile)) {
 				continue;
 			}
@@ -328,10 +329,6 @@ class MKSChangeProvider extends AbstractProjectComponent
 				}
 				case MODIFIED_WITHOUT_CHECKOUT: {
 					builder.processModifiedWithoutCheckout(virtualFile);
-					break;
-				}
-				case MISSING: {
-					builder.processLocallyDeletedFile(filePath);
 					break;
 				}
 				case SYNC:
@@ -407,6 +404,9 @@ class MKSChangeProvider extends AbstractProjectComponent
             ViewNonMembersCommandAPI nonMembersCommandRecursive = new ViewNonMembersCommandAPI(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
             nonMembersCommandRecursive.execute();
             addNonExcludedStates(states, nonMembersCommandRecursive.getMemberStates());
+            ViewMissingMembersCommandAPI missingMembersCommand = new ViewMissingMembersCommandAPI(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
+            missingMembersCommand.execute();
+            addNonExcludedStates(states, missingMembersCommand.getMemberStates());
             return states;
         }
     }
@@ -476,7 +476,9 @@ class MKSChangeProvider extends AbstractProjectComponent
 			final FilePath path = VcsUtil.getFilePath(entry.getKey());
 			if (path.getVirtualFile() != null && ProjectScope.getProjectScope(myProject).contains(path.getVirtualFile())) {
 				collectingMap.put(entry.getKey(), entry.getValue());
-			} else if (logger.isDebugEnabled()) {
+			} else if (entry.getValue().status == MksMemberState.Status.MISSING) {
+                collectingMap.put(entry.getKey(), entry.getValue());
+            } else if (logger.isDebugEnabled()) {
 				logger.debug("skipping " + path.getPath());
 			}
 

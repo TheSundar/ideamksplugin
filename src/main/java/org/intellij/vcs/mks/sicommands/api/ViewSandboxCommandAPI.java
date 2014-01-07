@@ -34,21 +34,7 @@ public class ViewSandboxCommandAPI extends SiAPICommand {
     @Override
     public void execute() {
         try {
-            Command command = new Command(Command.SI);
-            command.setCommandName("viewsandbox");
-            command.addOption(new Option("sandbox", sandboxPath));
-            MultiValue mv = new MultiValue( "," );
-            mv.add( "name" );
-            mv.add( "context" );
-            mv.add( "wfdelta" );
-            mv.add( "memberarchive" );
-            mv.add( "memberrev" );
-            mv.add( "workingrev" );
-            mv.add( "locker" );
-            mv.add( "workingcpid" );
-            mv.add( "revsyncdelta" );
-            command.addOption(new Option("fields", mv));
-            command.addOption(new Option("recurse"));
+            Command command = createCommand();
             final Response response = executeCommand(command);
 
             final SubRoutineIterator routineIterator = response.getSubRoutines();
@@ -75,6 +61,25 @@ public class ViewSandboxCommandAPI extends SiAPICommand {
             errors.add(new VcsException(e));
         }
 
+    }
+
+    protected Command createCommand() {
+        Command command = new Command(Command.SI);
+        command.setCommandName("viewsandbox");
+        command.addOption(new Option("sandbox", sandboxPath));
+        MultiValue mv = new MultiValue( "," );
+        mv.add( "name" );
+        mv.add( "context" );
+        mv.add( "wfdelta" );
+        mv.add( "memberarchive" );
+        mv.add( "memberrev" );
+        mv.add( "workingrev" );
+        mv.add( "locker" );
+        mv.add( "workingcpid" );
+        mv.add( "revsyncdelta" );
+        command.addOption(new Option("fields", mv));
+        command.addOption(new Option("recurse"));
+        return command;
     }
 
     private boolean shoulSkip(WorkItem item) {
