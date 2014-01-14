@@ -20,7 +20,7 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
     <change-notes><![CDATA[<ul>
      <li>0.10.2 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.10.2&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
       googlecode issues resolved in 0.10.2</a> for complete changes<br/>
-      Report locally missing files in the Changes View
+      issue 96 : Report locally missing files in the changes view
     </li>
      <li>0.10.1 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.10.1&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
       googlecode issues resolved in 0.10.1</a> for complete changes<br/>
