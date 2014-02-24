@@ -85,7 +85,7 @@ public class MksConfigurableForm implements Configurable {
         result[0] = new String[]{"Default", configuration.defaultEncoding};
         int i = 1;
         for (final String command : knownCommands) {
-            final String commandEncoding = configuration.SI_ENCODINGS.getMap().get(command);
+            final String commandEncoding = configuration.getSiEncodings().get(command);
             result[i++] = new String[]{command,
                     (commandEncoding == null) ? MksConfigurableForm.DEFAULT_ENCODING_VALUE : commandEncoding};
         }
@@ -111,7 +111,7 @@ public class MksConfigurableForm implements Configurable {
     public void apply() throws ConfigurationException {
         final MksConfiguration configuration = getConfiguration();
 //		configuration.PROJECT = myFldProject.getText();
-        configuration.SI_ENCODINGS.setMap(getEncodingMap());
+        configuration.setSiEncodings(getEncodingMap());
         configuration.defaultEncoding = getDefaultEncoding();
         configuration.setSynchronizeNonMembers(this.resyncNonMembers.isSelected());
         try {

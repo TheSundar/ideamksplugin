@@ -4,12 +4,12 @@
 	<groupId>mks-idea</groupId>
 	<artifactId>mks-idea</artifactId>
 	<packaging>jar</packaging>
-	<version>0.10.2</version>
+	<version>0.11-SNAPSHOT</version>
 	<name>IDEA MKS Plugin</name>
 	<description>Implementation of an IDEA MKS plugin.</description>
 	<properties>
 		<!-- 10.5.4 -->
-		<idea.version>129.1328</idea.version>
+		<idea.version>133.696</idea.version>
 	</properties>
 	<scm>
 		<connection>scm:svn:http://ideamksplugin.googlecode.com/svn/trunk</connection>
@@ -27,6 +27,11 @@
         <dependency>
             <groupId>com.intellij</groupId>
             <artifactId>javac2</artifactId>
+            <version>${idea.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>idea</artifactId>
             <version>${idea.version}</version>
         </dependency>
 		<dependency>

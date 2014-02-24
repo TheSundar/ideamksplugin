@@ -1,44 +1,68 @@
 package org.intellij.vcs.mks;
 
-import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.components.*;
 import com.intellij.openapi.ui.InputValidator;
-import com.intellij.openapi.util.DefaultJDOMExternalizer;
-import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.util.JDOMExternalizable;
-import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.intellij.vcs.mks.model.MksServerInfo;
-import org.jdom.Element;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * IMPORTANT : keep persisted properties PUBLIC or they won't be persisted !
  */
+@State (
+    name ="Mks.Configuration",
+    storages = {
+        @Storage(id="other", file = StoragePathMacros.APP_CONFIG + "/other.xml")
+    }
+)
 public class MksConfiguration
-		implements JDOMExternalizable, ApplicationComponent, MksCLIConfiguration {
+		implements PersistentStateComponent<MksConfiguration>, ApplicationComponent, MksCLIConfiguration {
 	public static final String DEFAULT_ENCODING = Charset.defaultCharset().name();
 	private static final String DEFAULT_DATE_PATTERN = "MMM dd, yyyy - hh:mm a";
 
-	public StringMap SI_ENCODINGS;
-	public String defaultEncoding = DEFAULT_ENCODING;
-	/**
-	 * (host:port(,host:port)*)?
-	 */
-	public String nonSiServers = "";
-	public String datePattern = DEFAULT_DATE_PATTERN;
-	public boolean synchronizeNonMembers = true;
+
+    public Map<String, String> SI_ENCODINGS= new HashMap<String, String>();
+    public String defaultEncoding = DEFAULT_ENCODING;
+    /**
+     * (host:port(,host:port)*)?
+     */
+    public String nonSiServers = "";
+    public String datePattern = DEFAULT_DATE_PATTERN;
+    public boolean synchronizeNonMembers = true;
+    public Map<String, Set<String>> rememberedUsernames = new HashMap<String, Set<String>>();
 
 
-	public MksConfiguration() {
-		this.SI_ENCODINGS = new StringMap();
+    @Nullable
+    @Override
+    public MksConfiguration getState() {
+        return this;
+    }
+
+    @Override
+    public void loadState(MksConfiguration state) {
+        XmlSerializerUtil.copyBean(state, this);
+        if (this.defaultEncoding == null) {
+            initDefaultEncoding();
+        }
+        simplifyIgnoredServers();
+        if (datePattern == null) {
+            datePattern = DEFAULT_DATE_PATTERN;
+        }
+
+    }
+
+    @NotNull
+    public Map <String, String> getSiEncodings (){
+        return SI_ENCODINGS;
+    }
+
+    public MksConfiguration() {
 		initDefaultEncoding();
 	}
 
@@ -56,19 +80,6 @@ public class MksConfiguration
 	}
 
 	public void initComponent() {
-	}
-
-	public void readExternal(final Element element)
-			throws InvalidDataException {
-		DefaultJDOMExternalizer.readExternal(this, element);
-		if (this.defaultEncoding == null) {
-			initDefaultEncoding();
-		}
-		simplifyIgnoredServers();
-		if (datePattern == null) {
-			datePattern = DEFAULT_DATE_PATTERN;
-		}
-
 	}
 
 	private void simplifyIgnoredServers() {
@@ -89,16 +100,11 @@ public class MksConfiguration
 
 	}
 
-	public void writeExternal(final Element element)
-			throws WriteExternalException {
-		DefaultJDOMExternalizer.writeExternal(this, element);
-	}
-
-	public boolean isServerSiServer(final MksServerInfo aServer) {
+	public boolean isServerSiServer(@NotNull final MksServerInfo aServer) {
 		return !nonSiServers.contains(aServer.toHostAndPort());
 	}
 
-	public void serverIsSiServer(final MksServerInfo aServer, final boolean yesOrNo) {
+	public void serverIsSiServer(@NotNull final MksServerInfo aServer, final boolean yesOrNo) {
 		if (!yesOrNo) {
 			if (!nonSiServers.contains(aServer.toHostAndPort())) {
 				synchronized (this) {
@@ -125,17 +131,18 @@ public class MksConfiguration
 		simplifyIgnoredServers();
 	}
 
+    @NotNull
 	public String getIgnoredServers() {
 		return this.nonSiServers;
 	}
 
 	@NotNull
-	public String getMksSiEncoding(final String command) {
-		final Map<String, String> encodings = SI_ENCODINGS.getMap();
+	public String getMksSiEncoding(@NotNull final String command) {
+		final Map<String, String> encodings = SI_ENCODINGS;
 		return (encodings.containsKey(command)) ? encodings.get(command) : this.defaultEncoding;
 	}
 
-	public void setDatePattern(String aPattern) {
+	public void setDatePattern(@NotNull String aPattern) {
 		datePattern = aPattern;
 	}
 
@@ -144,6 +151,7 @@ public class MksConfiguration
 		return datePattern;
 	}
 
+    @NotNull
 	public CommandExecutionListener getCommandExecutionListener() {
 		return CommandExecutionListener.IDLE;
 	}
@@ -160,52 +168,11 @@ public class MksConfiguration
 		this.synchronizeNonMembers = synchronizeNonMembers;
 	}
 
-	public static class StringMap implements JDOMExternalizable {
-		@NonNls
-		private static final String LEN_STRING = "len";
+    public void setSiEncodings(@NotNull Map<String, String> siEncodings) {
+        this.SI_ENCODINGS = siEncodings;
+    }
 
-		private Map<String, String> map;
-
-		public StringMap() {
-			this.map = new HashMap<String, String>();
-		}
-
-		public Map<String, String> getMap() {
-			return this.map;
-		}
-
-		public void setMap(final Map<String, String> map) {
-			this.map = map;
-		}
-
-		public void readExternal(final Element element) throws InvalidDataException {
-			// Read in map size
-			final int size = Integer.parseInt(element.getAttributeValue(StringMap.LEN_STRING));
-
-			// Read in all elements in the proper order.
-			for (int index = 0; index < size; index++) {
-				this.map.put(element.getAttributeValue('k' + Integer.toString(index)),
-						element.getAttributeValue('v' + Integer.toString(index))
-				);
-			}
-		}
-
-
-		public void writeExternal(final Element element) throws WriteExternalException {
-			// Write out map size
-			element.setAttribute(StringMap.LEN_STRING, Integer.toString(this.map.size()));
-
-			// Write out all elements in the proper order.
-			int index = 0;
-			for (final Map.Entry<String, String> entry : this.map.entrySet()) {
-				element.setAttribute('k' + Integer.toString(index), entry.getKey());
-				element.setAttribute('v' + Integer.toString(index), entry.getValue());
-				index++;
-			}
-		}
-	}
-
-	public static class DatePatternValidator implements InputValidator {
+    public static class DatePatternValidator implements InputValidator {
 
 		public boolean checkInput(String s) {
 			try {
@@ -221,4 +188,19 @@ public class MksConfiguration
 			return checkInput(s);
 		}
 	}
+
+    @NotNull
+    public Set<String> getRememberedUsernames(@NotNull String hostAndPort) {
+        Set<String> usernames = rememberedUsernames.get(hostAndPort);
+        return (null == usernames) ? Collections.EMPTY_SET: usernames;
+    }
+
+    public void addRememberedUsername(@NotNull String hostAndPort, @NotNull String username) {
+        Set<String> usernames = rememberedUsernames.get(hostAndPort);
+        if (null == usernames) {
+            usernames = new HashSet<String>();
+            rememberedUsernames.put(hostAndPort, usernames);
+        }
+        usernames.add(username);
+    }
 }

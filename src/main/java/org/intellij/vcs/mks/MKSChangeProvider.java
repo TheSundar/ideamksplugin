@@ -1,19 +1,7 @@
 package org.intellij.vcs.mks;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.*;
-
-import org.intellij.vcs.mks.model.MksChangePackage;
-import org.intellij.vcs.mks.model.MksMemberState;
-import org.intellij.vcs.mks.model.MksServerInfo;
-import org.intellij.vcs.mks.realtime.MksSandboxInfo;
-import org.intellij.vcs.mks.sicommands.api.*;
-import org.intellij.vcs.mks.sicommands.cli.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
+import com.intellij.ide.passwordSafe.PasswordSafe;
+import com.intellij.ide.passwordSafe.PasswordSafeException;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.components.ProjectComponent;
@@ -33,6 +21,19 @@ import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.Processor;
 import com.intellij.vcsUtil.VcsUtil;
+import org.intellij.vcs.mks.model.MksChangePackage;
+import org.intellij.vcs.mks.model.MksMemberState;
+import org.intellij.vcs.mks.model.MksServerInfo;
+import org.intellij.vcs.mks.realtime.MksSandboxInfo;
+import org.intellij.vcs.mks.sicommands.api.*;
+import org.intellij.vcs.mks.sicommands.cli.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.*;
 
 /**
  * @author Thibaut Fagart
@@ -172,8 +173,12 @@ class MKSChangeProvider extends AbstractProjectComponent
 			}
 		}
 	}
+    static class UserAndPassword {
+        String user = null;
+        String password = null;
+    }
 
-	private void checkNeededServersAreOnlineAndReconnectIfNeeded(@NotNull Set<MksSandboxInfo> sandboxesToRefresh,
+    private void checkNeededServersAreOnlineAndReconnectIfNeeded(@NotNull Set<MksSandboxInfo> sandboxesToRefresh,
 																 @NotNull ArrayList<MksServerInfo> servers) {
 		Set<String> connectedServers = new HashSet<String>();
 		for (MksServerInfo server : servers) {
@@ -190,32 +195,11 @@ class MKSChangeProvider extends AbstractProjectComponent
 
 			int colonIndex = hostAndPort.indexOf(':');
 			String host = hostAndPort.substring(0, colonIndex);
-			String port = hostAndPort.substring(colonIndex + 1);
-			class UserAndPassword {
-				String user = null;
-				String password = null;
-			}
-			final UserAndPassword userAndPassword = new UserAndPassword();
-			try {
-				Runnable runnable = new Runnable() {
-					public void run() {
+            String port = hostAndPort.substring(colonIndex + 1);
 
-						LoginDialog dialog = new LoginDialog(WindowManager.getInstance().getFrame(myProject), hostAndPort);
-						dialog.pack();
-						dialog.setVisible(true);
-						if (dialog.isCanceled()) {
-							userAndPassword.user = userAndPassword.password = null;
-						} else {
-							userAndPassword.user = dialog.getUser();
-							userAndPassword.password = dialog.getPassword();
-						}
-					}
-				};
-				MksVcs.invokeOnEventDispatchThreadAndWait(runnable);
-			} catch (VcsException e) {
-				logger.error(e);
-				continue;
-			}
+            PasswordSafe passwordSafe = PasswordSafe.getInstance();
+            final UserAndPassword userAndPassword = getUsernameAndPassword(hostAndPort);
+            if (userAndPassword == null) return;
 			if (userAndPassword.user == null || userAndPassword.password == null) {
 				continue;
 			}
@@ -224,13 +208,64 @@ class MKSChangeProvider extends AbstractProjectComponent
 			command.execute();
 			if (!command.foundError() && (command.getServer() != null)) {
 				servers.add(command.getServer());
-			} else {
+                try {
+                    MksConfiguration configuration = ApplicationManager.getApplication().getComponent(MksConfiguration.class);
+                    configuration.addRememberedUsername(hostAndPort, userAndPassword.user);
+                    passwordSafe.storePassword(myProject,  MksVcs.class, createPasswordKey(hostAndPort, userAndPassword.user),userAndPassword.password);
+                } catch (PasswordSafeException e) {
+                    reportErrors(Arrays.asList(new VcsException(e)), "unable to store credentials");
+                }
+            } else {
 				reportErrors(command.errors, "unable to connect to " + hostAndPort);
 			}
 		}
 	}
 
-	private void setStatusInfo
+    private String createPasswordKey(String hostAndPort, String username) {
+        return hostAndPort + ":" + username;
+    }
+
+    private UserAndPassword getUsernameAndPassword(final String hostAndPort) {
+        final UserAndPassword userAndPassword = new UserAndPassword();
+        MksConfiguration configuration = ApplicationManager.getApplication().getComponent(MksConfiguration.class);
+        Set<String> usernames = configuration.getRememberedUsernames(hostAndPort);
+        if (usernames.isEmpty()) {
+            try {
+                Runnable runnable = new Runnable() {
+                    public void run() {
+
+                        LoginDialog dialog = new LoginDialog(WindowManager.getInstance().getFrame(myProject), hostAndPort);
+                        dialog.pack();
+                        dialog.setVisible(true);
+                        if (dialog.isCanceled()) {
+                            userAndPassword.user = userAndPassword.password = null;
+                        } else {
+                            userAndPassword.user = dialog.getUser();
+                            userAndPassword.password = dialog.getPassword();
+                        }
+                    }
+                };
+                MksVcs.invokeOnEventDispatchThreadAndWait(runnable);
+            } catch (VcsException e) {
+                logger.error(e);
+                return null;
+            }
+        } else if (usernames.size()>1) {
+
+        } else {
+            String username = usernames.iterator().next();
+            String passwordKey = createPasswordKey(hostAndPort, username);
+            try {
+                userAndPassword.user= username;
+                userAndPassword.password=PasswordSafe.getInstance().getPassword(myProject, MksVcs.class, passwordKey);
+            } catch (PasswordSafeException e) {
+                logger.error("error querying password", e);
+            }
+        }
+        return userAndPassword;
+    }
+
+    private void setStatusInfo
 			(
 					final MksStatusWidget statusWidget,
 					final String message) {
