@@ -1,11 +1,9 @@
 rem complete your IDEA Home folder here
+call setHomeDirs.bat
 
-set IDEA_HOME=C:\swdtools\JetBrains\IntelliJ IDEA 13.0.2
-rem set IDEA_HOME=C:\swdtools\JetBrains\IntelliJ IDEA 12.1.5
 set IDEA_VERSION=133.696
 rem set IDEA_VERSION=129.1328
 set MKS_VERSION=8.3.2392
-set MKS_HOME=C:\Program Files\MKS\IntegrityClient2009
 set IDEA_GROUP_ID=com.intellij
 
 call mvn install:install-file -DgroupId=%IDEA_GROUP_ID% -Dpackaging=jar -Dfile="%IDEA_HOME%\lib\openapi.jar" -DartifactId=openapi -Dversion=%IDEA_VERSION%
