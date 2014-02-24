@@ -42,13 +42,14 @@ public abstract class BasicAction extends AnAction {
 
 	@Override
 	public void actionPerformed(@NotNull AnActionEvent event) {
-		final Project project = event.getData(DataKeys.PROJECT);
+
+        final Project project = getProject(event);
 		ApplicationManager.getApplication().runWriteAction(new Runnable() {
 			public void run() {
 				FileDocumentManager.getInstance().saveAllDocuments();
 			}
 		});
-		final VirtualFile[] vFiles = event.getData(DataKeys.VIRTUAL_FILE_ARRAY);
+        final VirtualFile[] vFiles = getVirtualFiles(event);
 
 		final MksVcs mksvcs = MksVcs.getInstance(project);
 		if (!ProjectLevelVcsManager.getInstance(project).checkAllFilesAreUnder(mksvcs, vFiles)) {
@@ -72,7 +73,15 @@ public abstract class BasicAction extends AnAction {
 
 	}
 
-	/**
+    private VirtualFile[] getVirtualFiles(AnActionEvent event) {
+        return PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(event.getDataContext());
+    }
+
+    private Project getProject(AnActionEvent event) {
+        return PlatformDataKeys.PROJECT.getData(event.getDataContext());
+    }
+
+    /**
 	 * given a list of action-target files, returns ALL the files that should be
 	 * subject to the action Does not keep directories, but recursively adds
 	 * directory contents
@@ -142,14 +151,14 @@ public abstract class BasicAction extends AnAction {
 		super.update(e);
 		Presentation presentation = e.getPresentation();
 		DataContext dataContext = e.getDataContext();
-		Project project = DataKeys.PROJECT.getData(dataContext);
+		Project project = getProject(e);
 		if (project == null) {
 			presentation.setEnabled(false);
 			presentation.setVisible(false);
 			return;
 		}
 
-		VirtualFile[] vFiles = DataKeys.VIRTUAL_FILE_ARRAY.getData(dataContext);
+		VirtualFile[] vFiles = getVirtualFiles(e);
 		if (vFiles == null || vFiles.length == 0) {
 			presentation.setEnabled(false);
 			presentation.setVisible(true);

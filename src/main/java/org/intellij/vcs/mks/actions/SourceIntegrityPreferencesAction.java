@@ -2,11 +2,12 @@ package org.intellij.vcs.mks.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
 import com.mks.api.CmdRunner;
 import com.mks.api.Command;
+import com.mks.api.Option;
 import com.mks.api.response.APIException;
 import org.intellij.vcs.mks.MKSAPIHelper;
 import org.intellij.vcs.mks.MksBundle;
@@ -25,9 +26,10 @@ public class SourceIntegrityPreferencesAction extends AnAction {
             final CmdRunner runner =  MKSAPIHelper.getInstance().getSession().createCmdRunner();
             Command command = new Command(Command.SI);
             command.setCommandName("viewprefs");
+            command.addOption(new Option("gui"));
             runner.execute(command);
         } catch (APIException e) {
-            final Project project = anActionEvent.getData(DataKeys.PROJECT);
+            final Project project = PlatformDataKeys.PROJECT.getData(anActionEvent.getDataContext());
             ArrayList<VcsException> errors = new ArrayList<VcsException>();
             //noinspection ThrowableInstanceNeverThrown
             errors.add(new VcsException(e));
