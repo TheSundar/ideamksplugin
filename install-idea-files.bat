@@ -1,8 +1,8 @@
 rem complete your IDEA Home folder here
 call setHomeDirs.bat
 
-set IDEA_VERSION=133.696
-rem set IDEA_VERSION=129.1328
+set IDEA_VERSION=129.1359
+rem set IDEA_VERSION=129.1359
 set MKS_VERSION=8.3.2392
 set IDEA_GROUP_ID=com.intellij
 
