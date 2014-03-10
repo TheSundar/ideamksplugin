@@ -319,7 +319,7 @@ class MKSChangeProvider extends AbstractProjectComponent
 			VirtualFile virtualFile = VcsUtil.getVirtualFile(entry.getKey());
             if (MksMemberState.Status.MISSING  == state.status ) {
                 builder.processLocallyDeletedFile(filePath);
-                return;
+                continue;
             }
 			if (null == virtualFile || MksVcs.getInstance(myProject).getSandboxCache().isSandboxProject(virtualFile)) {
 				continue;

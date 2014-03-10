@@ -18,11 +18,17 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
     <depends>com.intellij.modules.vcs</depends>
 
     <change-notes><![CDATA[<ul>
-     <li>0.11 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.11&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
+    <li>0.11.1 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.11.1&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
+      googlecode issues resolved in 0.1.1</a> for complete changes<br/>
+      issue 1018 : regression introduced by Missing files support, locally deleted files prevent report of other changes<br/>
+      issue 100 : use IDEA PasswordManager to remember passowrds<br/>
+    </li>
+    <li>0.11 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.11&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
       googlecode issues resolved in 0.11</a> for complete changes<br/>
       issue 98 : Plugin fails with PyCharm<br/>
       issue 100 : use IDEA PasswordManager to remember passowrds<br/>
-    </li> <li>0.10.2 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.10.2&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
+    </li>
+    <li>0.10.2 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.10.2&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
       googlecode issues resolved in 0.10.2</a> for complete changes<br/>
       issue 96 : Report locally missing files in the changes view
     </li>
