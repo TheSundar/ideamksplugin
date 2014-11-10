@@ -1,5 +1,6 @@
 package org.intellij.vcs.mks.sicommands.api;
 
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vcs.VcsException;
 import com.mks.api.CmdRunner;
 import com.mks.api.Command;
@@ -7,9 +8,14 @@ import com.mks.api.MultiValue;
 import com.mks.api.Option;
 import com.mks.api.response.*;
 import org.intellij.vcs.mks.MksCLIConfiguration;
+import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksChangePackage;
 import org.intellij.vcs.mks.model.MksServerInfo;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -65,7 +71,27 @@ public class ListChangePackagesAPICommand extends SiAPICommand {
             }
             changePackages = tempChangePackages;
         } catch (APIException e) {
-            errors.add(new VcsException(e));
+            if (e.getMessage().contains("(it may be down)")) {
+                try {
+                    final Runnable run = new Runnable() {
+                        public void run() {
+                            final IsServerSiServerDialog dialog = new IsServerSiServerDialog(serverInfo.host + ":" + serverInfo.port);
+                            dialog.show();
+                            serverInfo.isSIServer = dialog.isSiServer;
+                        }
+                    };
+                    MksVcs.invokeOnEventDispatchThreadAndWait(run);
+
+                } catch (VcsException e2) {
+                    LOGGER.warn(e2.getCause());
+                    final Throwable o = e2.getCause();
+                    //noinspection ThrowableInstanceNeverThrown
+                    errors.add(o instanceof VcsException ? (VcsException) o : e2);
+                }
+
+            } else {
+                errors.add(new VcsException(e));
+            }
         }
 
 /*
@@ -76,6 +102,42 @@ public class ListChangePackagesAPICommand extends SiAPICommand {
         }
 */
 
+    }
+    static class IsServerSiServerDialog extends DialogWrapper {
+        boolean isSiServer = false;
+        private final String serverName;
+
+        IsServerSiServerDialog(@NotNull String serverName) {
+            super(false);
+            this.serverName = serverName;
+            init();
+        }
+
+        @Override
+        @Nullable
+        protected JComponent createCenterPanel() {
+            return new JLabel("Is " + serverName + " a source integrity server ?\n" +
+                    "It does not seem to accept si commands.\n" +
+                    "(Answer yes if it is only momentarily down");
+        }
+
+        @Override
+        protected Action[] createActions() {
+            Action[] actions = new Action[2];
+            actions[0] = new AbstractAction("Yes") {
+                public void actionPerformed(ActionEvent e) {
+                    isSiServer = true;
+                    close(1);
+                }
+            };
+            actions[1] = new AbstractAction("No") {
+                public void actionPerformed(ActionEvent e) {
+                    isSiServer = false;
+                    close(1);
+                }
+            };
+            return actions;
+        }
     }
 
 }
