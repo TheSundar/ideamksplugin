@@ -2,7 +2,9 @@ package org.intellij.vcs.mks;
 
 import java.util.ArrayList;
 
+import org.intellij.vcs.mks.model.MksServerInfo;
 import org.intellij.vcs.mks.sicommands.cli.GetRevisionInfo;
+import org.intellij.vcs.mks.sicommands.cli.SiCLICommand;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,7 +34,7 @@ public class MksDiffProvider implements DiffProvider {
     @Nullable
     public VcsRevisionNumber getCurrentRevision(final VirtualFile virtualFile) {
         ArrayList<VcsException> errors = new ArrayList<VcsException>();
-        GetRevisionInfo command = getRevisionInfo(virtualFile, errors);
+        GetRevisionInfo command = getRevisionInfo(virtualFile, errors, 0);
         if (errors.isEmpty()) {
             return command.getWorkingRev();
         } else {
@@ -41,8 +43,8 @@ public class MksDiffProvider implements DiffProvider {
         }
     }
 
-    private GetRevisionInfo getRevisionInfo(@NotNull final VirtualFile virtualFile, final ArrayList<VcsException> errors) {
-        GetRevisionInfo command = new GetRevisionInfo(errors, mksVcs, virtualFile.getPath(),
+    private GetRevisionInfo getRevisionInfo(@NotNull final VirtualFile virtualFile, final ArrayList<VcsException> errors, int retryCount) {
+		GetRevisionInfo command = new GetRevisionInfo(errors, mksVcs, virtualFile.getPath(),
             VfsUtil.virtualToIoFile(virtualFile.getParent()));
         command.execute();
         if (command.errors.isEmpty()) {
@@ -56,16 +58,20 @@ public class MksDiffProvider implements DiffProvider {
                 };
                 MksVcs.invokeLaterOnEventDispatchThread(runnable);
                 return command;
-            } else {
-                LOGGER.warn("error occurred retrieving version info for " + virtualFile.getPresentableName());
-                return command;
-            }
-    }
+            } else if (errors.size() == 1 && errors.get(0).getMessage().equals(SiCLICommand.UNABLE_TO_RECONNECT_TO_MKS_SERVER) && (retryCount == 0)) {
+				MKSAPIHelper.getInstance().reconnect(mksVcs.getProject(), MksServerInfo.fromHostAndPort(mksVcs.getSandboxCache().getSandboxInfo(virtualFile).hostAndPort));
+				errors.remove(0);
+				return getRevisionInfo(virtualFile, errors, retryCount + 1);
+			} else {
+				LOGGER.warn("error occurred retrieving version info for " + virtualFile.getPresentableName());
+				return command;
+			}
+	}
 
     @Nullable
     public ItemLatestState getLastRevision(@NotNull final VirtualFile virtualFile) {
         ArrayList<VcsException> errors = new ArrayList<VcsException>();
-        GetRevisionInfo command = getRevisionInfo(virtualFile, errors);
+        GetRevisionInfo command = getRevisionInfo(virtualFile, errors, 0);
         if (errors.isEmpty()) {
             return new ItemLatestState(command.getMemberRev(), true, false);
         } else {

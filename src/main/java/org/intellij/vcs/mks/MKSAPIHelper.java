@@ -7,6 +7,7 @@ import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.wm.WindowManager;
 import com.mks.api.*;
@@ -16,7 +17,7 @@ import com.mks.api.response.Response;
 import org.intellij.vcs.mks.model.MksServerInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.intellij.vcs.mks.sicommands.api.ListServersAPI;
-import org.intellij.vcs.mks.sicommands.api.SiConnectCommandAPI;
+import org.intellij.vcs.mks.sicommands.api.SiConnectCommandBatchAPI;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -128,37 +129,40 @@ public class MKSAPIHelper implements ApplicationComponent {
 		String hostAndPort = serverInfo.toHostAndPort();
 		final UserAndPassword userAndPassword = getUsernameAndPassword(hostAndPort, project);
 		if (userAndPassword != null) {
-
+			boolean credentialsNeedPersisting = false;
 			if (userAndPassword.user == null || userAndPassword.password == null) {
 				try {
+					String oldUsername = userAndPassword.user, oldPassword = userAndPassword.password;
 					Runnable runnable = new CredentialsInputRunnable(project, hostAndPort, userAndPassword);
 					MksVcs.invokeOnEventDispatchThreadAndWait(runnable);
+					credentialsNeedPersisting = !(StringUtil.equals(oldUsername, userAndPassword.user)
+							&& StringUtil.equals(oldPassword, userAndPassword.password));
 				} catch (VcsException e) {
 					LOGGER.error(e);
 				}
 			}
-			SiConnectCommandAPI command = new SiConnectCommandAPI(MksVcs.getInstance(project), host, port, userAndPassword.user, userAndPassword.password);
+			SiConnectCommandBatchAPI command = new SiConnectCommandBatchAPI(MksVcs.getInstance(project), host, port, userAndPassword.user, userAndPassword.password);
 			command.execute();
-			if (!command.foundError()) {
-				String passwordKey = createPasswordKey(hostAndPort, userAndPassword.user);
-				if (!command.foundError() && (command.getServer() != null)) {
-					reconnectedServer = command.getServer();
-					try {
-						MksConfiguration configuration = ApplicationManager.getApplication().getComponent(MksConfiguration.class);
-						configuration.addRememberedUsername(hostAndPort, userAndPassword.user);
-						passwordSafe.storePassword(project, MksVcs.class, passwordKey, userAndPassword.password);
-					} catch (PasswordSafeException e) {
-						reportErrors(Arrays.asList(new VcsException(e)), "unable to store credentials for [" + passwordKey + "]");
-					}
-				} else {
-					reportErrors(command.errors, "unable to connect to " + hostAndPort);
-					try {
-						passwordSafe.removePassword(project, MksVcs.class, passwordKey);
-					} catch (PasswordSafeException e) {
-						reportErrors(Arrays.asList(new VcsException(e)), "unable to discard credentials for [" + passwordKey + "]");
-					}
-				}
-			}
+            String passwordKey = createPasswordKey(hostAndPort, userAndPassword.user);
+            if (!command.foundError() && (command.getServer() != null)) {
+                reconnectedServer = command.getServer();
+                if (credentialsNeedPersisting) {
+                    try {
+                        MksConfiguration configuration = ApplicationManager.getApplication().getComponent(MksConfiguration.class);
+                        configuration.addRememberedUsername(hostAndPort, userAndPassword.user);
+                        passwordSafe.storePassword(project, MksVcs.class, passwordKey, userAndPassword.password);
+                    } catch (PasswordSafeException e) {
+                        reportErrors(Arrays.asList(new VcsException(e)), "unable to store credentials for [" + passwordKey + "]");
+                    }
+                }
+            } else {
+                reportErrors(command.errors, "unable to connect to " + hostAndPort);
+                try {
+                    passwordSafe.removePassword(project, MksVcs.class, passwordKey);
+                } catch (PasswordSafeException e) {
+                    reportErrors(Arrays.asList(new VcsException(e)), "unable to discard credentials for [" + passwordKey + "]");
+                }
+            }
 		}
 		return reconnectedServer;
 	}
