@@ -44,7 +44,7 @@ public abstract class AbstractMKSCommand {
 			int lastIndexOfSlash = projectMemberRelativePath.lastIndexOf('/');
 			if (lastIndexOfSlash >= 0) {
 				VirtualFile projectFolder =
-						sandboxFolder.findFileByRelativePath(projectMemberRelativePath.substring(0, lastIndexOfSlash));
+					sandboxFolder.findFileByRelativePath(projectMemberRelativePath.substring(0, lastIndexOfSlash));
 				if (projectFolder != null && !projectFolders.contains(projectFolder)) {
 					if (LOGGER.isDebugEnabled()) {
 						LOGGER.debug("detected project folder :" + projectFolder);
@@ -55,7 +55,7 @@ public abstract class AbstractMKSCommand {
 						projectFolder = projectFolder.getParent();
 					}
 					while (projectFolder != null && !projectFolders.contains(projectFolder) &&
-							!projectFolder.equals(sandboxFolder));
+						!projectFolder.equals(sandboxFolder));
 				} else if (projectFolder == null) {
 					LOGGER.debug("can't find folder for path " + projectMemberRelativePath);
 				}
@@ -72,5 +72,9 @@ public abstract class AbstractMKSCommand {
 
 	private CommandExecutionListener getCommandExecutionListener() {
 		return mksCLIConfiguration.getCommandExecutionListener();
+	}
+
+	protected void logCommand(StringBuilder buf) {
+		LOGGER.warn("executing " + buf.toString());
 	}
 }

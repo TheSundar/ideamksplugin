@@ -131,10 +131,10 @@ public abstract class SiCLICommand extends AbstractMKSCommand implements Runnabl
 			if (exitValue == SI_IDX) {
 				LOGGER.warn("command [" + this + "] wrote to stderr " + errorOutput);
 			} else if (exitValue == BATCH_IDX && errorOutput.startsWith("Connecting to ")) {
-                this.errors.add(new VcsException("Unable to reconnect to mks server"));
-                LOGGER.warn("mks returned [" + errorOutput +
-                        "], you probably need to reconnect to the server manually, try executing 'si connect --hostname=$mksHost$'");
-            } else {
+				this.errors.add(new VcsException("Unable to reconnect to mks server"));
+				LOGGER.warn("mks returned [" + errorOutput +
+						"], you probably need to reconnect to the server manually, try executing 'si connect --hostname=$mksHost$'");
+			} else {
 				LOGGER.error("return code " + exitValue + " for command " + this
 						+ ", stdErr=" + errorOutput);
 			}

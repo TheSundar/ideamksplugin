@@ -16,14 +16,14 @@ public class ViewMissingMembersCommandAPI extends ViewSandboxCommandAPI {
         super(errors, mksCLIConfiguration, sandboxPjPath);
     }
 
-    @Override
-    protected Command createCommand() {
-        Command command = super.createCommand();
-        command.addOption(new Option("filter","changed:missing"));
-        return command;
-    }
+	@Override
+	protected Command createAPICommand() {
+		Command command = super.createAPICommand();
+		command.addOption(new Option("filter", "changed:missing"));
+		return command;
+	}
 
-    @Override
+	@Override
     protected MksMemberState createState(WorkItem item) throws VcsException {
         MksMemberState state = super.createState(item);
         return new MksMemberState(state.workingRevision, state.memberRevision, state.workingChangePackageId,  MksMemberState.Status.MISSING);

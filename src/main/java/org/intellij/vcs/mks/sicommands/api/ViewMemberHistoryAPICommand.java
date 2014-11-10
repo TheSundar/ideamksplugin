@@ -10,12 +10,11 @@
 package org.intellij.vcs.mks.sicommands.api;
 
 import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.vcs.history.VcsRevisionNumber;
 import com.mks.api.*;
 import com.mks.api.response.*;
-import org.intellij.vcs.mks.AbstractMKSCommand;
 import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.MksRevisionNumber;
-import org.intellij.vcs.mks.MksVcsException;
 import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
 import org.jetbrains.annotations.NonNls;
 
@@ -48,43 +47,45 @@ public class ViewMemberHistoryAPICommand extends SiAPICommand {
 		this.member = member;
 	}
 
-	public void execute() {
-		try {
-			Command command = new Command(Command.SI);
-			command.setCommandName(COMMAND);
-			command.addOption(new Option("fields", FIELDS));
-			command.addSelection(member);
-			final Response response;
-			/**
-			 * response ::= WorkItem[id = membername]{revision*}
-			 * revision ::= Field
-			 */
-			response = executeCommand(command);
-			final WorkItemIterator workItems = response.getWorkItems();
-			final List memberRevisions = (List) ((WorkItem) workItems.next()).getField("revisions").getValue();
-			revisionsInfo = new ArrayList<MksMemberRevisionInfo>(memberRevisions.size());
-			for (Iterator itRevisions = memberRevisions.iterator(); itRevisions.hasNext();) {
-				Item revisionItem = (Item) itRevisions.next();
-				String revision = revisionItem.getField(REVISION).getValueAsString();
-				final Date date = revisionItem.getField(DATE).getDateTime();
-				final String author = revisionItem.getField(AUTHOR).getValueAsString();
-				final String cpid = revisionItem.getField(CPID).getValueAsString();
-				final String description = revisionItem.getField(DESCRIPTION).getValueAsString();
-				MksMemberRevisionInfo info = new MksMemberRevisionInfo();
+	@Override
+	protected void handleResponse(Response response) throws APIException {
+		/**
+		 * response ::= WorkItem[id = membername]{revision*}
+		 * revision ::= Field
+		 */
+		final WorkItemIterator workItems = response.getWorkItems();
+		final List memberRevisions = (List) ((WorkItem) workItems.next()).getField("revisions").getValue();
+		revisionsInfo = new ArrayList<MksMemberRevisionInfo>(memberRevisions.size());
+		for (Iterator itRevisions = memberRevisions.iterator(); itRevisions.hasNext(); ) {
+			Item revisionItem = (Item) itRevisions.next();
+			String revision = revisionItem.getField(REVISION).getValueAsString();
+			final Date date = revisionItem.getField(DATE).getDateTime();
+			final String author = revisionItem.getField(AUTHOR).getValueAsString();
+			final String cpid = revisionItem.getField(CPID).getValueAsString();
+			final String description = revisionItem.getField(DESCRIPTION).getValueAsString();
+			MksMemberRevisionInfo info = new MksMemberRevisionInfo();
+			try {
 				info.setRevision(MksRevisionNumber.createRevision(revision));
-				info.setDate(date);
-				info.setCPID(cpid);
-				info.setAuthor(author);
-				info.setDescription(description);
-				revisionsInfo.add(info);
+			} catch (VcsException e) {
+				LOGGER.warn("unparseable revision " + revision + " for " + member, e);
+				info.setRevision(VcsRevisionNumber.NULL);
 			}
-		} catch (APIException e) {
-
-			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-			errors.add(new MksVcsException("apiException", e));
-		} catch (VcsException e) {
-			errors.add(e);
+			info.setDate(date);
+			info.setCPID(cpid);
+			info.setAuthor(author);
+			info.setDescription(description);
+			revisionsInfo.add(info);
 		}
+	}
+
+	@Override
+	protected Command createAPICommand() {
+		Command command = new Command(Command.SI);
+		command.setCommandName(COMMAND);
+		command.addOption(new Option("fields", FIELDS));
+		command.addSelection(member);
+		return command;
+
 	}
 
 	public List<MksMemberRevisionInfo> getRevisionsInfo() {

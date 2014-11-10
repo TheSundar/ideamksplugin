@@ -9,12 +9,17 @@ import com.intellij.openapi.vcs.history.*;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.vcsUtil.VcsUtil;
-import org.intellij.vcs.mks.MksRevisionNumber;
+import com.mks.api.Command;
+import com.mks.api.Option;
+import com.mks.api.response.NoCredentialsException;
+import com.mks.api.response.WorkItem;
+import org.intellij.vcs.mks.MKSAPIHelper;
 import org.intellij.vcs.mks.MksVcs;
 import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
 import org.intellij.vcs.mks.model.MksMemberState;
+import org.intellij.vcs.mks.model.MksServerInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
-import org.intellij.vcs.mks.sicommands.cli.AbstractViewSandboxCommand;
+import org.intellij.vcs.mks.sicommands.api.ViewSandboxCommandAPI;
 import org.intellij.vcs.mks.sicommands.cli.GetRevisionInfo;
 import org.intellij.vcs.mks.sicommands.api.ViewMemberHistoryAPICommand;
 import org.jetbrains.annotations.NonNls;
@@ -25,6 +30,7 @@ import javax.swing.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -60,67 +66,80 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
     @Nullable
     private VcsRevisionNumber getCurrentRevision(@NotNull MksSandboxInfo sandbox,
                                                  @NotNull final FilePath filePath) throws VcsException {
-        FilePath sandboxPath = VcsUtil.getFilePath(sandbox.sandboxPath);
-        FilePath sandboxFolder = sandboxPath.getParentPath();
-        assert sandboxFolder != null : "sandbox parent folder can not be null";
-        assert filePath.getPath().startsWith(sandboxFolder.getPath()) :
-                "" + filePath.getPath() + " should start with " + sandboxFolder.getPath();
-        final AbstractViewSandboxCommand command =
-                new AbstractViewSandboxCommand(new ArrayList<VcsException>(), vcs, sandbox.sandboxPath
-                        , "--filter=file:" + MksVcs.getRelativePath(filePath, sandboxFolder)
+		FilePath sandboxPath = VcsUtil.getFilePath(sandbox.sandboxPath);
+		final FilePath sandboxFolder = sandboxPath.getParentPath();
+		assert sandboxFolder != null : "sandbox parent folder can not be null";
+		assert filePath.getPath().startsWith(sandboxFolder.getPath()) :
+				"" + filePath.getPath() + " should start with " + sandboxFolder.getPath();
+		ViewSandboxCommandAPI command = createCommand(sandbox, filePath, sandboxFolder);
+		command.execute();
+		MksMemberState state = null;
+		if (command.foundError()) {
+			if (isNotConnectedError(command.errors)) {
+				tryReconnect(sandbox);
+				command = createCommand(sandbox, filePath, sandboxFolder);
+				command.execute();
+			} else {
+				LOGGER.error("error obtaining current revision for " + filePath);
+				throw new VcsException("error obtaining current revision for " + filePath);
+			}
+		}
+		if (!command.foundError()) {
+
+			state = command.getMemberStates().get(filePath.getPath());
+			if (state == null) {
+				for (String s : command.getMemberStates().keySet()) {
+					if (VcsUtil.getFilePath(s).getPath().equals(filePath.getPath())) {
+						state = command.getMemberStates().get(s);
+						break;
+					}
+				}
+			}
+			return (null == state)? null: ((VcsRevisionNumber.NULL == state.workingRevision) ? null : state.workingRevision);
+		} else {
+			LOGGER.error("error obtaining current revision for " + filePath);
+			throw new VcsException("error obtaining current revision for " + filePath);
+		}
+	}
+
+	private ViewSandboxCommandAPI createCommand(final MksSandboxInfo sandbox, final FilePath filePath, final FilePath sandboxFolder) {
+		return new ViewSandboxCommandAPI(new ArrayList<VcsException>(), vcs, sandbox.sandboxPath
 //				"--fields=workingrev",
 //				"--recurse"
-                ) {
-                    @Override
-                    protected MksMemberState createState(String workingRev, String memberRev, String workingCpid,
-                                                         String locker, String lockedSandbox, String type,
-                                                         String deferred) throws VcsException {
-                        return new MksMemberState((MksRevisionNumber.createRevision(workingRev)),
-                                (MksRevisionNumber.createRevision(memberRev)), workingCpid,
-                                MksMemberState.Status.UNKNOWN);
-                    }
-
-/*
+		) {
 			@Override
-			public void execute() {
-				try {
-					super.executeCommand();
-					BufferedReader reader = new BufferedReader(new StringReader(commandOutput));
-					String line ;
-					while ((line = reader.readLine()) != null && !"".equals(line)) {
-						if (currentRevisionHolder[0] == null) {
-							currentRevisionHolder[0] = line;
-						} else {
-							LOGGER.warn("multiple members retrieved for "+filePath+"!!");
-						}
-					}
-
-				} catch (IOException e) {
-					LOGGER.error("error obtaining current revision for " + filePath, e);
-				}
-
+			protected Command createAPICommand() {
+				Command apiCommand = super.createAPICommand();
+				apiCommand.addOption(new Option("filter", "file:" + MksVcs.getRelativePath(filePath, sandboxFolder)));
+				return apiCommand;
 			}
-*/
-                };
-        command.execute();
-        MksMemberState state = command.getMemberStates().get(filePath.getPath());
-        if (state == null) {
-            for (String s : command.getMemberStates().keySet()) {
-                if (VcsUtil.getFilePath(s).getPath().equals(filePath.getPath())) {
-                    state = command.getMemberStates().get(s);
-                    break;
-                }
-            }
-        }
-        if (state == null) {
-            LOGGER.error("error obtaining current revision for " + filePath);
-            throw new VcsException("error obtaining current revision for " + filePath);
-        }
-        return (VcsRevisionNumber.NULL == state.workingRevision) ? null : state.workingRevision;
 
-    }
+			@Override
+			protected MksMemberState createState(WorkItem item) throws VcsException {
+				return super.createState(item);
+			}
+		};
+	}
 
-    private List<VcsFileRevision> getRevisions(FilePath filePath) {
+	private boolean tryReconnect(MksSandboxInfo sandboxInfo) {
+
+		HashSet<MksSandboxInfo> sandboxes = new HashSet<MksSandboxInfo>();
+		sandboxes.add(sandboxInfo);
+		MKSAPIHelper helper = MKSAPIHelper.getInstance();
+		ArrayList<MksServerInfo> mksServers = helper.getMksServers(null, new ArrayList<VcsException>(), vcs);
+		return helper.checkNeededServersAreOnlineAndReconnectIfNeeded(sandboxes, mksServers, vcs.getProject());
+	}
+
+	private boolean isNotConnectedError(List<VcsException> errors) {
+		for (VcsException error : errors) {
+			if (error.getCause() != null && error.getCause() instanceof NoCredentialsException) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private List<VcsFileRevision> getRevisions(FilePath filePath) {
         final ViewMemberHistoryAPICommand command =
                 new ViewMemberHistoryAPICommand(new ArrayList<VcsException>(), vcs, filePath.getPath());
         command.execute();

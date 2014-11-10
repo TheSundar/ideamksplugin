@@ -3,7 +3,6 @@ package org.intellij.vcs.mks.sicommands.api;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vcs.history.VcsRevisionNumber;
 import com.intellij.vcsUtil.VcsUtil;
-import com.mks.api.CmdRunner;
 import com.mks.api.Command;
 import com.mks.api.MultiValue;
 import com.mks.api.Option;
@@ -12,7 +11,6 @@ import com.mks.api.si.SIModelTypeName;
 import org.intellij.vcs.mks.MksCLIConfiguration;
 import org.intellij.vcs.mks.MksRevisionNumber;
 import org.intellij.vcs.mks.model.MksMemberState;
-import org.intellij.vcs.mks.sicommands.SandboxInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -23,70 +21,70 @@ import java.util.*;
 public class ViewSandboxCommandAPI extends SiAPICommand {
     private static final Set<String> SandboxModelTypes = new HashSet<String>(Arrays.asList(SIModelTypeName.SI_FORMER_SUBSANDBOX, SIModelTypeName.SI_FORMER_SANDBOX, SIModelTypeName.SI_SUBSANDBOX, SIModelTypeName.SI_SANDBOX));
     private static final String COMMAND = "viewsandbox";
-    @NotNull private String sandboxPath;
-    protected final Map<String, MksMemberState> memberStates = new HashMap<String, MksMemberState>();
+	@NotNull
+	protected String sandboxPath;
+	protected final Map<String, MksMemberState> memberStates = new HashMap<String, MksMemberState>();
 
     public ViewSandboxCommandAPI(@NotNull List<VcsException> errors, @NotNull MksCLIConfiguration mksCLIConfiguration, @NotNull String sandboxPjPath) {
-        super(errors, COMMAND, mksCLIConfiguration);
-       this.sandboxPath = sandboxPjPath;
-    }
+		this(errors, COMMAND, mksCLIConfiguration, sandboxPjPath);
+	}
 
-    @Override
-    public void execute() {
-        try {
-            Command command = createCommand();
-            final Response response = executeCommand(command);
+	protected ViewSandboxCommandAPI(@NotNull List<VcsException> errors, @NotNull String command, @NotNull MksCLIConfiguration mksCLIConfiguration, @NotNull String sandboxPjPath) {
+		super(errors, command, mksCLIConfiguration);
+		this.sandboxPath = sandboxPjPath;
+	}
 
-            final SubRoutineIterator routineIterator = response.getSubRoutines();
-            while (routineIterator.hasNext()) {
-                final SubRoutine subRoutine = routineIterator.next();
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("routine " + subRoutine);
-                }
-            }
-            final WorkItemIterator workItems = response.getWorkItems();
-            while (workItems.hasNext()) {
-                final WorkItem item = workItems.next();
-                if (shoulSkip(item)) {
-                    continue;
-                }
-                String memberName = item.getField("name").getValueAsString();
+	@Override
+	protected void handleResponse(Response response) throws APIException, VcsException {
+		final SubRoutineIterator routineIterator = response.getSubRoutines();
+		while (routineIterator.hasNext()) {
+			final SubRoutine subRoutine = routineIterator.next();
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("routine " + subRoutine);
+			}
+		}
+		final WorkItemIterator workItems = response.getWorkItems();
+		while (workItems.hasNext()) {
+			final WorkItem item = workItems.next();
+			if (shouldSkip(item)) {
+				continue;
+			}
+			String memberName = getMemberStateName(item);
 
-                MksMemberState memberState = createState(item);
-                setState(memberName, memberState);
-            }
-        } catch (APIException e) {
-            errors.add(new VcsException(e));
-        } catch (VcsException e) {
-            errors.add(new VcsException(e));
-        }
+			MksMemberState memberState = createState(item);
+			setState(memberName, memberState);
+		}
+	}
 
-    }
+	protected String getMemberStateName(WorkItem item) {
+		return item.getField("name").getValueAsString();
+	}
 
-    protected Command createCommand() {
-        Command command = new Command(Command.SI);
-        command.setCommandName("viewsandbox");
-        command.addOption(new Option("sandbox", sandboxPath));
-        MultiValue mv = new MultiValue( "," );
-        mv.add( "name" );
-        mv.add( "context" );
-        mv.add( "wfdelta" );
-        mv.add( "memberarchive" );
-        mv.add( "memberrev" );
-        mv.add( "workingrev" );
-        mv.add( "locker" );
-        mv.add( "workingcpid" );
-        mv.add( "revsyncdelta" );
-        command.addOption(new Option("fields", mv));
-        command.addOption(new Option("recurse"));
-        return command;
-    }
+	@Override
+	protected Command createAPICommand() {
+		Command command = new Command(Command.SI);
+		command.setCommandName("viewsandbox");
+		command.addOption(new Option("sandbox", sandboxPath));
+		MultiValue mv = new MultiValue(",");
+		mv.add("name");
+		mv.add("context");
+		mv.add("wfdelta");
+		mv.add("memberarchive");
+		mv.add("memberrev");
+		mv.add("workingrev");
+		mv.add("locker");
+		mv.add("workingcpid");
+		mv.add("revsyncdelta");
+		command.addOption(new Option("fields", mv));
+		command.addOption(new Option("recurse"));
+		return command;
+	}
 
-    private boolean shoulSkip(WorkItem item) {
-        return SandboxModelTypes.contains(item.getModelType());
-    }
+	protected boolean shouldSkip(WorkItem item) {
+		return SandboxModelTypes.contains(item.getModelType());
+	}
 
-    protected void setState(@NotNull final String name, @NotNull final MksMemberState memberState) {
+	protected void setState(@NotNull final String name, @NotNull final MksMemberState memberState) {
         memberStates.put(VcsUtil.getFilePath(name).getPath(), memberState);
     }
 

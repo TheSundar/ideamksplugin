@@ -18,10 +18,14 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
     <depends>com.intellij.modules.vcs</depends>
 
     <change-notes><![CDATA[<ul>
+    <li>0.12 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.12&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
+      googlecode issues resolved in 0.12</a> for complete changes<br/>
+      issue 103 : assertion failed "project is already disposed" when closing MKS backed project<br/>
+      issue 104, 105 : better usage of PasswordManager and better handling of disconnection errors<br/>
+    </li>
     <li>0.11.1 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.11.1&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
       googlecode issues resolved in 0.1.1</a> for complete changes<br/>
-      issue 1018 : regression introduced by Missing files support, locally deleted files prevent report of other changes<br/>
-      issue 100 : use IDEA PasswordManager to remember passowrds<br/>
+      issue 101 : regression introduced by Missing files support, locally deleted files prevent report of other changes<br/>
     </li>
     <li>0.11 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.11&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
       googlecode issues resolved in 0.11</a> for complete changes<br/>

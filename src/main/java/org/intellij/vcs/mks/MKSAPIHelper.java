@@ -1,16 +1,25 @@
 package org.intellij.vcs.mks;
 
+import com.intellij.ide.passwordSafe.PasswordSafe;
+import com.intellij.ide.passwordSafe.PasswordSafeException;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.wm.WindowManager;
 import com.mks.api.*;
 import com.mks.api.response.APIException;
 import com.mks.api.response.InvalidCommandSelectionException;
 import com.mks.api.response.Response;
+import org.intellij.vcs.mks.model.MksServerInfo;
+import org.intellij.vcs.mks.realtime.MksSandboxInfo;
+import org.intellij.vcs.mks.sicommands.api.ListServersAPI;
+import org.intellij.vcs.mks.sicommands.api.SiConnectCommandAPI;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class MKSAPIHelper implements ApplicationComponent {
     protected final Logger LOGGER = Logger.getInstance(getClass().getName());
@@ -69,7 +78,157 @@ public class MKSAPIHelper implements ApplicationComponent {
         return siCommands;
     }
 
-    public static class SICommands extends com.mks.api.commands.SICommands {
+	@NotNull
+	public ArrayList<MksServerInfo> getMksServers (final ProgressIndicator progress, final ArrayList<VcsException> errors, MksVcs vcs) {
+		final ListServersAPI listServersAction = new ListServersAPI(errors, vcs);
+		if (progress != null) {
+			progress.setIndeterminate(true);
+			progress.setText("Querying mks servers ...");
+		}
+		listServersAction.execute();
+		if (listServersAction.foundError()) {
+			reportErrors(listServersAction.errors, "encountered errors querying servers");
+		}
+		return listServersAction.servers;
+	}
+
+	private void reportErrors
+			(List<VcsException> errors, String
+					message) {
+		for (VcsException error : errors) {
+			LOGGER.warn(message, error);
+		}
+	}
+
+	public boolean checkNeededServersAreOnlineAndReconnectIfNeeded(@NotNull Set<MksSandboxInfo> sandboxesToRefresh,
+																 @NotNull ArrayList<MksServerInfo> servers, Project project) {
+		Set<String> connectedServers = new HashSet<String>();
+		for (MksServerInfo server : servers) {
+			connectedServers.add(server.host + ":" + server.port);
+		}
+		Set<String> serversNeedingReconnect = new HashSet<String>();
+		for (MksSandboxInfo sandboxInfo : sandboxesToRefresh) {
+			if (!connectedServers.contains(sandboxInfo.hostAndPort)) {
+				serversNeedingReconnect.add(sandboxInfo.hostAndPort);
+			}
+		}
+		for (final String hostAndPort : serversNeedingReconnect) {
+			// request user and password
+
+			int colonIndex = hostAndPort.indexOf(':');
+			String host = hostAndPort.substring(0, colonIndex);
+			String port = hostAndPort.substring(colonIndex + 1);
+
+			PasswordSafe passwordSafe = PasswordSafe.getInstance();
+			final UserAndPassword userAndPassword = getUsernameAndPassword(hostAndPort, project);
+			if (userAndPassword == null) return false;
+			if (userAndPassword.user == null || userAndPassword.password == null) {
+				try {
+					Runnable runnable = new CredentialsInputRunnable(project, hostAndPort, userAndPassword);
+					MksVcs.invokeOnEventDispatchThreadAndWait(runnable);
+				} catch (VcsException e) {
+					LOGGER.error(e);
+					return false;
+				}
+			}
+			SiConnectCommandAPI command =
+					new SiConnectCommandAPI(MksVcs.getInstance(project), host, port, userAndPassword.user, userAndPassword.password);
+			command.execute();
+			if (command.foundError()) {
+				return false;
+			}
+			String passwordKey = createPasswordKey(hostAndPort, userAndPassword.user);
+			if (!command.foundError() && (command.getServer() != null)) {
+				servers.add(command.getServer());
+				try {
+					MksConfiguration configuration = ApplicationManager.getApplication().getComponent(MksConfiguration.class);
+					configuration.addRememberedUsername(hostAndPort, userAndPassword.user);
+					passwordSafe.storePassword(project, MksVcs.class, passwordKey, userAndPassword.password);
+				} catch (PasswordSafeException e) {
+					reportErrors(Arrays.asList(new VcsException(e)), "unable to store credentials for [" + passwordKey + "]");
+				}
+			} else {
+				reportErrors(command.errors, "unable to connect to " + hostAndPort);
+				try {
+					passwordSafe.removePassword(project, MksVcs.class, passwordKey);
+				} catch (PasswordSafeException e) {
+					reportErrors(Arrays.asList(new VcsException(e)), "unable to discard credentials for [" + passwordKey + "]");
+				}
+			}
+		}
+		return  true;
+	}
+	/**
+	 * search for previously used username for <code>hostAndPort</code> in the configuration, if present search
+	 * passwordSafe for the password, otherwise request credentials from user
+	 *
+	 * @param hostAndPort
+	 * @param project
+	 * @return
+	 */
+	private UserAndPassword getUsernameAndPassword(final String hostAndPort, final Project project) {
+		final UserAndPassword userAndPassword = new UserAndPassword();
+		MksConfiguration configuration = ApplicationManager.getApplication().getComponent(MksConfiguration.class);
+		Set<String> usernames = configuration.getRememberedUsernames(hostAndPort);
+		if (usernames.isEmpty()) {
+			try {
+				Runnable runnable = new CredentialsInputRunnable(project, hostAndPort, userAndPassword);
+				MksVcs.invokeOnEventDispatchThreadAndWait(runnable);
+			} catch (VcsException e) {
+				LOGGER.error(e);
+				return null;
+			}
+		} else if (usernames.size() > 1) {
+			LOGGER.warn("unexpected : more than one username remembered for " + hostAndPort);
+		} else {
+			String username = usernames.iterator().next();
+			String passwordKey = createPasswordKey(hostAndPort, username);
+			try {
+				userAndPassword.user = username;
+				userAndPassword.password = PasswordSafe.getInstance().getPassword(project, MksVcs.class, passwordKey);
+				LOGGER.info("reconnecting to [" + hostAndPort + "] using [" + username + "]");
+			} catch (PasswordSafeException e) {
+				LOGGER.error("error querying password", e);
+			}
+		}
+		return userAndPassword;
+	}
+
+	static class UserAndPassword {
+		String user = null;
+		String password = null;
+	}
+
+	private String createPasswordKey(String hostAndPort, String username) {
+		return hostAndPort + ":" + username;
+	}
+
+	private static class CredentialsInputRunnable implements Runnable {
+		private final Project project;
+		private final String hostAndPort;
+		private final UserAndPassword userAndPassword;
+
+		public CredentialsInputRunnable(Project project, String hostAndPort, UserAndPassword userAndPassword) {
+			this.project = project;
+			this.hostAndPort = hostAndPort;
+			this.userAndPassword = userAndPassword;
+		}
+
+		public void run() {
+
+			LoginDialog dialog = new LoginDialog(WindowManager.getInstance().getFrame(project), hostAndPort);
+			dialog.pack();
+			dialog.setVisible(true);
+			if (dialog.isCanceled()) {
+				userAndPassword.user = userAndPassword.password = null;
+			} else {
+				userAndPassword.user = dialog.getUser();
+				userAndPassword.password = dialog.getPassword();
+			}
+		}
+	}
+
+	public static class SICommands extends com.mks.api.commands.SICommands {
         public SICommands(Session session)
                 throws APIException {
             super(session, true);
