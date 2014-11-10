@@ -9,12 +9,16 @@ import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vcs.*;
+import com.intellij.openapi.vcs.actions.VcsContextFactory;
+import com.intellij.openapi.vcs.annotate.AnnotationProvider;
+import com.intellij.openapi.vcs.annotate.FileAnnotation;
 import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vcs.changes.ChangeProvider;
-import com.intellij.openapi.vcs.changes.CommitExecutor;
 import com.intellij.openapi.vcs.checkin.CheckinEnvironment;
 import com.intellij.openapi.vcs.diff.DiffProvider;
+import com.intellij.openapi.vcs.history.VcsFileRevision;
 import com.intellij.openapi.vcs.history.VcsHistoryProvider;
+import com.intellij.openapi.vcs.history.VcsRevisionNumber;
 import com.intellij.openapi.vcs.rollback.RollbackEnvironment;
 import com.intellij.openapi.vcs.update.UpdateEnvironment;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -27,9 +31,13 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.AbstractTableCellEditor;
 import org.intellij.vcs.mks.actions.api.CheckoutAPICommand;
+import org.intellij.vcs.mks.history.MksFileAnnotation;
+import org.intellij.vcs.mks.history.MksVcsFileRevision;
 import org.intellij.vcs.mks.history.MksVcsHistoryProvider;
+import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
 import org.intellij.vcs.mks.realtime.*;
 import org.intellij.vcs.mks.sicommands.api.ListServersAPI;
+import org.intellij.vcs.mks.sicommands.api.ViewMemberHistoryAPICommand;
 import org.intellij.vcs.mks.sicommands.cli.*;
 import org.intellij.vcs.mks.update.MksUpdateEnvironment;
 import org.jetbrains.annotations.NonNls;
@@ -51,10 +59,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
     static final Logger LOGGER = Logger.getInstance(MksVcs.class.getName());
@@ -667,5 +673,55 @@ public class MksVcs extends AbstractVcs implements MksCLIConfiguration {
     @Override
     public RollbackEnvironment getRollbackEnvironment() {
         return rollbackEnvironment;
+    }
+
+    @Nullable
+    @Override
+    public AnnotationProvider getAnnotationProvider() {
+        return new AnnotationProvider() {
+            @Override
+            public FileAnnotation annotate(VirtualFile file) throws VcsException {
+                return annotate(file, null);
+            }
+
+            private AnnotateFileCommand createAnnotateCommand(VirtualFile file, ArrayList<VcsException> errors, VcsFileRevision revision) {
+                return (revision == null)
+                        ? new AnnotateFileCommand(errors, MksVcs.this, file.getCanonicalPath())
+                        : new AnnotateFileCommand(errors, MksVcs.this, file.getCanonicalPath(), (MksRevisionNumber) revision.getRevisionNumber());
+            }
+
+            @Override
+            public FileAnnotation annotate(VirtualFile file, VcsFileRevision revision) throws VcsException {
+                ArrayList<VcsException> errors = new ArrayList<VcsException>();
+                AnnotateFileCommand command = createAnnotateCommand(file, errors, revision);
+                command.execute();
+
+                ArrayList<VcsFileRevision> fileRevisions = new ArrayList<VcsFileRevision>();
+                HashSet<VcsRevisionNumber> revisionSet = new HashSet<VcsRevisionNumber>();
+                revisionSet.addAll(command.getRevisions());
+
+                // collect commit info for the revisions involved
+                ViewMemberHistoryAPICommand  memberHistoryCommand = new ViewMemberHistoryAPICommand (errors, MksVcs.this, file.getCanonicalPath());
+                memberHistoryCommand.execute();
+                List<MksMemberRevisionInfo> revisionsInfo = memberHistoryCommand.getRevisionsInfo();
+                for (MksMemberRevisionInfo revisionInfo : revisionsInfo) {
+                    if (revisionSet.contains(revisionInfo.getRevision())) {
+                        fileRevisions.add(new MksVcsFileRevision(MksVcs.getInstance(myProject), VcsContextFactory.SERVICE.getInstance().createFilePathOn(file), revisionInfo));
+                    }
+                }
+
+                return new MksFileAnnotation(myProject, file, command.getLineInfos(), command.getLines(), command.getRevisions(), fileRevisions);
+            }
+
+            @Override
+            public boolean isAnnotationValid(VcsFileRevision rev) {
+                return true;
+            }
+        };
+    }
+
+    @Override
+    public Locale getDateLocale() {
+        return ApplicationManager.getApplication().getComponent(MksConfiguration.class).getDateLocale();
     }
 }

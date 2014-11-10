@@ -2,6 +2,8 @@ package org.intellij.vcs.mks;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Locale;
+
 /**
  * @author Thibaut Fagart
  */
@@ -20,4 +22,6 @@ public interface MksCLIConfiguration {
 	 * @return
 	 */
 	boolean isMks2007();
+
+    Locale getDateLocale();
 }

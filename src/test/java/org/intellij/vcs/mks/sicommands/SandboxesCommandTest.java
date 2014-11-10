@@ -11,6 +11,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class SandboxesCommandTest extends TestCase {
 	private static final String ENCODING = "IBM437";
@@ -47,7 +48,12 @@ public class SandboxesCommandTest extends TestCase {
 			public boolean isMks2007() {
 				return false;
 			}
-		};
+            @Override
+            public Locale getDateLocale() {
+                return Locale.ENGLISH;
+            }
+
+        };
 		return new SandboxesCommand(errors, mksCLIConfiguration) {
 			@Override
 			protected String executeCommand() throws IOException {

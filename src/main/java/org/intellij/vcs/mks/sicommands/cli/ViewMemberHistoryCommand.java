@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,7 +57,7 @@ public class ViewMemberHistoryCommand extends SiCLICommand {
                 member);
         setWorkingDir(new File(member).getParentFile());
         this.member = member;
-        format = new SimpleDateFormat(mksCLIConfiguration.getDatePattern());
+        format = new SimpleDateFormat(mksCLIConfiguration.getDatePattern(), mksCLIConfiguration.getDateLocale());
     }
 
     @Override
@@ -146,7 +147,7 @@ public class ViewMemberHistoryCommand extends SiCLICommand {
 				if (pattern != null) {
 					final MksConfiguration configuration = ApplicationManager.getApplication().getComponent(MksConfiguration.class);
 					configuration.setDatePattern(pattern);
-					format = new SimpleDateFormat(configuration.getDatePattern());
+					format = new SimpleDateFormat(configuration.getDatePattern(), configuration.getDateLocale());
 				}
 				return parseDate(date, false);
 

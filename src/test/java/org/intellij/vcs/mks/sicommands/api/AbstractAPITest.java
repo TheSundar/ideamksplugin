@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Properties;
 
@@ -69,6 +70,11 @@ public abstract class AbstractAPITest extends TestCase {
             @Override
             public boolean isMks2007() {
                 return false;
+            }
+
+            @Override
+            public Locale getDateLocale() {
+                return Locale.ENGLISH;
             }
         };
     }

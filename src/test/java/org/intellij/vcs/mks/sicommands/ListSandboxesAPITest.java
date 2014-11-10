@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class ListSandboxesAPITest extends TestCase {
     private static final String ENCODING = "IBM437";
@@ -35,6 +36,11 @@ public class ListSandboxesAPITest extends TestCase {
             public boolean isMks2007() {
                 return false;
             }
+            @Override
+            public Locale getDateLocale() {
+                return Locale.ENGLISH;
+            }
+
         };
         return new ListSandboxesAPI(errors, mksCLIConfiguration) {
             @Override

@@ -37,6 +37,11 @@ public class MksConfiguration
     public boolean synchronizeNonMembers = true;
     public Map<String, Set<String>> rememberedUsernames = new HashMap<String, Set<String>>();
 
+    public String savedLocale;
+
+//    @com.intellij.util.xmlb.annotations.Transient
+//    private transient Locale dateLocale;
+
 
     @Nullable
     @Override
@@ -54,7 +59,6 @@ public class MksConfiguration
         if (datePattern == null) {
             datePattern = DEFAULT_DATE_PATTERN;
         }
-
     }
 
     @NotNull
@@ -170,6 +174,17 @@ public class MksConfiguration
 
     public void setSiEncodings(@NotNull Map<String, String> siEncodings) {
         this.SI_ENCODINGS = siEncodings;
+    }
+
+    @Override
+    @com.intellij.util.xmlb.annotations.Transient
+    public Locale getDateLocale() {
+        return (savedLocale == null) ? Locale.getDefault() : new Locale(savedLocale);
+    }
+
+
+    public void setDateLocale(Locale dateLocale) {
+        this.savedLocale = dateLocale.toString();
     }
 
     public static class DatePatternValidator implements InputValidator {

@@ -26,6 +26,7 @@ public class MksConfigurableForm implements Configurable {
     private JTextArea ignoredServersTA;
     private JTextField datePatternString;
     private JCheckBox resyncNonMembers;
+    private JComboBox localeCombo;
     private DefaultTableModel tableModel;
     private MksConfiguration configuration;
     private JComboBox charsetEditorCombo = new JComboBox();
@@ -122,6 +123,8 @@ public class MksConfigurableForm implements Configurable {
                             " java dateFormat pattern");
 
         }
+        configuration.setDateLocale((Locale) localeCombo.getSelectedItem());
+
         final List<MksServerInfo> ignoredServersListOld = parseIgnoredServers(configuration.getIgnoredServers());
         final List<MksServerInfo> ignoredServersListNew;
         try {
@@ -196,6 +199,15 @@ public class MksConfigurableForm implements Configurable {
 
     private void initDatePattern() {
         this.datePatternString.setText(configuration.getDatePattern());
+        Locale[] locales = Locale.getAvailableLocales();
+        Arrays.sort(locales, new Comparator<Locale>() {
+            @Override
+            public int compare(Locale o1, Locale o2) {
+                return o1.toString().compareTo(o2.toString());
+            }
+        });
+        this.localeCombo.setModel(new DefaultComboBoxModel(locales));
+        this.localeCombo.setSelectedItem(configuration.getDateLocale());
     }
 
     private MksConfiguration getConfiguration() {
@@ -210,10 +222,12 @@ public class MksConfigurableForm implements Configurable {
         } catch (Exception e) {
             isDateChanged = true;
         }
+
         return isResyncNonMembersModified(configuration)
                 || isEncodingsModified(configuration)
                 || (!configuration.getIgnoredServers().equals(ignoredServersTA.getText()))
                 || isDateChanged
+                || !localeCombo.getSelectedItem().equals(configuration.getDateLocale())
 //			&& configuration.PROJECT.equals(.getText())
                 ;
     }
@@ -275,7 +289,7 @@ public class MksConfigurableForm implements Configurable {
         ignoredServersTA.setRows(3);
         scrollPane2.setViewportView(ignoredServersTA);
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new FormLayout("fill:d:noGrow,left:4dlu:noGrow,fill:d:grow", "center:max(d;4px):noGrow,top:4dlu:noGrow,center:d:grow"));
+        panel1.setLayout(new FormLayout("fill:d:noGrow,left:4dlu:noGrow,fill:d:grow,left:4dlu:noGrow,fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:max(d;4px):noGrow", "center:max(d;4px):noGrow,top:4dlu:noGrow,center:d:grow"));
         mainPanel.add(panel1, cc.xy(2, 1));
         final JLabel label3 = new JLabel();
         this.$$$loadLabelText$$$(label3, ResourceBundle.getBundle("org/intellij/vcs/mks/mksBundle").getString("config.date_pattern"));
@@ -292,6 +306,11 @@ public class MksConfigurableForm implements Configurable {
         this.$$$loadLabelText$$$(label4, ResourceBundle.getBundle("org/intellij/vcs/mks/mksBundle").getString("config.resyncNonMembers"));
         label4.setToolTipText(ResourceBundle.getBundle("org/intellij/vcs/mks/mksBundle").getString("config.resyncNonMembers.hover"));
         panel1.add(label4, cc.xy(1, 1));
+        final JLabel label5 = new JLabel();
+        this.$$$loadLabelText$$$(label5, ResourceBundle.getBundle("org/intellij/vcs/mks/mksBundle").getString("config.date_locale"));
+        panel1.add(label5, cc.xy(5, 3));
+        localeCombo = new JComboBox();
+        panel1.add(localeCombo, cc.xy(7, 3));
         label1.setLabelFor(scrollPane1);
         label2.setLabelFor(ignoredServersTA);
         label3.setLabelFor(datePatternString);

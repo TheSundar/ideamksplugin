@@ -75,6 +75,10 @@
         <colspec value="fill:d:noGrow"/>
         <colspec value="left:4dlu:noGrow"/>
         <colspec value="fill:d:grow"/>
+        <colspec value="left:4dlu:noGrow"/>
+        <colspec value="fill:max(d;4px):noGrow"/>
+        <colspec value="left:4dlu:noGrow"/>
+        <colspec value="fill:max(d;4px):noGrow"/>
         <constraints>
           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
           <forms/>
@@ -122,6 +126,22 @@
               <text resource-bundle="org/intellij/vcs/mks/mksBundle" key="config.resyncNonMembers"/>
               <toolTipText resource-bundle="org/intellij/vcs/mks/mksBundle" key="config.resyncNonMembers.hover"/>
             </properties>
+          </component>
+          <component id="8c5ab" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text resource-bundle="org/intellij/vcs/mks/mksBundle" key="config.date_locale"/>
+            </properties>
+          </component>
+          <component id="67cd8" class="javax.swing.JComboBox" binding="localeCombo">
+            <constraints>
+              <grid row="2" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties/>
           </component>
         </children>
       </grid>

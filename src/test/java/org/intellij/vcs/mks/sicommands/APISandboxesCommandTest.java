@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class APISandboxesCommandTest extends TestCase {
     private SandboxesCommandAPI createCommand(final List<VcsException> errors, final MKSAPIHelper helper) {
@@ -32,12 +33,19 @@ public class APISandboxesCommandTest extends TestCase {
             public boolean isMks2007() {
                 return false;
             }
+            @Override
+            public Locale getDateLocale() {
+                return Locale.ENGLISH;
+            }
+
         };
         return new SandboxesCommandAPI(errors, mksCLIConfiguration) {
             protected MKSAPIHelper getAPIHelper() {
                 return helper;
             }
+
         };
+
     }
 
     @Override
