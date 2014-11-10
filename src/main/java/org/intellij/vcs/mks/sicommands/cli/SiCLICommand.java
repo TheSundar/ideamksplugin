@@ -31,6 +31,7 @@ public abstract class SiCLICommand extends AbstractMKSCommand implements Runnabl
 	protected static final String sandboxPattern = namePattern + "?";
 	protected static final String userPattern = "(?:(?:[^\\t]+? \\()?([^\\)]+)(?:\\))?)?";
 	protected static final String DEFERRED = "deferred";
+	public static final String UNABLE_TO_RECONNECT_TO_MKS_SERVER = "Unable to reconnect to mks server";
 	private String commandString;
 	private String[] args;
 	protected String commandOutput;
@@ -130,8 +131,9 @@ public abstract class SiCLICommand extends AbstractMKSCommand implements Runnabl
 		if (!"".equals(errorOutput)) {
 			if (exitValue == SI_IDX) {
 				LOGGER.warn("command [" + this + "] wrote to stderr " + errorOutput);
-			} else if (exitValue == BATCH_IDX && errorOutput.startsWith("Connecting to ")) {
-				this.errors.add(new VcsException("Unable to reconnect to mks server"));
+			} else if (exitValue == BATCH_IDX && (errorOutput.startsWith("Connecting to ")
+					|| errorOutput.contains("must use the option --password"))) {
+				this.errors.add(new VcsException(UNABLE_TO_RECONNECT_TO_MKS_SERVER));
 				LOGGER.warn("mks returned [" + errorOutput +
 						"], you probably need to reconnect to the server manually, try executing 'si connect --hostname=$mksHost$'");
 			} else {

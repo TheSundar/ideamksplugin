@@ -102,62 +102,67 @@ public class MKSAPIHelper implements ApplicationComponent {
 
 	public boolean checkNeededServersAreOnlineAndReconnectIfNeeded(@NotNull Set<MksSandboxInfo> sandboxesToRefresh,
 																 @NotNull ArrayList<MksServerInfo> servers, Project project) {
-		Set<String> connectedServers = new HashSet<String>();
-		for (MksServerInfo server : servers) {
-			connectedServers.add(server.host + ":" + server.port);
-		}
-		Set<String> serversNeedingReconnect = new HashSet<String>();
+		Set<MksServerInfo> connectedServers = new HashSet<MksServerInfo>(servers);
+
+		Set<MksServerInfo> serversNeedingReconnect = new HashSet<MksServerInfo>();
 		for (MksSandboxInfo sandboxInfo : sandboxesToRefresh) {
-			if (!connectedServers.contains(sandboxInfo.hostAndPort)) {
-				serversNeedingReconnect.add(sandboxInfo.hostAndPort);
+			serversNeedingReconnect.add(MksServerInfo.fromHostAndPort(sandboxInfo.hostAndPort));
+		}
+		for (final MksServerInfo serverInfo : serversNeedingReconnect) {
+			// request user and password
+			MksServerInfo reconnectedServer = reconnect(project, serverInfo);
+			if (reconnectedServer != null) {
+				connectedServers.add(reconnectedServer);
 			}
 		}
-		for (final String hostAndPort : serversNeedingReconnect) {
-			// request user and password
 
-			int colonIndex = hostAndPort.indexOf(':');
-			String host = hostAndPort.substring(0, colonIndex);
-			String port = hostAndPort.substring(colonIndex + 1);
+		return  (connectedServers.size() == serversNeedingReconnect.size());
+	}
 
-			PasswordSafe passwordSafe = PasswordSafe.getInstance();
-			final UserAndPassword userAndPassword = getUsernameAndPassword(hostAndPort, project);
-			if (userAndPassword == null) return false;
+	public MksServerInfo reconnect(Project project, MksServerInfo serverInfo) {
+		MksServerInfo reconnectedServer = null;
+		String host = serverInfo.host;
+		String port = serverInfo.port;
+
+		PasswordSafe passwordSafe = PasswordSafe.getInstance();
+		String hostAndPort = serverInfo.toHostAndPort();
+		final UserAndPassword userAndPassword = getUsernameAndPassword(hostAndPort, project);
+		if (userAndPassword != null) {
+
 			if (userAndPassword.user == null || userAndPassword.password == null) {
 				try {
 					Runnable runnable = new CredentialsInputRunnable(project, hostAndPort, userAndPassword);
 					MksVcs.invokeOnEventDispatchThreadAndWait(runnable);
 				} catch (VcsException e) {
 					LOGGER.error(e);
-					return false;
 				}
 			}
-			SiConnectCommandAPI command =
-					new SiConnectCommandAPI(MksVcs.getInstance(project), host, port, userAndPassword.user, userAndPassword.password);
+			SiConnectCommandAPI command = new SiConnectCommandAPI(MksVcs.getInstance(project), host, port, userAndPassword.user, userAndPassword.password);
 			command.execute();
-			if (command.foundError()) {
-				return false;
-			}
-			String passwordKey = createPasswordKey(hostAndPort, userAndPassword.user);
-			if (!command.foundError() && (command.getServer() != null)) {
-				servers.add(command.getServer());
-				try {
-					MksConfiguration configuration = ApplicationManager.getApplication().getComponent(MksConfiguration.class);
-					configuration.addRememberedUsername(hostAndPort, userAndPassword.user);
-					passwordSafe.storePassword(project, MksVcs.class, passwordKey, userAndPassword.password);
-				} catch (PasswordSafeException e) {
-					reportErrors(Arrays.asList(new VcsException(e)), "unable to store credentials for [" + passwordKey + "]");
-				}
-			} else {
-				reportErrors(command.errors, "unable to connect to " + hostAndPort);
-				try {
-					passwordSafe.removePassword(project, MksVcs.class, passwordKey);
-				} catch (PasswordSafeException e) {
-					reportErrors(Arrays.asList(new VcsException(e)), "unable to discard credentials for [" + passwordKey + "]");
+			if (!command.foundError()) {
+				String passwordKey = createPasswordKey(hostAndPort, userAndPassword.user);
+				if (!command.foundError() && (command.getServer() != null)) {
+					reconnectedServer = command.getServer();
+					try {
+						MksConfiguration configuration = ApplicationManager.getApplication().getComponent(MksConfiguration.class);
+						configuration.addRememberedUsername(hostAndPort, userAndPassword.user);
+						passwordSafe.storePassword(project, MksVcs.class, passwordKey, userAndPassword.password);
+					} catch (PasswordSafeException e) {
+						reportErrors(Arrays.asList(new VcsException(e)), "unable to store credentials for [" + passwordKey + "]");
+					}
+				} else {
+					reportErrors(command.errors, "unable to connect to " + hostAndPort);
+					try {
+						passwordSafe.removePassword(project, MksVcs.class, passwordKey);
+					} catch (PasswordSafeException e) {
+						reportErrors(Arrays.asList(new VcsException(e)), "unable to discard credentials for [" + passwordKey + "]");
+					}
 				}
 			}
 		}
-		return  true;
+		return reconnectedServer;
 	}
+
 	/**
 	 * search for previously used username for <code>hostAndPort</code> in the configuration, if present search
 	 * passwordSafe for the password, otherwise request credentials from user

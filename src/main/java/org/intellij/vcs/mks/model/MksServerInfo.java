@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * How to connect to a given mks server as returned by si servers. <br/>
  */ // when offline you have like "user@host:7001 (offline)"
 public final class MksServerInfo {
+	private static final String UNKNOWN_USER = "<unknown>";
 	@NotNull
 	public final String user;
 	@NotNull
@@ -18,6 +19,11 @@ public final class MksServerInfo {
 		this.host = host.toLowerCase();
 		this.port = port;
 		this.user = user;
+	}
+	public MksServerInfo(@NotNull final String host, @NotNull final String port) {
+		this.host = host.toLowerCase();
+		this.port = port;
+		this.user = UNKNOWN_USER;
 	}
 
 	@Override
@@ -54,6 +60,15 @@ public final class MksServerInfo {
 
 	public String toHostAndPort() {
 		return this.host + ":" + this.port;
+	}
+	public static MksServerInfo fromHostAndPort(String hostAndPort) {
+		if (! hostAndPort.matches("([^:]+):(\\d+)")) {
+			throw new IllegalArgumentException("not a hostAndPort [" + hostAndPort + "]");
+		}
+		int colonIndex = hostAndPort.indexOf(':');
+		String host = hostAndPort.substring(0, colonIndex);
+		String port = hostAndPort.substring(colonIndex + 1);
+		return new MksServerInfo(host,port);
 	}
 
 }
