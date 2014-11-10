@@ -347,9 +347,11 @@ class MKSChangeProvider extends AbstractProjectComponent
 			ViewSandboxCommandAPI commandAPI = new ViewSandboxCommandAPI(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
 			commandAPI.execute();
 			addNonExcludedStates(states, commandAPI.getMemberStates());
-			ViewNonMembersCommandAPI nonMembersCommandRecursive = new ViewNonMembersCommandAPI(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
-			nonMembersCommandRecursive.execute();
-			addNonExcludedStates(states, nonMembersCommandRecursive.getMemberStates());
+			if (ApplicationManager.getApplication().getComponent(MksConfiguration.class).isSynchronizeNonMembers()) {
+				ViewNonMembersCommandAPI nonMembersCommandRecursive = new ViewNonMembersCommandAPI(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
+				nonMembersCommandRecursive.execute();
+				addNonExcludedStates(states, nonMembersCommandRecursive.getMemberStates());
+			}
 			ViewMissingMembersCommandAPI missingMembersCommand = new ViewMissingMembersCommandAPI(errors, MksVcs.getInstance(myProject), sandbox.sandboxPath);
 			missingMembersCommand.execute();
 			addNonExcludedStates(states, missingMembersCommand.getMemberStates());
