@@ -2,7 +2,7 @@ package org.intellij.vcs.mks.history;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -20,15 +20,14 @@ import com.mks.api.response.NoCredentialsException;
 import com.mks.api.response.WorkItem;
 import org.intellij.vcs.mks.MKSAPIHelper;
 import org.intellij.vcs.mks.MksVcs;
-import org.intellij.vcs.mks.model.MksChangePackage;
 import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
 import org.intellij.vcs.mks.model.MksMemberState;
 import org.intellij.vcs.mks.model.MksServerInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
 import org.intellij.vcs.mks.sicommands.api.ViewChangePackageAPICommand;
+import org.intellij.vcs.mks.sicommands.api.ViewMemberHistoryAPICommand;
 import org.intellij.vcs.mks.sicommands.api.ViewSandboxCommandAPI;
 import org.intellij.vcs.mks.sicommands.cli.GetRevisionInfo;
-import org.intellij.vcs.mks.sicommands.api.ViewMemberHistoryAPICommand;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,7 +49,7 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
     private final AnAction viewChangePackageAction = new AnAction("View ChangePackage") {
 		@Override
 		public void update(@NotNull AnActionEvent e) {
-			Project project = (Project) e.getData(CommonDataKeys.PROJECT);
+			Project project = (Project) e.getData(PlatformDataKeys.PROJECT);
 			if (project != null) {
 				VcsKey vcsKey = (VcsKey) e.getData(VcsDataKeys.VCS);
 				if (vcsKey != null) {
@@ -66,7 +65,7 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
 
 		@Override
 		public void actionPerformed(AnActionEvent e) {
-			Project project = (Project) e.getData(CommonDataKeys.PROJECT);
+			Project project = (Project) e.getData(PlatformDataKeys.PROJECT);
 			if (project != null) {
 				VcsKey vcsKey = (VcsKey) e.getData(VcsDataKeys.VCS);
 				if (vcsKey != null) {
