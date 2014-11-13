@@ -1,10 +1,15 @@
 package org.intellij.vcs.mks.history;
 
 import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.FilePath;
+import com.intellij.openapi.vcs.VcsDataKeys;
 import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.vcs.VcsKey;
 import com.intellij.openapi.vcs.history.*;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.ColumnInfo;
@@ -15,10 +20,12 @@ import com.mks.api.response.NoCredentialsException;
 import com.mks.api.response.WorkItem;
 import org.intellij.vcs.mks.MKSAPIHelper;
 import org.intellij.vcs.mks.MksVcs;
+import org.intellij.vcs.mks.model.MksChangePackage;
 import org.intellij.vcs.mks.model.MksMemberRevisionInfo;
 import org.intellij.vcs.mks.model.MksMemberState;
 import org.intellij.vcs.mks.model.MksServerInfo;
 import org.intellij.vcs.mks.realtime.MksSandboxInfo;
+import org.intellij.vcs.mks.sicommands.api.ViewChangePackageAPICommand;
 import org.intellij.vcs.mks.sicommands.api.ViewSandboxCommandAPI;
 import org.intellij.vcs.mks.sicommands.cli.GetRevisionInfo;
 import org.intellij.vcs.mks.sicommands.api.ViewMemberHistoryAPICommand;
@@ -40,6 +47,42 @@ import java.util.List;
 public class MksVcsHistoryProvider implements VcsHistoryProvider {
     private final MksVcs vcs;
     private final Logger LOGGER = Logger.getInstance(getClass().getName());
+    private final AnAction viewChangePackageAction = new AnAction("View ChangePackage") {
+		@Override
+		public void update(@NotNull AnActionEvent e) {
+			Project project = (Project) e.getData(CommonDataKeys.PROJECT);
+			if (project != null) {
+				VcsKey vcsKey = (VcsKey) e.getData(VcsDataKeys.VCS);
+				if (vcsKey != null) {
+					VcsFileRevision revision = (VcsFileRevision) e.getData(VcsDataKeys.VCS_FILE_REVISION);
+					VirtualFile revisionVirtualFile = (VirtualFile) e.getData(VcsDataKeys.VCS_VIRTUAL_FILE);
+
+					MksVcsFileRevision mksRevision = (MksVcsFileRevision) revision;
+					String cpid = mksRevision.getCpid();
+					e.getPresentation().setEnabled(null != cpid);
+				}
+			}
+		}
+
+		@Override
+		public void actionPerformed(AnActionEvent e) {
+			Project project = (Project) e.getData(CommonDataKeys.PROJECT);
+			if (project != null) {
+				VcsKey vcsKey = (VcsKey) e.getData(VcsDataKeys.VCS);
+				if (vcsKey != null) {
+					VcsFileRevision revision = (VcsFileRevision) e.getData(VcsDataKeys.VCS_FILE_REVISION);
+					VirtualFile revisionVirtualFile = (VirtualFile) e.getData(VcsDataKeys.VCS_VIRTUAL_FILE);
+
+					MksVcsFileRevision mksRevision = (MksVcsFileRevision) revision;
+					String cpid = mksRevision.getCpid();
+					if (null != cpid) {
+						new ViewChangePackageAPICommand(new ArrayList<VcsException>(), MksVcs.getInstance(project), cpid).execute();
+					}
+
+				}
+			}
+		}
+	};
 
     public MksVcsHistoryProvider(MksVcs vcs) {
         this.vcs = vcs;
@@ -184,14 +227,12 @@ public class MksVcsHistoryProvider implements VcsHistoryProvider {
     }
 
     /**
-     * todo : add possibility to view change package related to a revision
-     *
      * @param runnable
      * @return
      */
     @Override
     public AnAction[] getAdditionalActions(Runnable runnable) {
-        return new AnAction[0];
+        return new AnAction[]{viewChangePackageAction};
     }
 
     @Nullable
