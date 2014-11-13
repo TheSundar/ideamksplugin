@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 public class MksAPITest extends TestCase {
     private static final String user = "79310750";
@@ -415,7 +416,12 @@ public class MksAPITest extends TestCase {
             public boolean isMks2007() {
                 return false;
             }
-        };
+
+			@Override
+			public Locale getDateLocale() {
+				return null;
+			}
+		};
     }
 
 }

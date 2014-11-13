@@ -20,8 +20,11 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
     <change-notes><![CDATA[<ul>
     <li>0.12 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.12&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
       googlecode issues resolved in 0.12</a> for complete changes<br/>
+      issue 106 : enable "view change package" action in file history view<br/>
+      issue 102 : Support File History &gt; Annotate<br/>
       issue 103 : assertion failed "project is already disposed" when closing MKS backed project<br/>
       issue 104, 105 : better usage of PasswordManager and better handling of disconnection errors<br/>
+      issue 106 : Honor "resynchronize non members" Plugin preference<br/>
     </li>
     <li>0.11.1 :  See <a href="http://code.google.com/p/ideamksplugin/issues/list?can=1&q=label%3AMilestone-Release0.11.1&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles">
       googlecode issues resolved in 0.1.1</a> for complete changes<br/>
@@ -181,7 +184,7 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
                     class="org.intellij.vcs.mks.actions.RevertMembersAction"
                     text="Revert Members"
                     description="Revert Members" icon="/icons/revert.gif"/>
-            <reference id="MKS.MemberDiffsAction"/>
+            <reference ref="MKS.MemberDiffsAction"/>
             <action id="MKS.MemberHistoryAction"
                     class="org.intellij.vcs.mks.actions.MemberHistoryAction"
                     text="Member History" description="Member History"
@@ -219,14 +222,16 @@ See <a href="http://code.google.com/p/ideamksplugin/">here</a> for the googlecod
             <separator/>
             <action id="mks.viewChangePackage" class="org.intellij.vcs.mks.actions.ViewChangePackageAction"
                     text="View ChangePackage"/>
-            <reference id="UpdateFiles"/>
-            <reference id="CheckStatusForFiles"/>
 
-            <reference id="Compare.SameVersion"/>
-            <reference id="Compare.LastVersion"/>
-            <reference id="Compare.Selected"/>
-            <reference id="Vcs.ShowTabbedFileHistory"/>
-            <reference id="Vcs.ShowHistoryForBlock"/>
+            <reference ref="Annotate"/>
+            <reference ref="UpdateFiles"/>
+            <reference ref="CheckStatusForFiles"/>
+
+            <reference ref="Compare.SameVersion"/>
+            <reference ref="Compare.LastVersion"/>
+            <reference ref="Compare.Selected"/>
+            <reference ref="Vcs.ShowTabbedFileHistory"/>
+            <reference ref="Vcs.ShowHistoryForBlock"/>
 
             <add-to-group group-id="VcsGroup" anchor="last"/>
             <add-to-group group-id="VcsGroups" anchor="last"/>
